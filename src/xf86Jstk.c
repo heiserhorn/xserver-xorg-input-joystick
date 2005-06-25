@@ -779,9 +779,11 @@ static XF86ModuleVersionInfo xf86JstkVersionRec =
 				/* a tool */
 };
 
-XF86ModuleData joystickModuleData = {&xf86JstkVersionRec,
-					 xf86JstkPlug,
-					 xf86JstkUnplug};
+_X_EXPORT XF86ModuleData joystickModuleData = {
+    &xf86JstkVersionRec,
+    xf86JstkPlug,
+    xf86JstkUnplug
+};
 #endif /* XFree86LOADER */
 
 #endif /* ! XFREE86_V4 */
