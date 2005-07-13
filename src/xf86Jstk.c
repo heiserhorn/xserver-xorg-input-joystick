@@ -44,7 +44,7 @@
 #include <xf86Xinput.h>
 #include <xisb.h>
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
-#include <keysym.h>
+#include <X11/keysym.h>
 
 #ifdef XFree86LOADER
 #include <xf86Module.h>
