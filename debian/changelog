@@ -1,0 +1,48 @@
+xserver-xorg-input-joystick (1:1.0.0.5-1) UNRELEASED; urgency=low
+
+  * First upload to Debian
+
+ -- David Nusinow <dnusinow@debian.org>  Thu, 19 Jan 2006 20:42:09 -0500
+
+xserver-xorg-input-joystick (1:1.0.0.5-0ubuntu1) dapper; urgency=low
+
+  * New upstream release.
+  * Add provides on xserver-xorg-input.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Wed,  4 Jan 2006 19:43:22 +1100
+
+xserver-xorg-input-joystick (1:1.0.0.4-0ubuntu1) dapper; urgency=low
+
+  * New upstream release.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Mon, 19 Dec 2005 08:56:28 +1100
+
+xserver-xorg-input-joystick (1:1.0.0.3-0ubuntu1) dapper; urgency=low
+
+  * New upstream release.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Mon, 12 Dec 2005 13:38:38 +1100
+
+xserver-xorg-input-joystick (1:1.0.0.2-0ubuntu2) dapper; urgency=low
+
+  * Add missing Build-Depends (x11proto-core-dev, x11proto-randr-dev).
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Mon,  5 Dec 2005 12:48:35 +1100
+
+xserver-xorg-input-joystick (1:1.0.0.2-0ubuntu1) dapper; urgency=low
+
+  * New upstream release.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Tue, 22 Nov 2005 13:21:49 +1100
+
+xserver-xorg-input-joystick (1:1.0.0.1-1) dapper; urgency=low
+
+  * New upstream release.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Tue, 25 Oct 2005 16:53:56 +1000
+
+xserver-xorg-input-joystick (1:1.0.0-1) breezy; urgency=low
+
+  * First xserver-xorg-input-joystick release.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Wed,  6 Jul 2005 15:48:17 +1000
