@@ -1,6 +1,8 @@
-xserver-xorg-input-joystick (1:1.0.0.5-1) UNRELEASED; urgency=low
+xorg-input-driver-joystick (1:1.0.0.5-1) experimental; urgency=low
 
   * First upload to Debian
+  * Change source package, package, and provides names to denote the
+    type of driver rather than that they are for the xorg-server
 
  -- David Nusinow <dnusinow@debian.org>  Thu, 19 Jan 2006 20:42:09 -0500
 

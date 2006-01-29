@@ -1,4 +1,4 @@
-Source: xserver-xorg-input-joystick
+Source: xorg-input-driver-joystick
 Section: x11
 Priority: optional
 Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
@@ -6,10 +6,10 @@ Uploaders: David Nusinow <dnusinow@debian.org>, Branden Robinson <branden@ debia
 Build-Depends: debhelper (>= 4.0.0), pkg-config, xserver-xorg-dev, x11proto-input-dev, x11proto-core-dev, x11proto-randr-dev
 Standards-Version: 3.6.1.0
 
-Package: xserver-xorg-input-joystick
+Package: xorg-input-driver-joystick
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, xserver-xorg-core (>= 1:0.99.0-1)
-Provides: xserver-xorg-input
+Provides: xorg-input-driver
 Replaces: xserver-xorg (<< 6.8.2-35)
 Description: X.Org X server -- joystick input driver
  This package provides the driver for joysticks.
