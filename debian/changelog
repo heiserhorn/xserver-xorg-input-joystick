@@ -1,3 +1,11 @@
+xserver-xorg-input-joystick (1:1.0.0.5-3) UNRELEASED; urgency=low
+
+  * Test for obj-$(DEB_BUILD_GNU_TYPE) before creating it during build;
+    idempotency fix.
+  * Run dh_install w/ --list-missing.
+
+ -- Andres Salomon <dilinger@debian.org>  Mon, 17 Jul 2006 01:07:04 -0400
+
 xserver-xorg-input-joystick (1:1.0.0.5-2) unstable; urgency=low
 
   * Upload to modular
