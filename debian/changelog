@@ -1,10 +1,19 @@
-xserver-xorg-input-joystick (1:1.0.0.5-3) UNRELEASED; urgency=low
+xserver-xorg-input-joystick (1:1.1.0-1) unstable; urgency=low
 
+  [ Andres Salomon ]
   * Test for obj-$(DEB_BUILD_GNU_TYPE) before creating it during build;
     idempotency fix.
   * Run dh_install w/ --list-missing.
 
- -- Andres Salomon <dilinger@debian.org>  Mon, 17 Jul 2006 01:07:04 -0400
+  [ Drew Parsons ]
+  * New upstream version (X11R7.1).
+  * Standards version 3.7.2.
+  * [Build-] Depends: xserver-xorg (>= 2:1.1.1-1).
+  * Use debhelper 5.
+  * Use dh_installman to install man pages.
+  * Exclude joystick_drv.la from dh_install.
+
+ -- Drew Parsons <dparsons@debian.org>  Wed, 11 Oct 2006 00:22:42 +1000
 
 xserver-xorg-input-joystick (1:1.0.0.5-2) unstable; urgency=low
 
