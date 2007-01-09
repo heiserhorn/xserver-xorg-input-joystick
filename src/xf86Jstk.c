@@ -377,7 +377,7 @@ xf86JstkEvents(OsTimerPtr        timer,
                pointer           arg)
 {
   DeviceIntPtr          device = (DeviceIntPtr)arg;
-  JoystickDevPtr        priv = (JoystickDevPtr) PRIVATE(device);
+  JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
   int                   timeout = priv->jstkTimeout;
   int                   x, y, buttons;
 
@@ -445,7 +445,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
   int                   nbbuttons;
   int                   jstkfd;
   LocalDevicePtr        local = (LocalDevicePtr)pJstk->public.devicePrivate;
-  JoystickDevPtr        priv = (JoystickDevPtr)PRIVATE(pJstk);
+  JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(pJstk);
 
   DBG(2, ErrorF("BEGIN xf86JstkProc dev=0x%x priv=0x%x xf86JstkEvents=0x%x\n",
                 pJstk, priv, xf86JstkEvents));
