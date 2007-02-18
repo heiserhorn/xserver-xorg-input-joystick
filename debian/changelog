@@ -2,10 +2,9 @@ xserver-xorg-input-joystick (1:1.1.0-2) UNRELEASED; urgency=low
 
   * Add link to xserver-xorg-core bug script, so that bugreports contain
     the user's config and log files.
-  * Bump dependency on xserver-xorg-core to >= 2:1.1.1-11, as previous
-    versions don't have the bug script.
+  * Generate the dependency on xserver-xorg-core automatically.
 
- -- Julien Cristau <julien.cristau@ens-lyon.org>  Tue,  7 Nov 2006 07:30:37 +0100
+ -- Julien Cristau <jcristau@debian.org>  Sun, 18 Feb 2007 18:38:09 +0100
 
 xserver-xorg-input-joystick (1:1.1.0-1) unstable; urgency=low
 
