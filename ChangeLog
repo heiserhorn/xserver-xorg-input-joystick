@@ -1,3 +1,9 @@
+2007-03-13  Sascha Hlusiak <saschahlusiak@freedesktop.org>
+
+	* src/xf86Jstk.c:
+	Cleaning and rearranging of code.
+	Made the module actually work at all.
+
 2006-04-06  Adam Jackson  <ajax@freedesktop.org>
 
 	* configure.ac:
