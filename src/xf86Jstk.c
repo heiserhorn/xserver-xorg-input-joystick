@@ -1,20 +1,20 @@
-/* $XConsortium: xf86Jstk.c /main/14 1996/10/25 14:11:36 kaleb $ */
 /*
+ * Copyright 2007      by Sascha Hlusiak. <saschahlusiak@freedesktop.org>
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>       
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
  * the  above copyright   notice appear  in   all  copies and  that both  that
  * copyright  notice   and   this  permission   notice  appear  in  supporting
- * documentation, and that   the  name of  Frederic   Lepied not  be  used  in
+ * documentation, and that   the  name of  Sascha   Hlusiak  not  be  used  in
  * advertising or publicity pertaining to distribution of the software without
- * specific,  written      prior  permission.     Frederic  Lepied   makes  no
+ * specific,  written      prior  permission.     Sascha   Hlusiak   makes  no
  * representations about the suitability of this software for any purpose.  It
  * is provided "as is" without express or implied warranty.                   
  *                                                                            
- * FREDERIC  LEPIED DISCLAIMS ALL   WARRANTIES WITH REGARD  TO  THIS SOFTWARE,
+ * SASCHA  HLUSIAK  DISCLAIMS ALL   WARRANTIES WITH REGARD  TO  THIS SOFTWARE,
  * INCLUDING ALL IMPLIED   WARRANTIES OF MERCHANTABILITY  AND   FITNESS, IN NO
- * EVENT  SHALL FREDERIC  LEPIED BE   LIABLE   FOR ANY  SPECIAL, INDIRECT   OR
+ * EVENT  SHALL SASCHA  HLUSIAK  BE   LIABLE   FOR ANY  SPECIAL, INDIRECT   OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA  OR PROFITS, WHETHER  IN  AN ACTION OF  CONTRACT,  NEGLIGENCE OR OTHER
  * TORTIOUS  ACTION, ARISING    OUT OF OR   IN  CONNECTION  WITH THE USE    OR
@@ -22,7 +22,6 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.5 2001/11/26 16:25:53 dawes Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -657,7 +656,7 @@ static XF86ModuleVersionInfo xf86JstkVersionRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XORG_VERSION_CURRENT,
-	1, 1, 0,
+	1, 1, 1,
 	ABI_CLASS_XINPUT,
 	ABI_XINPUT_VERSION,
 	MOD_CLASS_XINPUT,
