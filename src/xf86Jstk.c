@@ -31,30 +31,18 @@
 
 #include <misc.h>
 #include <xf86.h>
-#include <xf86_OSproc.h>
 #include <xf86Xinput.h>
 #include <xisb.h>
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
 #include <X11/keysym.h>
 
-#include <sys/types.h>
-#include <linux/joystick.h>
-#include <fcntl.h>
-#include <errno.h>
-
 #ifdef XFree86LOADER
 #include <xf86Module.h>
 #endif
 
-#define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
-#define tcflush(fd, n) xf86FlushInput((fd))
-#undef read
-#define read(a,b,c) xf86ReadSerial((a),(b),(c))
-#undef write
-#define write(a,b,c) xf86WriteSerial((a),(char*)(b),(c))
-#define XCONFIG_PROBED "(==)"
-#define XCONFIG_GIVEN "(**)"
-#define xf86Verbose 1
+
+#include "xf86Jstk.h"
+#include "linux_jstk.h"
 
 
 
@@ -68,156 +56,22 @@
 #undef DEBUG
 #endif
 
-static int      debug_level = 0;
 #define DEBUG 1
+
 #if DEBUG
+static int      debug_level = 0;
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
 #define DBG(lvl, f)
 #endif
 
-/******************************************************************************
- * device records
- *****************************************************************************/
-
-typedef struct 
-{
-  int           jstkFd;         /* Joystick File Descriptor */
-  OsTimerPtr    jstkTimer;      /* timer object */
-  int           jstkTimeout;    /* timeout to poll device */
-  char          *jstkDevice;    /* device file name */
-  int           jstkOldX;       /* previous X position */
-  int           jstkOldY;       /* previous Y position */
-  int           jstkOldButtons; /* previous buttons state */
-  int           jstkMaxX;       /* max X value */
-  int           jstkMaxY;       /* max Y value */
-  int           jstkMinX;       /* min X value */
-  int           jstkMinY;       /* min Y value */
-  int           jstkCenterX;    /* X center value */
-  int           jstkCenterY;    /* Y center value */
-  int           jstkDelta;      /* delta cursor */
-} JoystickDevRec, *JoystickDevPtr;
 
 
+/****************************************************************************
+ * Forward declarations
+ ****************************************************************************/
 
-
-#if !defined(JSIOCGTIMELIMIT)
-/* make 2.1.x joystick.h backward compatable */
-#define JSIOCGTIMELIMIT         JS_GET_TIMELIMIT
-#define JSIOCSTIMELIMIT         JS_SET_TIMELIMIT
-#define js_status               JS_DATA_TYPE
-#endif
-
-int
-xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
-{
-  int                   fd;
-  struct js_status      js;
-    
-#ifdef DEBUG
-  ErrorF("xf86JoystickOn %s\n", name);
-#endif
-
-  if ((fd = open(name, O_RDWR | O_NDELAY, 0)) < 0)
-    {
-      xf86Msg(X_WARNING, "Cannot open joystick '%s' (%s)\n", name,
-                strerror(errno));
-      return -1;
-    }
-
-  if (*timeout == 0) {
-    if (ioctl (fd, JSIOCGTIMELIMIT, timeout) == -1) {
-      Error("joystick JSIOCGTIMELIMIT ioctl");
-    }
-    else {
-      xf86Msg(X_CONFIG, "Joystick: timeout value = %d\n", *timeout);
-    }
-  }
-  else {
-    if (ioctl(fd, JSIOCSTIMELIMIT, timeout) == -1) {
-      Error("joystick JSIOCSTIMELIMIT ioctl");
-    }
-  }
-
-  /* Assume the joystick is centred when this is called */
-  read(fd, &js, JS_RETURN);
-  if (*centerX < 0) {
-    *centerX = js.x;
-    xf86Msg(X_CONFIG, "Joystick: CenterX set to %d\n", *centerX);
-  }
-  if (*centerY < 0) {
-    *centerY = js.y;
-    xf86Msg(X_CONFIG, "Joystick: CenterY set to %d\n", *centerY);
-  }
-
-  return fd;
-}
-
-/***********************************************************************
- *
- * xf86JoystickInit --
- *
- * called when X device is initialized.
- *
- ***********************************************************************
- */
-
-void
-xf86JoystickInit()
-{
-        return;
-}
-
-/***********************************************************************
- *
- * xf86JoystickOff --
- *
- * close the handle.
- *
- ***********************************************************************
- */
-
-int
-xf86JoystickOff(int *fd, int doclose)
-{
-  int   oldfd;
-  
-  if (((oldfd = *fd) >= 0) && doclose) {
-    close(*fd);
-    *fd = -1;
-  }
-  return oldfd;
-}
-
-/***********************************************************************
- *
- * xf86JoystickGetState --
- *
- * return the state of buttons and the position of the joystick.
- *
- ***********************************************************************
- */
-
-int
-xf86JoystickGetState(int fd, int *x, int *y, int *buttons)
-{
-  struct js_status      js;
-  int                   status;
-  
-  status = read(fd, &js, JS_RETURN);
- 
-  if (status != JS_RETURN)
-    {
-      Error("Joystick read");      
-      return 0;
-    }
-  
-  *x = js.x;
-  *y = js.y;
-  *buttons = js.buttons;
-  
-  return 1;
-}
+static Bool xf86JstkProc(DeviceIntPtr pJstk, int what);
 
 
 
@@ -251,75 +105,64 @@ xf86JstkConvert(LocalDevicePtr	local,
     return TRUE;
 }
 
+
+
 /*
- * xf86JstkEvents --
- *      Read the new events from the device, and enqueue them.
+ * xf86JstkTimer --
+ *      A timer fired
  */
 static CARD32
-xf86JstkEvents(OsTimerPtr        timer,
+xf86JstkTimer(OsTimerPtr        timer,
                CARD32            atime,
                pointer           arg)
 {
   DeviceIntPtr          device = (DeviceIntPtr)arg;
   JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
-  int                   timeout = priv->jstkTimeout;
   int                   x, y, buttons;
 
-  int sigstate;
+//   int sigstate;
+// 
+// 
+   DBG(5, ErrorF("xf86JstkEvents BEGIN device=0x%x priv=0x%x"
+                 " timeout=%d\n",
+                 device, priv, priv->timeout));
 
 
-  DBG(5, ErrorF("xf86JstkEvents BEGIN device=0x%x priv=0x%x"
-                " timeout=%d timer=0x%x\n",
-                device, priv, timeout, priv->jstkTimer));
+//     sigstate = xf86BlockSIGIO ();
+// 	xf86PostMotionEvent(device, 0, 0, 2, v0, v1);
+// 	    xf86PostButtonEvent(device, 0, loop+1, ((buttons & (1<<loop)) == (1<<loop)),
+// 				0, 2, v0, v1);
+//     xf86UnblockSIGIO (sigstate);
 
-  if (xf86JoystickGetState(priv->jstkFd, &x, &y, &buttons)) {
-    int loop;
-    int length = priv->jstkMaxX - priv->jstkMinX;
-    int height = priv->jstkMaxY - priv->jstkMinY;
-    int v0 = ((x - priv->jstkMinX) * priv->jstkDelta) / length -
-      (priv->jstkDelta / 2);
-    int v1 = ((y - priv->jstkMinY) * priv->jstkDelta) / height - 
-      (priv->jstkDelta / 2);
 
-    DBG(4, ErrorF("xf86JoystickGetState x=%d y=%d centerX=%d centerY=%d v0=%d "
-                  "v1=%d buttons=%d\n",
-                  x, y, priv->jstkCenterX, priv->jstkCenterY,
-                  v0, v1, buttons));
-    
-    sigstate = xf86BlockSIGIO ();
-    if ((abs(v0) > (priv->jstkDelta / 20)) ||
-        (abs(v1) > (priv->jstkDelta / 20)))
-      {
-	xf86PostMotionEvent(device, 0, 0, 2, v0, v1);
-	
-        priv->jstkOldX = x;
-        priv->jstkOldY = y;          
-      }
-    for(loop=0; loop<5; loop++)
-      {
-        if ((priv->jstkOldButtons & (1<<loop)) != (buttons & (1<<loop)))
-          {
-	    xf86PostButtonEvent(device, 0, loop+1, ((buttons & (1<<loop)) == (1<<loop)),
-				0, 2, v0, v1);
-          }
-      }
-    xf86UnblockSIGIO (sigstate);
-    priv->jstkOldButtons = buttons;
-  }
-
-  DBG(3, ErrorF("xf86JstkEvents END   device=0x%x priv=0x%x"
-                " timeout=%d timer=0x%x\n",
-                device, priv, timeout, priv->jstkTimer));
-
-  return timeout;
+  return priv->timeout;     /* New timeout value */
 }
+
+
+
+
+/*
+ * xf86JstkRead --
+ *      This is called, when there is data to read at the device
+ */
 
 static void
-xf86JstkControlProc(DeviceIntPtr	device,
-                    PtrCtrl		*ctrl)
+xf86JstkRead(LocalDevicePtr local)
 {
-  DBG(2, ErrorF("xf86JstkControlProc\n"));
+  JoystickDevPtr priv = local->private;
+  DBG(2, ErrorF("xf86JstkRead\n"));
+
+  if (xf86ReadJoystickData(priv)==0) {
+    int sigstate;
+    xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
+
+    if (local->fd >= 0)
+      RemoveEnabledDevice(local->fd);
+    return;
+  }
 }
+
+
 
 /*
  * xf86JstkProc --
@@ -329,54 +172,43 @@ static Bool
 xf86JstkProc(DeviceIntPtr       pJstk,
 	     int                what)
 {
-  CARD8                 map[5];
-  int                   nbaxes;
-  int                   nbbuttons;
-  int                   jstkfd;
+  int i;
+  CARD8                 map[MAXBUTTONS];
   LocalDevicePtr        local = (LocalDevicePtr)pJstk->public.devicePrivate;
   JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(pJstk);
 
-  DBG(2, ErrorF("BEGIN xf86JstkProc dev=0x%x priv=0x%x xf86JstkEvents=0x%x\n",
-                pJstk, priv, xf86JstkEvents));
-  
   switch (what)
     {
     case DEVICE_INIT: 
       DBG(1, ErrorF("xf86JstkProc pJstk=0x%x what=INIT\n", pJstk));
-  
-      map[1] = 1;
-      map[2] = 2;
-      map[3] = 3;
-
-      nbaxes = 2;
-      nbbuttons = 3;
+      for (i=1; i<MAXBUTTONS; i++) map[i] = i;
 
       if (InitButtonClassDeviceStruct(pJstk,
-                                      nbbuttons,
+                                      priv->buttons,
                                       map) == FALSE) 
         {
           ErrorF("unable to allocate Button class device\n");
           return !Success;
         }
-      
+
       if (InitFocusClassDeviceStruct(pJstk) == FALSE)
         {
           ErrorF("unable to init Focus class device\n");
           return !Success;
         }
-          
-      if (InitPtrFeedbackClassDeviceStruct(pJstk,
-                                           xf86JstkControlProc) == FALSE)
-        {
-          ErrorF("unable to init ptr feedback\n");
-          return !Success;
-        }
-          
+
+//       if (InitPtrFeedbackClassDeviceStruct(pJstk,
+//                                            xf86JstkControlProc) == FALSE)
+//         {
+//           ErrorF("unable to init ptr feedback\n");
+//           return !Success;
+//         }
+
       if (InitValuatorClassDeviceStruct(pJstk, 
-                                    nbaxes,
+                                    2,    /* FIXME */
                                     xf86GetMotionEvents, 
                                     local->history_size,
-                                    Relative) /* relatif ou absolute */
+                                    Relative) /* relative or absolute */
           == FALSE) 
         {
           ErrorF("unable to allocate Valuator class device\n"); 
@@ -401,42 +233,42 @@ xf86JstkProc(DeviceIntPtr       pJstk,
 	    
 	  /* allocate the motion history buffer if needed */
 	  xf86MotionHistoryAllocate(local);
-
-          xf86JoystickInit();
         }
 
       break; 
       
     case DEVICE_ON:
-      priv->jstkFd = jstkfd = xf86JoystickOn(priv->jstkDevice,
-                                             &(priv->jstkTimeout),
-                                             &(priv->jstkCenterX),
-                                             &(priv->jstkCenterY));
+      i = xf86JoystickOn(priv, FALSE);
 
       DBG(1, ErrorF("xf86JstkProc  pJstk=0x%x what=ON name=%s\n", pJstk,
-                    priv->jstkDevice));
+                    priv->device));
 
-      if (jstkfd != -1)
+      if (i != 0)
       {
-        priv->jstkTimer = TimerSet(NULL, 0, /*TimerAbsolute,*/
-                                   priv->jstkTimeout,
-                                   xf86JstkEvents,
+        priv->timer = TimerSet(NULL, 0, /*TimerAbsolute,*/
+                                   priv->timeout,
+                                   xf86JstkTimer,
                                    (pointer)pJstk);
         pJstk->public.on = TRUE;
-        DBG(2, ErrorF("priv->jstkTimer=0x%x\n", priv->jstkTimer));
+        local->fd = priv->fd;
+        AddEnabledDevice(local->fd);
       }
       else
         return !Success;
     break;
-      
+
     case DEVICE_OFF:
     case DEVICE_CLOSE:
       DBG(1, ErrorF("xf86JstkProc  pJstk=0x%x what=%s\n", pJstk,
                     (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 
-      TimerFree(priv->jstkTimer);
-      priv->jstkTimer = NULL;
-      jstkfd = xf86JoystickOff(&(priv->jstkFd), (what == DEVICE_CLOSE));
+      if (priv->timer)
+        TimerFree(priv->timer);
+      priv->timer = NULL;
+      if (local->fd >= 0)
+        RemoveEnabledDevice(local->fd);
+      local->fd = -1;
+      xf86JoystickOff(priv);
       pJstk->public.on = FALSE;
     break;
 
@@ -445,8 +277,6 @@ xf86JstkProc(DeviceIntPtr       pJstk,
       return !Success;
       break;
     }
-  DBG(2, ErrorF("END   xf86JstkProc dev=0x%x priv=0x%x xf86JstkEvents=0x%x\n",
-                pJstk, priv, xf86JstkEvents));
   return Success;
 }
 
@@ -504,7 +334,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->name = dev->identifier;
     local->flags = XI86_POINTER_CAPABLE | XI86_SEND_DRAG_EVENTS;
     local->device_control = xf86JstkProc;
-    local->read_input = NULL;
+    local->read_input = xf86JstkRead;
     local->close_proc = NULL;
     local->control_proc = NULL;
     local->switch_mode = NULL;
@@ -517,84 +347,47 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->always_core_feedback = 0;
     local->conf_idev = dev;
 
-    priv->jstkFd = -1;
-    priv->jstkTimer = NULL;
-    priv->jstkTimeout = 1;
-    priv->jstkDevice = NULL;
-    priv->jstkOldX = -1;
-    priv->jstkOldY = -1;
-    priv->jstkOldButtons = -1;
-    priv->jstkMaxX = 1000;
-    priv->jstkMaxY = 1000;
-    priv->jstkMinX = 0;
-    priv->jstkMinY = 0;
-    priv->jstkCenterX = 0;
-    priv->jstkCenterY = 0;
-    priv->jstkDelta = 100;
+    priv->fd = -1;
+    priv->timer = NULL;
+    priv->timeout = 10;
+    priv->device = NULL;
+
 
     xf86CollectInputOptions(local, NULL, NULL);
     xf86OptionListReport(local->options);
-  
-    /* Joytsick device is mandatory */
-    priv->jstkDevice = xf86CheckStrOption(dev->commonOptions, "Device", NULL);
 
-    if (!priv->jstkDevice) {
+    /* Joystick device is mandatory */
+    priv->device = xf86CheckStrOption(dev->commonOptions, "Device", NULL);
+
+    if (!priv->device) {
 	xf86Msg (X_ERROR, "JOYSTICK: No Device specified.\n");
 /*	*errmaj = LDR_BADUSAGE;*/
 	goto SetupProc_fail;
     }
 
-    /* Optional configuration */
+    xf86Msg(X_CONFIG, "JOYSTICK device is %s\n", priv->device);
+    if (xf86JoystickOn(priv, TRUE) == -1) {
+	goto SetupProc_fail;
+    }
+    xf86JoystickOff(priv);
 
-    s = xf86CheckStrOption(dev->commonOptions, "DeviceName", NULL);
-    if (s != NULL)
-	local->name = s;
-
-    xf86Msg(X_CONFIG, "%s name is %s\n", local->type_name, local->name);
-    xf86Msg(X_CONFIG, "JOYSTICK device is %s\n", priv->jstkDevice);
 
     xf86ProcessCommonOptions(local, local->options);
 
+#if DEBUG
     debug_level = xf86SetIntOption(dev->commonOptions, "DebugLevel", 0);
     if (debug_level > 0) {
 	xf86Msg(X_CONFIG, "JOYSTICK: debug level set to %d\n", debug_level);
     }
+#else
+    if (xf86SetIntOption(dev->commonOptions, "DebugLevel", 0) != 0) {
+        xf86Msg(X_WARNING, "JOYSTICK: Compiled without Debug support!\n");
+    }
+#endif
 
-    priv->jstkMaxX = xf86SetIntOption(local->options, "MaxX", 1000);
-    if (priv->jstkMaxX != 1000) {
-	xf86Msg(X_CONFIG, "JOYSTICK: max x = %d\n", priv->jstkMaxX);
-    }
-    priv->jstkMaxY = xf86SetIntOption(local->options, "MaxY", 1000);
-    if (priv->jstkMaxY != 1000) {
-	xf86Msg(X_CONFIG, "JOYSTICK: max y = %d\n", priv->jstkMaxY);
-    }
-    priv->jstkMinX = xf86SetIntOption(local->options, "MinX", 0);
-    if (priv->jstkMinX != 0) {
-	xf86Msg(X_CONFIG, "JOYSTICK: min x = %d\n", priv->jstkMinX);
-    }
-    priv->jstkMinY = xf86SetIntOption(local->options, "MinY", 0);
-    if (priv->jstkMinY != 0) {
-	xf86Msg(X_CONFIG, "JOYSTICK: min y = %d\n", priv->jstkMinY);
-    }
-	    
-    priv->jstkCenterX = xf86SetIntOption(local->options, "CenterX", 128);
-    if (priv->jstkCenterX != 128) {
-	xf86Msg(X_CONFIG, "JOYSTICK: center x = %d\n", priv->jstkCenterX);
-    }
-    priv->jstkCenterY = xf86SetIntOption(local->options, "CenterY", 128);
-    if (priv->jstkCenterY != 128) {
-	xf86Msg(X_CONFIG, "JOYSTICK: center y = %d\n", priv->jstkCenterY);
-    }
+    priv->timeout = xf86SetIntOption(dev->commonOptions, "Timeout", 10);
 
-     priv->jstkTimeout = xf86SetIntOption(local->options, "Timeout", -1);
-     if (priv->jstkTimeout != -1) {
- 	xf86Msg(X_CONFIG, "JOYSTICK: timeout = %d\n", priv->jstkTimeout);
-     }
 
-    priv->jstkDelta = xf86SetIntOption(local->options, "Delta", 0);
-    if (priv->jstkDelta != 0) {
-	xf86Msg(X_CONFIG, "JOYSTICK: delta = %d\n", priv->jstkDelta);
-    }
 
     /* return the LocalDevice */
     local->flags |= XI86_CONFIGURED ;
@@ -610,14 +403,14 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
 
 /*
- * xf86AiptekUninit --
+ * xf86JstkCoreUnInit --
  *
  * called when the driver is unloaded.
  */
 static void
 xf86JstkCoreUnInit(InputDriverPtr    drv,
-               LocalDevicePtr    local,
-               int               flags)
+                   LocalDevicePtr    local,
+                   int               flags)
 {
     JoystickDevPtr device = (JoystickDevPtr) local->private;
 

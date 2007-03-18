@@ -28,4 +28,5 @@
 @DRIVER_NAME@_drv_la_LDFLAGS = -module -avoid-version
 @DRIVER_NAME@_drv_ladir = @inputdir@
 
-@DRIVER_NAME@_drv_la_SOURCES = xf86Jstk.c
+@DRIVER_NAME@_drv_la_SOURCES = xf86Jstk.c xf86Jstk.h \
+                               linux_jstk.c linux_jstk.h
