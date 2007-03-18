@@ -19,7 +19,6 @@
  * DATA  OR PROFITS, WHETHER  IN  AN ACTION OF  CONTRACT,  NEGLIGENCE OR OTHER
  * TORTIOUS  ACTION, ARISING    OUT OF OR   IN  CONNECTION  WITH THE USE    OR
  * PERFORMANCE OF THIS SOFTWARE.
- *
  */
 
 
@@ -83,6 +82,8 @@ static Bool xf86JstkProc(DeviceIntPtr pJstk, int what);
  *
  ***************************************************************************
  */
+/* FIXME: What is this for? */
+
 static Bool
 xf86JstkConvert(LocalDevicePtr	local,
 		int		first,
@@ -111,6 +112,8 @@ xf86JstkConvert(LocalDevicePtr	local,
  * xf86JstkTimer --
  *      A timer fired
  */
+/* FIXME */
+
 static CARD32
 xf86JstkTimer(OsTimerPtr        timer,
                CARD32            atime,
@@ -149,16 +152,62 @@ xf86JstkTimer(OsTimerPtr        timer,
 static void
 xf86JstkRead(LocalDevicePtr local)
 {
+  enum JOYSTICKEVENT event;
+  int number;
+
   JoystickDevPtr priv = local->private;
   DBG(2, ErrorF("xf86JstkRead\n"));
 
-  if (xf86ReadJoystickData(priv)==0) {
+  if (xf86ReadJoystickData(priv, &event, &number)==0) {
     int sigstate;
     xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
 
     if (local->fd >= 0)
       RemoveEnabledDevice(local->fd);
     return;
+  }
+
+  /* A button's status changed */
+  if (event == EVENT_BUTTON) {
+    switch (priv->button[number].mapping) {
+      case MAPPING_BUTTON:
+        xf86PostButtonEvent(local->dev, 0, number+1, 
+          priv->button[number].pressed, 0, 2, 0, 0);
+        break;
+
+      case MAPPING_X: /* FIXME */
+        break;
+      case MAPPING_Y: /* FIXME */
+        break;
+      case MAPPING_ZX: /* FIXME */
+        break;
+      case MAPPING_ZY: /* FIXME */
+        break;
+      case MAPPING_KEY: /* FIXME */
+        break;
+      case MAPPING_SPEED_MULTIPLY: /* FIXME */
+        break;
+      case MAPPING_DISABLE: /* FIXME */
+        break;
+      case MAPPING_DISABLE_MOUSE: /* FIXME */
+        break;
+      case MAPPING_DISABLE_KEYS: /* FIXME */
+        break;
+    }
+  }
+
+  /* An axis was moved */
+  if (event == EVENT_AXIS) {
+    switch (priv->button[number].mapping) {
+      case MAPPING_X: /* FIXME */
+        break;
+      case MAPPING_Y: /* FIXME */
+        break;
+      case MAPPING_ZX: /* FIXME */
+        break;
+      case MAPPING_ZY: /* FIXME */
+        break;
+    }
   }
 }
 
@@ -321,7 +370,8 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 {
     LocalDevicePtr	local = NULL;
     JoystickDevPtr	priv = NULL;
-    char		*s;
+    char                *s;
+    int                 i;
 
     local = xf86AllocateInput(drv, 0);
     if (!local) {
@@ -352,6 +402,18 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->timeout = 10;
     priv->device = NULL;
 
+    /* Initialize default mappings */
+    for (i=0; i<MAXAXES; i++) {
+      priv->axis[i].value     = 0;
+      priv->axis[i].deadzone  = 1000;
+      priv->axis[i].type      = TYPE_BYVALUE;
+      priv->axis[i].mapping   = MAPPING_NONE;
+    }
+    for (i=0; i<MAXBUTTONS; i++) {
+      priv->button[i].pressed = 0;
+      priv->button[i].value   = i+1;  /* The button number to simulate */
+      priv->button[i].mapping = MAPPING_BUTTON;
+    }
 
     xf86CollectInputOptions(local, NULL, NULL);
     xf86OptionListReport(local->options);

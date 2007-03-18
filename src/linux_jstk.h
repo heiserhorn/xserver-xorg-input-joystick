@@ -28,6 +28,6 @@
 
 int  xf86JoystickOn(JoystickDevPtr joystick, int init);
 void xf86JoystickOff(JoystickDevPtr joystick);
-int  xf86ReadJoystickData(JoystickDevPtr joystick);
+int  xf86ReadJoystickData(JoystickDevPtr joystick, enum JOYSTICKEVENT *event, int *number);
 
 #endif

@@ -52,6 +52,12 @@ enum JOYSTICKMAPPING {
   MAPPING_DISABLE_KEYS
 };
 
+enum JOYSTICKEVENT {
+  EVENT_NONE=0,
+  EVENT_BUTTON,
+  EVENT_AXIS
+};
+
 
 
 typedef struct

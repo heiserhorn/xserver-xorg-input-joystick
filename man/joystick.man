@@ -1,0 +1,33 @@
+.ds q \N'34'
+.TH joystick __drivermansuffix__ __vendorversion__
+.SH NAME
+joystick \- Joystick input driver
+.SH SYNOPSIS
+.nf
+.B "Section \*qInputDevice\*q"
+.BI "  Identifier \*q" devname \*q
+.B  "  Driver \*qevdev\*q"
+.BI "  Option \*qDevice\*q   \*q" devpath \*q
+\ \ ...
+.B EndSection
+.fi
+.SH DESCRIPTION
+.B joystick
+is an __xservername__ input driver for Linux\'s joystick devices.
+
+.SH SUPPORTED HARDWARE
+In general, every by the kernel supported joystick should be supported through the
+.B joystick
+driver. See the Linux kernel documentation for a complete list. 
+
+.SH CONFIGURATION DETAILS
+Please refer to __xconfigfile__(__filemansuffix__) for general configuration
+details.  This section only covers configuration details specific to this
+driver.
+.PP
+.SH "SEE ALSO"
+__xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__)
+.SH AUTHORS
+Sascha Hlusiak.
+.fi
+Frederic Lepied.

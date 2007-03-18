@@ -104,32 +104,41 @@ xf86JoystickOff(JoystickDevPtr joystick)
  * xf86ReadJoystickData --
  *
  * Reads data from fd and stores it in the JoystickDevRec struct
+ * fills in the type of event and the number of the button/axis
  * return 1 if success, 0 otherwise
  *
  ***********************************************************************
  */
 
 int
-xf86ReadJoystickData(JoystickDevPtr joystick)
+xf86ReadJoystickData(JoystickDevPtr joystick, enum JOYSTICKEVENT *event, int *number)
 {
   struct js_event js;
+  if (event != NULL) *event = EVENT_NONE;
   if (xf86ReadSerial(joystick->fd, &js, sizeof(struct js_event)) != sizeof(struct js_event))
     return 0;
 
   switch(js.type & ~JS_EVENT_INIT) {
     case JS_EVENT_BUTTON:
-      if (js.number<32)
+      if (js.number<MAXBUTTONS)
+      {
         joystick->button[js.number].pressed=js.value;
+        if (event != NULL) *event = EVENT_BUTTON;
+        if (number != NULL) *number = js.number;
+      }
       break;
     case JS_EVENT_AXIS:
-      if (js.number<32) {
+      if (js.number<MAXAXES) {
         joystick->axis[js.number].value=js.value;
         if (abs(js.value)<joystick->axis[js.number].deadzone) {
           joystick->axis[js.number].value=0;
         }
+        if (event != NULL) *event = EVENT_AXIS;
+        if (number != NULL) *number = js.number;
       }
       break;
   }
+
 
   return 1;
 }
