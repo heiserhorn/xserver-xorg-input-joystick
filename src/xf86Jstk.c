@@ -171,8 +171,8 @@ xf86JstkRead(LocalDevicePtr local)
   if (event == EVENT_BUTTON) {
     switch (priv->button[number].mapping) {
       case MAPPING_BUTTON:
-        xf86PostButtonEvent(local->dev, 0, number+1, 
-          priv->button[number].pressed, 0, 2, 0, 0);
+        xf86PostButtonEvent(local->dev, 0, priv->button[number].value,
+          priv->button[number].pressed, 0, 0);
         break;
 
       case MAPPING_X: /* FIXME */
@@ -448,6 +448,32 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 #endif
 
     priv->timeout = xf86SetIntOption(dev->commonOptions, "Timeout", 10);
+
+    /* Process button mapping options */
+    for (i=0; i<priv->buttons; i++) if (i<MAXBUTTONS) {
+      char p[20];
+
+      sprintf(p,"MapButton%d",i+1);
+      s = xf86CheckStrOption(dev->commonOptions, p, NULL);
+      if (s != NULL) {
+        char *param;
+        char *tmp;
+        int value;
+        param = xstrdup(s);
+
+        for (tmp = param; *tmp; tmp++) *tmp = toupper(*tmp);
+
+        if (sscanf(param, "BUTTON %d", &value) == 1) {
+          priv->button[i].mapping = MAPPING_BUTTON;
+          priv->button[i].value   = value;
+/*          xf86Msg(X_CONFIG, "JOYSTICK button %d mapped to mouse button %d\n", 
+            i+1, value);*/
+        }else xf86Msg(X_WARNING, "JOYSTICK: '%s' has invalid format: '%s'. Ignored!\n", p, param);
+
+        xfree(param);
+      }
+    }
+
 
 
 
