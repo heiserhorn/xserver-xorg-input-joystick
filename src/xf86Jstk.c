@@ -466,9 +466,9 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         if (sscanf(param, "BUTTON %d", &value) == 1) {
           priv->button[i].mapping = MAPPING_BUTTON;
           priv->button[i].value   = value;
-/*          xf86Msg(X_CONFIG, "JOYSTICK button %d mapped to mouse button %d\n", 
-            i+1, value);*/
-        }else xf86Msg(X_WARNING, "JOYSTICK: '%s' has invalid format: '%s'. Ignored!\n", p, param);
+          xf86Msg(X_CONFIG, "JOYSTICK: button %d mapped to mouse button %d\n", 
+            i+1, value);
+        }else xf86Msg(X_WARNING, "JOYSTICK: '%s' has invalid format ('%s'), ignored.\n", p, param);
 
         xfree(param);
       }

@@ -6,7 +6,7 @@ joystick \- Joystick input driver
 .nf
 .B "Section \*qInputDevice\*q"
 .BI "  Identifier \*q" devname \*q
-.B  "  Driver \*qevdev\*q"
+.B  "  Driver \*qjoystick\*q"
 .BI "  Option \*qDevice\*q   \*q" devpath \*q
 \ \ ...
 .B EndSection
@@ -25,6 +25,37 @@ Please refer to __xconfigfile__(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
 driver.
 .PP
+The following Driver
+.B Options
+are supported:
+.TP 7
+.BI "Option \*qDevice\*q \*q" string \*q
+Specifies the device through which the joystick can be accessed.
+The first joystick is mostly accessible under "/dev/input/js0".
+This option is mandatory, and there is no default setting.
+.TP 7
+.BI "Option \*qDebugLevel\*q \*q" integer \*q
+If compiled with debugging information, controls the verbosity of the driver.
+The higher the DebugLevel, the more output is produced.
+Default: 0
+.TP 7
+.BI "Option \*qMapButton<number>\*q \*q" string \*q
+Sets the mapping of the joystick button to the desired action. Possible options are:
+.RS 7
+.TP 7
+.BI "\*qbutton " <number> \*q
+The joystick button will generate a click with the specified button.
+.RE
+.PP
+.TP 7
+.BI "Option \*qMapAxis<number>\*q \*q" string \*q
+Sets the mapping of the axis to the desired action. Possible options are:
+.P
+.RS 7
+.B NONE SO FAR
+.RE
+
+
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__)
 .SH AUTHORS
