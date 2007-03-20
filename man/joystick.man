@@ -43,19 +43,36 @@ Default: 0
 Sets the mapping of the joystick button to the desired action. Possible options are:
 .RS 7
 .TP 7
-.BI "\*qbutton " <number> \*q
-The joystick button will generate a click with the specified button.
+.B "none"
+This joystick button won't do anything.
+.TP 7
+.BI "\*qbutton="<number> \*q
+The joystick button will generate a click with the specified button (starting with 1).
 .RE
 .PP
 .TP 7
 .BI "Option \*qMapAxis<number>\*q \*q" string \*q
-Sets the mapping of the axis to the desired action. Possible options are:
-.P
+Sets the mapping of the axis to the desired action. The parameter may contain:
 .RS 7
-.B NONE SO FAR
+.TP 7
+.BI "\*qmode="<string> \*q
+Where
+.I <string>
+may be one of:
+
+.B relative, accelerated, absolute
+.TP 7
+.BI "\*qaxis="<string> \*q
+Where
+.I <string>
+is one of:
+
+.B X, Y, ZX, ZY
+.TP 7
+.BI "\*qdeadzone="<number> \*q
+Sets the unresponsive range of the axis to
+.IR <number> .
 .RE
-
-
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__)
 .SH AUTHORS
