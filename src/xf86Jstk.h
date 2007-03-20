@@ -63,15 +63,14 @@ enum JOYSTICKEVENT {
 typedef struct
 {
   int          fd;             /* Actual file descriptor */
-  OsTimerPtr   timer;
-  int          timeout;
   char         *device;        /* Name of the device */
-
 
   struct AXIS
   {
     int value;
     int deadzone;
+    OsTimerPtr timer;
+    CARD32 lasttimer;
     enum JOYSTICKTYPE type;
     enum JOYSTICKMAPPING mapping;
   }axis[32];                   /* Configuration per axis */

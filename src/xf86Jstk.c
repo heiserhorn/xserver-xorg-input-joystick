@@ -35,6 +35,8 @@
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
 #include <X11/keysym.h>
 
+#include <math.h>
+
 #ifdef XFree86LOADER
 #include <xf86Module.h>
 #endif
@@ -107,6 +109,26 @@ xf86JstkConvert(LocalDevicePtr	local,
 }
 
 
+static CARD32 xf86PredictNextByValueTimer(int amplitude, enum JOYSTICKMAPPING mapping, int *pixels) {
+    #define abs(x) ((x>0)?(x):(-x))
+    float nt,temp;
+    if (pixels) *pixels = 1;
+    if (amplitude == 0) return 0;
+
+    nt = 150000.0 / ((pow(abs((float)amplitude/1700.0), 4.0))+500.0);
+
+    if ((mapping == MAPPING_ZX) || (mapping == MAPPING_ZY))
+      nt *= 17.0;
+
+    temp = nt;
+    while (nt < 16.0) {
+      nt += temp;
+      if (pixels) (*pixels)++;
+    }
+    return (CARD32)nt;
+    #undef abs
+}
+
 
 /*
  * xf86JstkTimer --
@@ -115,30 +137,51 @@ xf86JstkConvert(LocalDevicePtr	local,
 /* FIXME */
 
 static CARD32
-xf86JstkTimer(OsTimerPtr        timer,
-               CARD32            atime,
-               pointer           arg)
+xf86JstkAxisByValueTimer(OsTimerPtr        timer,
+                         CARD32            atime,
+                         pointer           arg)
 {
   DeviceIntPtr          device = (DeviceIntPtr)arg;
   JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
-  int                   x, y, buttons;
 
-//   int sigstate;
-// 
-// 
-   DBG(5, ErrorF("xf86JstkEvents BEGIN device=0x%x priv=0x%x"
-                 " timeout=%d\n",
-                 device, priv, priv->timeout));
+  int sigstate, i;
+  int nexttimer;
+  nexttimer = 0;
 
+  sigstate = xf86BlockSIGIO ();
 
-//     sigstate = xf86BlockSIGIO ();
-// 	xf86PostMotionEvent(device, 0, 0, 2, v0, v1);
-// 	    xf86PostButtonEvent(device, 0, loop+1, ((buttons & (1<<loop)) == (1<<loop)),
-// 				0, 2, v0, v1);
-//     xf86UnblockSIGIO (sigstate);
+  for (i=0; i<MAXAXES; i++) if (timer == priv->axis[i].timer) {
+    int pixels;
 
+    nexttimer = xf86PredictNextByValueTimer(priv->axis[i].value, priv->axis[i].mapping, &pixels);
 
-  return priv->timeout;     /* New timeout value */
+    if (priv->axis[i].value < 0) pixels *= -1;
+    if (priv->axis[i].value != 0) {
+      switch (priv->axis[i].mapping) {
+        case MAPPING_X:
+          xf86PostMotionEvent(device, 0, 0, 2, pixels, 0);
+          break;
+        case MAPPING_Y:
+          xf86PostMotionEvent(device, 0, 0, 2, 0, pixels);
+          break;
+        case MAPPING_ZX:
+          xf86PostButtonEvent(device, 0, (pixels<0)?6:7, 1, 0, 0);
+          xf86PostButtonEvent(device, 0, (pixels<0)?6:7, 0, 0, 0);
+          break;
+        case MAPPING_ZY:
+          xf86PostButtonEvent(device, 0, (pixels<0)?4:5, 1, 0, 0);
+          xf86PostButtonEvent(device, 0, (pixels<0)?4:5, 0, 0, 0);
+          break;
+      }
+
+    }
+/*    DBG(2, ErrorF("timer for axis %d. value: %d. nexttimer: %d\n", i, priv->axis[i].value, nexttimer));*/
+    if (nexttimer != 0) priv->axis[i].lasttimer = GetTimeInMillis();
+      else priv->axis[i].lasttimer = 0;
+    break;
+  }
+  xf86UnblockSIGIO (sigstate);
+  return nexttimer;
 }
 
 
@@ -153,10 +196,9 @@ static void
 xf86JstkRead(LocalDevicePtr local)
 {
   enum JOYSTICKEVENT event;
-  int number;
+  int number, i;
 
   JoystickDevPtr priv = local->private;
-  DBG(2, ErrorF("xf86JstkRead\n"));
 
   if (xf86ReadJoystickData(priv, &event, &number)==0) {
     int sigstate;
@@ -197,15 +239,28 @@ xf86JstkRead(LocalDevicePtr local)
   }
 
   /* An axis was moved */
-  if (event == EVENT_AXIS) {
-    switch (priv->button[number].mapping) {
-      case MAPPING_X: /* FIXME */
+  if ((event == EVENT_AXIS) && (priv->axis[number].mapping != MAPPING_NONE)) {
+    switch (priv->axis[number].type) {
+      case TYPE_BYVALUE:
+        i = xf86PredictNextByValueTimer(
+            priv->axis[number].value, priv->axis[number].mapping, 0);
+        if (priv->axis[number].lasttimer==0) i+=GetTimeInMillis();
+          else i+=priv->axis[number].lasttimer;
+//         DBG(2, ErrorF("starting Timer for axis %d for %d\n", number,i));
+        priv->axis[number].timer = TimerSet(
+          priv->axis[number].timer, 
+          (priv->axis[number].lasttimer>0)?TimerAbsolute:TimerAbsolute|TimerForceOld, 
+          i,
+          xf86JstkAxisByValueTimer, local->dev);
         break;
-      case MAPPING_Y: /* FIXME */
+      case TYPE_ACCELERATED: /* FIXME */
+        priv->axis[number].timer = TimerSet(
+          priv->axis[number].timer, TimerAbsolute, 
+          priv->axis[number].lasttimer + xf86PredictNextByValueTimer(
+            priv->axis[number].value, priv->axis[number].mapping, 0),
+          xf86JstkAxisByValueTimer, local->dev);
         break;
-      case MAPPING_ZX: /* FIXME */
-        break;
-      case MAPPING_ZY: /* FIXME */
+      case TYPE_ABSOLUTE: /* FIXME */
         break;
     }
   }
@@ -285,7 +340,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
         }
 
       break; 
-      
+
     case DEVICE_ON:
       i = xf86JoystickOn(priv, FALSE);
 
@@ -294,10 +349,6 @@ xf86JstkProc(DeviceIntPtr       pJstk,
 
       if (i != 0)
       {
-        priv->timer = TimerSet(NULL, 0, /*TimerAbsolute,*/
-                                   priv->timeout,
-                                   xf86JstkTimer,
-                                   (pointer)pJstk);
         pJstk->public.on = TRUE;
         local->fd = priv->fd;
         AddEnabledDevice(local->fd);
@@ -311,9 +362,12 @@ xf86JstkProc(DeviceIntPtr       pJstk,
       DBG(1, ErrorF("xf86JstkProc  pJstk=0x%x what=%s\n", pJstk,
                     (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 
-      if (priv->timer)
-        TimerFree(priv->timer);
-      priv->timer = NULL;
+      for (i=0; i<MAXAXES; i++) if (priv->axis[i].timer != NULL) {
+        TimerFree(priv->axis[i].timer);
+        priv->axis[i].timer = NULL;
+        priv->axis[i].lasttimer = 0;
+      }
+
       if (local->fd >= 0)
         RemoveEnabledDevice(local->fd);
       local->fd = -1;
@@ -398,16 +452,16 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->conf_idev = dev;
 
     priv->fd = -1;
-    priv->timer = NULL;
-    priv->timeout = 10;
     priv->device = NULL;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
       priv->axis[i].value     = 0;
-      priv->axis[i].deadzone  = 1000;
+      priv->axis[i].deadzone  = 10;
       priv->axis[i].type      = TYPE_BYVALUE;
       priv->axis[i].mapping   = MAPPING_NONE;
+      priv->axis[i].timer     = NULL;
+      priv->axis[i].lasttimer = 0;
     }
     for (i=0; i<MAXBUTTONS; i++) {
       priv->button[i].pressed = 0;
@@ -447,7 +501,6 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 #endif
 
-    priv->timeout = xf86SetIntOption(dev->commonOptions, "Timeout", 10);
 
     /* Process button mapping options */
     for (i=0; i<priv->buttons; i++) if (i<MAXBUTTONS) {
@@ -474,8 +527,20 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
       }
     }
 
+    priv->axis[0].type      = TYPE_BYVALUE;
+    priv->axis[0].mapping   = MAPPING_X;
+    priv->axis[1].type      = TYPE_BYVALUE;
+    priv->axis[1].mapping   = MAPPING_Y;
 
+    priv->axis[2].type      = TYPE_BYVALUE;
+    priv->axis[2].mapping   = MAPPING_ZX;
+    priv->axis[3].type      = TYPE_BYVALUE;
+    priv->axis[3].mapping   = MAPPING_ZY;
 
+    priv->axis[4].type      = TYPE_ACCELERATED;
+    priv->axis[4].mapping   = MAPPING_X;
+    priv->axis[5].type      = TYPE_ACCELERATED;
+    priv->axis[5].mapping   = MAPPING_Y;
 
     /* return the LocalDevice */
     local->flags |= XI86_CONFIGURED ;
