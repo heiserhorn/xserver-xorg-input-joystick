@@ -42,8 +42,9 @@
 #endif
 
 
-#include "xf86Jstk.h"
+#include "jstk.h"
 #include "linux_jstk.h"
+#include "jstk_axis.h"
 
 
 
@@ -109,85 +110,6 @@ xf86JstkConvert(LocalDevicePtr	local,
 }
 
 
-static CARD32 xf86PredictNextByValueTimer(struct AXIS *axis, int *pixels) {
-    #define abs(x) ((x>0)?(x):(-x))
-    float nt,temp,scale;
-    if (pixels) *pixels = 1;
-    if (axis->value == 0) return 0;
-
-    /* Calculate scale value, so we still get a range from 0 to 32768 */
-    scale = (32768.0/(float)(32768 - axis->deadzone));
-
-    nt = (float)axis->value;
-    nt = 150000.0 / ((pow((abs(nt)-(float)axis->deadzone)*scale/1700.0, 3.9))+500.0);
-
-    if ((axis->mapping == MAPPING_ZX) || (axis->mapping == MAPPING_ZY))
-      nt *= 17.0;
-
-    temp = nt;
-    while (nt < 16.0) {
-      nt += temp;
-      if (pixels) (*pixels)++;
-    }
-    return (CARD32)nt;
-    #undef abs
-}
-
-
-/*
- * xf86JstkTimer --
- *      A timer fired
- */
-
-static CARD32
-xf86JstkAxisByValueTimer(OsTimerPtr        timer,
-                         CARD32            atime,
-                         pointer           arg)
-{
-  DeviceIntPtr          device = (DeviceIntPtr)arg;
-  JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
-
-  int sigstate, i;
-  int nexttimer;
-  nexttimer = 0;
-
-  sigstate = xf86BlockSIGIO ();
-
-  for (i=0; i<MAXAXES; i++) if (timer == priv->axis[i].timer) {
-    int pixels;
-
-    nexttimer = xf86PredictNextByValueTimer(&priv->axis[i], &pixels);
-
-    if (priv->axis[i].value < 0) pixels *= -1;
-    if (priv->axis[i].value != 0) {
-      switch (priv->axis[i].mapping) {
-        case MAPPING_X:
-          xf86PostMotionEvent(device, 0, 0, 2, pixels, 0);
-          break;
-        case MAPPING_Y:
-          xf86PostMotionEvent(device, 0, 0, 2, 0, pixels);
-          break;
-        case MAPPING_ZX:
-          xf86PostButtonEvent(device, 0, (pixels<0)?6:7, 1, 0, 0);
-          xf86PostButtonEvent(device, 0, (pixels<0)?6:7, 0, 0, 0);
-          break;
-        case MAPPING_ZY:
-          xf86PostButtonEvent(device, 0, (pixels<0)?4:5, 1, 0, 0);
-          xf86PostButtonEvent(device, 0, (pixels<0)?4:5, 0, 0, 0);
-          break;
-      }
-
-    }
-/*    DBG(2, ErrorF("timer for axis %d. value: %d. nexttimer: %d\n", i, priv->axis[i].value, nexttimer));*/
-    if (nexttimer != 0) priv->axis[i].lasttimer = GetTimeInMillis();
-      else priv->axis[i].lasttimer = 0;
-    break;
-  }
-  xf86UnblockSIGIO (sigstate);
-  return nexttimer;
-}
-
-
 
 
 /*
@@ -199,12 +121,11 @@ static void
 xf86JstkRead(LocalDevicePtr local)
 {
   enum JOYSTICKEVENT event;
-  int number, i;
+  int number;
 
   JoystickDevPtr priv = local->private;
 
   if (xf86ReadJoystickData(priv, &event, &number)==0) {
-    int sigstate;
     xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
 
     if (local->fd >= 0)
@@ -238,6 +159,9 @@ xf86JstkRead(LocalDevicePtr local)
         break;
       case MAPPING_DISABLE_KEYS: /* FIXME */
         break;
+
+      default:
+        break;
     }
   }
 
@@ -245,25 +169,15 @@ xf86JstkRead(LocalDevicePtr local)
   if ((event == EVENT_AXIS) && (priv->axis[number].mapping != MAPPING_NONE)) {
     switch (priv->axis[number].type) {
       case TYPE_BYVALUE:
-        i = xf86PredictNextByValueTimer(
-            &priv->axis[number], NULL);
-        if (priv->axis[number].lasttimer==0) i+=GetTimeInMillis();
-          else i+=priv->axis[number].lasttimer;
-//         DBG(2, ErrorF("starting Timer for axis %d for %d\n", number,i));
-        priv->axis[number].timer = TimerSet(
-          priv->axis[number].timer, 
-          (priv->axis[number].lasttimer>0)?TimerAbsolute:TimerAbsolute|TimerForceOld, 
-          i,
-          xf86JstkAxisByValueTimer, local->dev);
+        jstkStartAxisByValueTimer(local, number);
         break;
       case TYPE_ACCELERATED: /* FIXME */
-/*        priv->axis[number].timer = TimerSet(
-          priv->axis[number].timer, TimerAbsolute, 
-          priv->axis[number].lasttimer + xf86PredictNextByValueTimer(
-            priv->axis[number].value, priv->axis[number].mapping, 0),
-          xf86JstkAxisByValueTimer, local->dev);*/
+
         break;
       case TYPE_ABSOLUTE: /* FIXME */
+        break;
+
+      default:
         break;
     }
   }
@@ -287,7 +201,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
   switch (what)
     {
     case DEVICE_INIT: 
-      DBG(1, ErrorF("xf86JstkProc pJstk=0x%x what=INIT\n", pJstk));
+      DBG(1, ErrorF("xf86JstkProc what=INIT\n"));
       for (i=1; i<MAXBUTTONS; i++) map[i] = i;
 
       if (InitButtonClassDeviceStruct(pJstk,
@@ -347,8 +261,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
     case DEVICE_ON:
       i = xf86JoystickOn(priv, FALSE);
 
-      DBG(1, ErrorF("xf86JstkProc  pJstk=0x%x what=ON name=%s\n", pJstk,
-                    priv->device));
+      DBG(1, ErrorF("xf86JstkProc  what=ON name=%s\n", priv->device));
 
       if (i != 0)
       {
@@ -362,8 +275,8 @@ xf86JstkProc(DeviceIntPtr       pJstk,
 
     case DEVICE_OFF:
     case DEVICE_CLOSE:
-      DBG(1, ErrorF("xf86JstkProc  pJstk=0x%x what=%s\n", pJstk,
-                    (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
+      DBG(1, ErrorF("xf86JstkProc  what=%s\n", 
+        (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 
       for (i=0; i<MAXAXES; i++) if (priv->axis[i].timer != NULL) {
         TimerFree(priv->axis[i].timer);
@@ -449,7 +362,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->fd = -1;
     local->dev = NULL;
     local->private = priv;
-    local->type_name = "JOYSTICK";
+    local->type_name = XI_MOUSE;
     local->history_size  = 0;
     local->always_core_feedback = 0;
     local->conf_idev = dev;
@@ -511,11 +424,13 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 #if DEBUG
     debug_level = xf86SetIntOption(dev->commonOptions, "DebugLevel", 0);
     if (debug_level > 0) {
-	xf86Msg(X_CONFIG, "%s: debug level set to %d\n", local->name, debug_level);
+      xf86Msg(X_CONFIG, "%s: debug level set to %d\n", 
+        local->name, debug_level);
     }
 #else
     if (xf86SetIntOption(dev->commonOptions, "DebugLevel", 0) != 0) {
-        xf86Msg(X_WARNING, "%s: Compiled without Debug support!\n", local->name);
+      xf86Msg(X_WARNING, "%s: Compiled without Debug support!\n", 
+        local->name);
     }
 #endif
 
@@ -560,9 +475,9 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         param = xstrdup(s);
         for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
         xf86Msg(X_CONFIG, "%s: Option \"mapaxis%d\" \"%s\"\n", 
-          local->name, i+1, param);
+                local->name, i+1, param);
 
-        if (s=strstr(param, "mode="))
+        if ((s=strstr(param, "mode=")) != NULL) {
           if (sscanf(s, "mode=%15s", p2) == 1) {
             if (strcmp(p2, "relative") == 0)
               priv->axis[i].type = TYPE_BYVALUE;
@@ -571,11 +486,14 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
             else if (strcmp(p2, "absolute") == 0)
               priv->axis[i].type = TYPE_ABSOLUTE;
             else {
-              xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", local->name, param);
+              xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
+                      local->name, param);
             }
-          }else xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", local->name, param);
+          }else xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
+                        local->name, param);
+        }
 
-        if (s=strstr(param, "axis="))
+        if ((s=strstr(param, "axis=")) != NULL) {
           if (sscanf(s, "axis=%15s", p2) == 1) {
             if (strcmp(p2, "x") == 0)
               priv->axis[i].mapping = MAPPING_X;
@@ -586,17 +504,24 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
             else if (strcmp(p2, "zy") == 0)
               priv->axis[i].mapping = MAPPING_ZY;
             else {
-              xf86Msg(X_WARNING, "%s: error parsing axis.\n", local->name, param);
+              xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
+                      local->name);
             }
-          }else xf86Msg(X_WARNING, "%s: error parsing axis.\n", local->name, param);
+          }else xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
+                        local->name);
+        }
 
-        if (s=strstr(param, "deadzone="))
+        if ((s=strstr(param, "deadzone=")) != NULL ) {
           if (sscanf(s, "deadzone=%d", &value) == 1) {
             value = (value<0)?(-value):value;
             if (value > 30000)
-              xf86Msg(X_WARNING, "%s: deadzone of %d seems unreasonable. Ignored.\n", local->name, value);
+              xf86Msg(X_WARNING, 
+                "%s: deadzone of %d seems unreasonable. Ignored.\n", 
+                local->name, value);
             else priv->axis[i].deadzone = value;
-          }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", local->name, param);
+          }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
+                        local->name);
+        }
 
 
         xfree(param);

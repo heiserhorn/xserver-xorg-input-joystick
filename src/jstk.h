@@ -21,11 +21,8 @@
  *
  */
 
-#ifndef _XF86JSTK_H_INCLUDED_
-#define _XF86JSTK_H_INCLUDED_
-
-
-#include <xf86.h>
+#ifndef __JSTK_H_INCLUDED__
+#define __JSTK_H_INCLUDED__
 
 
 #define MAXBUTTONS 32

@@ -26,13 +26,17 @@
 #include "config.h"
 #endif
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <linux/joystick.h>
 #include <fcntl.h>
 #include <errno.h>
 
+#include <xf86.h>
+#include <xf86_OSproc.h>
+
+#include "jstk.h"
 #include "linux_jstk.h"
-#include "xf86Jstk.h"
 
 
 /***********************************************************************
@@ -68,8 +72,8 @@ xf86JoystickOn(JoystickDevPtr joystick,int init)
   }
   if (init != 0) {
     if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name)==-1) {
-      xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed (%s)\n", joystick->device,
-              strerror(errno));
+      xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed (%s)\n", 
+              joystick->device, strerror(errno));
       return -1;
     }
 
@@ -111,11 +115,16 @@ xf86JoystickOff(JoystickDevPtr joystick)
  */
 
 int
-xf86ReadJoystickData(JoystickDevPtr joystick, enum JOYSTICKEVENT *event, int *number)
+xf86ReadJoystickData(JoystickDevPtr joystick, 
+                     enum JOYSTICKEVENT *event, 
+                     int *number)
 {
   struct js_event js;
   if (event != NULL) *event = EVENT_NONE;
-  if (xf86ReadSerial(joystick->fd, &js, sizeof(struct js_event)) != sizeof(struct js_event))
+  if (xf86ReadSerial(joystick->fd, 
+                     &js, 
+                     sizeof(struct js_event)
+      ) != sizeof(struct js_event))
     return 0;
 
   switch(js.type & ~JS_EVENT_INIT) {
@@ -142,34 +151,3 @@ xf86ReadJoystickData(JoystickDevPtr joystick, enum JOYSTICKEVENT *event, int *nu
 
   return 1;
 }
-
-/***********************************************************************
- *
- * xf86JoystickGetState --
- *
- * return the state of buttons and the position of the joystick.
- *
- ***********************************************************************
- */
-
-// int
-// xf86JoystickGetState(int fd, int *x, int *y, int *buttons)
-// {
-//   struct js_status      js;
-//   int                   status;
-//   
-//   status = read(fd, &js, JS_RETURN);
-//  
-//   if (status != JS_RETURN)
-//     {
-//       Error("Joystick read");      
-//       return 0;
-//     }
-//   
-//   *x = js.x;
-//   *y = js.y;
-//   *buttons = js.buttons;
-//   
-//   return 1;
-// }
-
