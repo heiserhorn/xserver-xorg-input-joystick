@@ -25,6 +25,31 @@
 #define __JSTK_H_INCLUDED__
 
 
+
+
+/******************************************************************************
+ * debugging macro
+ *****************************************************************************/
+#ifdef DBG
+#undef DBG
+#endif
+#ifdef DEBUG
+#undef DEBUG
+#endif
+
+#define DEBUG 1
+
+#if DEBUG
+extern int      debug_level;
+#define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
+#else
+#define DBG(lvl, f)
+#endif
+
+
+
+
+
 #define MAXBUTTONS 32
 #define MAXAXES MAXBUTTONS
 
@@ -62,12 +87,15 @@ typedef struct
   int          fd;             /* Actual file descriptor */
   char         *device;        /* Name of the device */
 
+  OsTimerPtr   timer;
+  Bool         timerrunning;
+  float        x,y,zx,zy;      /* Pending subpixel movements */
+
   struct AXIS
   {
-    int value;
-    int deadzone;
-    OsTimerPtr timer;
-    CARD32 lasttimer;
+    int   value;
+    int   deadzone;
+    float temp,amplify;
     enum JOYSTICKTYPE type;
     enum JOYSTICKMAPPING mapping;
   }axis[32];                   /* Configuration per axis */

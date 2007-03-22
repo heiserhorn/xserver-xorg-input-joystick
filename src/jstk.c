@@ -48,33 +48,12 @@
 
 
 
-/******************************************************************************
- * debugging macro
- *****************************************************************************/
-#ifdef DBG
-#undef DBG
-#endif
-#ifdef DEBUG
-#undef DEBUG
-#endif
-
-#define DEBUG 1
-
-#if DEBUG
-static int      debug_level = 0;
-#define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
-#else
-#define DBG(lvl, f)
-#endif
-
-
-
 /****************************************************************************
  * Forward declarations
  ****************************************************************************/
 
 static Bool xf86JstkProc(DeviceIntPtr pJstk, int what);
-
+int      debug_level = 0;
 
 
 /*
@@ -169,12 +148,13 @@ xf86JstkRead(LocalDevicePtr local)
   if ((event == EVENT_AXIS) && (priv->axis[number].mapping != MAPPING_NONE)) {
     switch (priv->axis[number].type) {
       case TYPE_BYVALUE:
-        jstkStartAxisByValueTimer(local, number);
-        break;
-      case TYPE_ACCELERATED: /* FIXME */
-
+      case TYPE_ACCELERATED:
+        if (priv->axis[number].value == 0)
+          priv->axis[number].temp = 1.0;
+        jstkStartAxisTimer(local, number);
         break;
       case TYPE_ABSOLUTE: /* FIXME */
+        jstkHandleAbsoluteAxis(local, number);
         break;
 
       default:
@@ -278,10 +258,9 @@ xf86JstkProc(DeviceIntPtr       pJstk,
       DBG(1, ErrorF("xf86JstkProc  what=%s\n", 
         (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 
-      for (i=0; i<MAXAXES; i++) if (priv->axis[i].timer != NULL) {
-        TimerFree(priv->axis[i].timer);
-        priv->axis[i].timer = NULL;
-        priv->axis[i].lasttimer = 0;
+      if (priv->timerrunning == TRUE) {
+        priv->timerrunning = FALSE;
+        TimerCancel(priv->timer);
       }
 
       if (local->fd >= 0)
@@ -369,6 +348,12 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     priv->fd = -1;
     priv->device = NULL;
+    priv->x  = 0.0;
+    priv->y  = 0.0;
+    priv->zx = 0.0;
+    priv->zy = 0.0;
+    priv->timer = NULL;
+    priv->timerrunning = FALSE;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
@@ -376,8 +361,8 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
       priv->axis[i].deadzone  = 10;
       priv->axis[i].type      = TYPE_BYVALUE;
       priv->axis[i].mapping   = MAPPING_NONE;
-      priv->axis[i].timer     = NULL;
-      priv->axis[i].lasttimer = 0;
+      priv->axis[i].temp      = 1.0;
+      priv->axis[i].amplify   = 1.0;
     }
     for (i=0; i<MAXBUTTONS; i++) {
       priv->button[i].pressed = 0;
@@ -429,7 +414,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 #else
     if (xf86SetIntOption(dev->commonOptions, "DebugLevel", 0) != 0) {
-      xf86Msg(X_WARNING, "%s: Compiled without Debug support!\n", 
+      xf86Msg(X_WARNING, "%s: DebugLevel: Compiled without Debug support!\n", 
         local->name);
     }
 #endif
@@ -472,6 +457,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         char *param;
         char *tmp;
         int value;
+        float fvalue;
         param = xstrdup(s);
         for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
         xf86Msg(X_CONFIG, "%s: Option \"mapaxis%d\" \"%s\"\n", 
@@ -522,7 +508,16 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
           }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
                         local->name);
         }
-
+        if ((s=strstr(param, "amplify=")) != NULL ) {
+          if (sscanf(s, "amplify=%f", &fvalue) == 1) {
+            if ((fvalue > 10000)||(fvalue < 0.00001))
+              xf86Msg(X_WARNING, 
+                "%s: amplifier of %.3f seems unreasonable. Ignored.\n", 
+                local->name, fvalue);
+            else priv->axis[i].amplify = fvalue;
+          }else xf86Msg(X_WARNING, "%s: error parsing amplifier.\n", 
+                        local->name);
+        }
 
         xfree(param);
       }

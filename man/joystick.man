@@ -72,10 +72,21 @@ is one of:
 .BI "\*qdeadzone="<number> \*q
 Sets the unresponsive range of the axis to
 .IR <number> .
+This can be between
+.IR "0" " and " "30000" .
+Default: 10
+.TP 7
+.BI "\*qamplify="<number> \*q
+Amplifies the influence of the axis. To make cursor movement slower, set to value 
+.IR \<1.0 .
+To make it faster, set to value
+.IR \>1.0 .
+Default: 1.0
+
 .RE
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__)
 .SH AUTHORS
-Sascha Hlusiak.
+Sascha Hlusiak
 .fi
-Frederic Lepied.
+Frederic Lepied (1995-1999)
