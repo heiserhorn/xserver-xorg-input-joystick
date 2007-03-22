@@ -40,6 +40,7 @@ jstkAxisTimer(OsTimerPtr        timer,
                          CARD32            atime,
                          pointer           arg)
 {
+#define NEXTTIMER 15
   DeviceIntPtr          device = (DeviceIntPtr)arg;
   JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
 
@@ -54,7 +55,7 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p2 = 1.0;
     float scale;
 
-    nexttimer = 15;
+    nexttimer = NEXTTIMER;
 
     if (priv->axis[i].type == TYPE_BYVALUE) {
       /* Calculate scale value, so we still get a range from 0 to 32768 */
@@ -62,24 +63,22 @@ jstkAxisTimer(OsTimerPtr        timer,
 
       p1 = ((pow((abs((float)priv->axis[i].value)-(float)priv->axis[i].deadzone)*
              scale/1700.0, 3.5))+100.0)*
-            ((float)nexttimer/40000.0) * priv->axis[i].amplify;
+            ((float)NEXTTIMER/40000.0) * priv->axis[i].amplify;
       p2 = ((pow((abs((float)priv->axis[i].value)-(float)priv->axis[i].deadzone)*
              scale/1000.0, 2.5))+200.0)*
-            ((float)nexttimer/200000.0) * priv->axis[i].amplify;
+            ((float)NEXTTIMER/200000.0) * priv->axis[i].amplify;
 
 
     } else if (priv->axis[i].type == TYPE_ACCELERATED) {
       if (priv->axis[i].temp < 120.0) priv->axis[i].temp *= 1.2;
 
-      p1 = (priv->axis[i].temp - 0.1) * (float)nexttimer / 180.0 * priv->axis[i].amplify;
+      p1 = (priv->axis[i].temp - 0.1) * (float)NEXTTIMER / 180.0 * priv->axis[i].amplify;
       p2 = p1 / 8.0;
     }
     if (priv->axis[i].value < 0) {
       p1 *= -1.0;
       p2 *= -1.0;
     }
-
-
 
     switch (priv->axis[i].mapping) {
       case MAPPING_X:
@@ -98,6 +97,38 @@ jstkAxisTimer(OsTimerPtr        timer,
         break;
     }
   }
+
+
+  for (i=0; i<MAXBUTTONS; i++) if (priv->button[i].pressed == 1) {
+    float p1;
+    float p2;
+
+    if (priv->button[i].temp < 120.0) priv->button[i].temp *= 1.2;
+    p1 = (priv->button[i].temp - 0.1) * (float)NEXTTIMER / 180.0 * ((float)priv->button[i].value)/1000.0;
+    p2 = p1 / 8.0;
+
+    switch (priv->button[i].mapping) {
+      case MAPPING_X:
+        priv->x += p1;
+        nexttimer = NEXTTIMER;
+        break;
+      case MAPPING_Y:
+        priv->y += p1;
+        nexttimer = NEXTTIMER;
+        break;
+      case MAPPING_ZX:
+        priv->zx += p2;
+        nexttimer = NEXTTIMER;
+        break;
+      case MAPPING_ZY:
+        priv->zy += p2;
+        nexttimer = NEXTTIMER;
+        break;
+      default:
+        break;
+    }
+  }
+
 
   if (((int)priv->x != 0)||((int)priv->y != 0))
     xf86PostMotionEvent(device, 0, 0, 2, (int)priv->x, (int)priv->y);
@@ -173,6 +204,40 @@ jstkStartAxisTimer(LocalDevicePtr device, int number) {
     device->dev);
 }
 
+void
+jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
+  JoystickDevPtr priv = device->private;
+
+  if (priv->timerrunning) return;
+  priv->timerrunning = TRUE;
+
+  int pixel = 1;
+  if (priv->button[number].value < 0) pixel = -1;
+  switch (priv->button[number].mapping) {
+    case MAPPING_X:
+      priv->x += pixel;
+      break;
+    case MAPPING_Y:
+      priv->y += pixel;
+      break;
+    case MAPPING_ZX:
+      priv->zx += pixel;
+      break;
+    case MAPPING_ZY:
+      priv->zy += pixel;
+      break;
+    default:
+      break;
+  }
+
+  DBG(2, ErrorF("Starting Timer\n"));
+  priv->timer = TimerSet(
+    priv->timer, 
+    0,         /* Relative */
+    5,
+    jstkAxisTimer,
+    device->dev);
+}
 
 
 void

@@ -26,6 +26,37 @@
 #include "jstk_options.h"
 
 
+static BOOL
+jstkGetButtonAxis(struct BUTTON *button, char* param, const char* name) {
+  /* param can be:
+     x
+     +x
+     -x
+     3x
+     3.5x
+     -8x */
+  float value;
+  button->mapping = MAPPING_NONE;
+  if (sscanf(param, "%f", &value)==0) {
+    value = 1.0;
+    if (param[0]=='-')
+      value = -1.0;
+  }
+  if (strstr(param, "zx") != NULL)
+    button->mapping = MAPPING_ZX;
+  else if (strstr(param, "zy") != NULL)
+    button->mapping = MAPPING_ZY;
+  else if (strstr(param, "x") != NULL)
+    button->mapping = MAPPING_X;
+  else if (strstr(param, "y") != NULL)
+    button->mapping = MAPPING_Y;
+  else {
+    return FALSE;
+  }
+  button->value = (int)(value*1000.0);
+  return TRUE;
+}
+
 void
 jstkParseButtonOption(const char* org, 
                       struct BUTTON *button, 
@@ -44,18 +75,9 @@ jstkParseButtonOption(const char* org,
     button->mapping = MAPPING_BUTTON;
     button->value   = value;
   } else if (sscanf(param, "axis=%15s", p) == 1) {
-    if (strcmp(p, "x") == 0)
-      button->mapping = MAPPING_X;
-    else if (strcmp(p, "y") == 0)
-      button->mapping = MAPPING_Y;
-    else if (strcmp(p, "zx") == 0)
-      button->mapping = MAPPING_ZX;
-    else if (strcmp(p, "zy") == 0)
-      button->mapping = MAPPING_ZY;
-    else {
-      xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
-              name);
-    }
+    if (jstkGetButtonAxis(button, p, name) == FALSE)
+      xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
+              name, p);
   } else {
     xf86Msg(X_WARNING, "%s: error parsing button parameter.\n", 
             name);

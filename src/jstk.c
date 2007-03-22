@@ -121,14 +121,15 @@ xf86JstkRead(LocalDevicePtr local)
           priv->button[number].pressed, 0, 0);
         break;
 
-      case MAPPING_X: /* FIXME */
+      case MAPPING_X:
+      case MAPPING_Y:
+      case MAPPING_ZX:
+      case MAPPING_ZY:
+        if (priv->button[number].pressed == 0)
+          priv->button[number].temp = 1.0;
+        jstkStartButtonAxisTimer(local, number);
         break;
-      case MAPPING_Y: /* FIXME */
-        break;
-      case MAPPING_ZX: /* FIXME */
-        break;
-      case MAPPING_ZY: /* FIXME */
-        break;
+
       case MAPPING_KEY: /* FIXME */
         break;
       case MAPPING_SPEED_MULTIPLY: /* FIXME */
@@ -369,6 +370,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
       priv->button[i].pressed = 0;
       priv->button[i].value   = i+1;  /* The button number to simulate */
       priv->button[i].mapping = MAPPING_BUTTON;
+      priv->button[i].temp    = 1.0;
     }
 
     /* Set default mappings */

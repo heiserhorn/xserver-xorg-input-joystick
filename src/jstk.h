@@ -104,6 +104,7 @@ typedef struct
   {
     char pressed;
     int value;
+    float temp;
     enum JOYSTICKMAPPING mapping;
   }button[32];                 /* Configuration per button */
   int axes, buttons;           /* Number of axes and buttons */
