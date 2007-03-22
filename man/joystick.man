@@ -81,6 +81,8 @@ Amplifies the influence of the axis. To make cursor movement slower, set to valu
 .IR \<1.0 .
 To make it faster, set to value
 .IR \>1.0 .
+To invert movement direction, set to a
+.IR "negative value" .
 Default: 1.0
 
 .RE

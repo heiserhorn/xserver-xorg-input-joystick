@@ -510,7 +510,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         }
         if ((s=strstr(param, "amplify=")) != NULL ) {
           if (sscanf(s, "amplify=%f", &fvalue) == 1) {
-            if ((fvalue > 10000)||(fvalue < 0.00001))
+            if ((fvalue > 10000)||(fvalue < -10000.0))
               xf86Msg(X_WARNING, 
                 "%s: amplifier of %.3f seems unreasonable. Ignored.\n", 
                 local->name, fvalue);
