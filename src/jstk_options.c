@@ -26,35 +26,30 @@
 #include "jstk_options.h"
 
 
-static BOOL
-jstkGetButtonAxis(struct BUTTON *button, char* param, const char* name) {
-  /* param can be:
+static enum JOYSTICKMAPPING
+jstkGetAxisMapping(float *value, char* param, const char* name) {
+  /* param can be like:
      x
-     +x
-     -x
+     +y
+     -zx
      3x
-     3.5x
+     3.5zy
      -8x */
-  float value;
-  button->mapping = MAPPING_NONE;
-  if (sscanf(param, "%f", &value)==0) {
-    value = 1.0;
+  if (sscanf(param, "%f", value)==0) {
+    *value = 1.0;
     if (param[0]=='-')
-      value = -1.0;
+      *value = -1.0;
   }
   if (strstr(param, "zx") != NULL)
-    button->mapping = MAPPING_ZX;
+    return MAPPING_ZX;
   else if (strstr(param, "zy") != NULL)
-    button->mapping = MAPPING_ZY;
+    return MAPPING_ZY;
   else if (strstr(param, "x") != NULL)
-    button->mapping = MAPPING_X;
+    return MAPPING_X;
   else if (strstr(param, "y") != NULL)
-    button->mapping = MAPPING_Y;
-  else {
-    return FALSE;
-  }
-  button->value = (int)(value*1000.0);
-  return TRUE;
+    return MAPPING_Y;
+
+  return MAPPING_NONE;
 }
 
 void
@@ -75,7 +70,10 @@ jstkParseButtonOption(const char* org,
     button->mapping = MAPPING_BUTTON;
     button->value   = value;
   } else if (sscanf(param, "axis=%15s", p) == 1) {
-    if (jstkGetButtonAxis(button, p, name) == FALSE)
+    float value;
+    button->mapping = jstkGetAxisMapping(&value, p, name);
+    button->value = (int)(value*1000.0);
+    if (button->mapping == MAPPING_NONE)
       xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
               name, p);
   } else {
@@ -116,18 +114,11 @@ jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
   if ((tmp=strstr(param, "axis=")) != NULL) {
     if (sscanf(tmp, "axis=%15s", p) == 1) {
       p[15]='\0';
-      if (strcmp(p, "x") == 0)
-        axis->mapping = MAPPING_X;
-      else if (strcmp(p, "y") == 0)
-        axis->mapping = MAPPING_Y;
-      else if (strcmp(p, "zx") == 0)
-        axis->mapping = MAPPING_ZX;
-      else if (strcmp(p, "zy") == 0)
-        axis->mapping = MAPPING_ZY;
-      else {
-        xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
-                name);
-      }
+      axis->mapping = jstkGetAxisMapping(&fvalue, p, name);
+      axis->amplify = fvalue;
+      if (axis->mapping == MAPPING_NONE)
+        xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
+                name, p);
     }else xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
                   name);
   }
@@ -141,16 +132,6 @@ jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
           name, value);
       else axis->deadzone = value;
     }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
-                  name);
-  }
-  if ((tmp=strstr(param, "amplify=")) != NULL ) {
-    if (sscanf(tmp, "amplify=%f", &fvalue) == 1) {
-      if ((fvalue > 10000)||(fvalue < -10000.0))
-        xf86Msg(X_WARNING, 
-          "%s: amplifier of %.3f seems unreasonable. Ignored.\n", 
-          name, fvalue);
-      else axis->amplify = fvalue;
-    }else xf86Msg(X_WARNING, "%s: error parsing amplifier.\n", 
                   name);
   }
 

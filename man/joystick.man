@@ -48,6 +48,18 @@ This joystick button won't do anything.
 .TP 7
 .BI "\*qbutton="<number> \*q
 The joystick button will generate a click with the specified button (starting with 1).
+.TP 7
+.BI "\*qaxis="[<factor>]<axis> \*q
+Where
+.I <axis>
+is one of:
+.B X, Y, ZX, ZY
+
+and 
+.I <factor>
+is an optional amplifier of the axis, like
+.B -, +, -5, 0.4, 1.3, ...
+Use positive and negative values to control the direction. Default: 1.0
 .RE
 .PP
 .TP 7
@@ -62,12 +74,17 @@ may be one of:
 
 .B relative, accelerated, absolute
 .TP 7
-.BI "\*qaxis="<string> \*q
+.BI "\*qaxis="[<factor>]<axis> \*q
 Where
-.I <string>
+.I <axis>
 is one of:
-
 .B X, Y, ZX, ZY
+
+and 
+.I <factor>
+is an optional amplifier of the axis, like
+.B -, +, -5, 0.4, 1.3, ...
+Negative values will invert the movement. Default: 1.0
 .TP 7
 .BI "\*qdeadzone="<number> \*q
 Sets the unresponsive range of the axis to
@@ -75,15 +92,6 @@ Sets the unresponsive range of the axis to
 This can be between
 .IR "0" " and " "30000" .
 Default: 10
-.TP 7
-.BI "\*qamplify="<number> \*q
-Amplifies the influence of the axis. To make cursor movement slower, set to value 
-.IR \<1.0 .
-To make it faster, set to value
-.IR \>1.0 .
-To invert movement direction, set to a
-.IR "negative value" .
-Default: 1.0
 
 .RE
 .SH "SEE ALSO"
