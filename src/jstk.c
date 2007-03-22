@@ -45,6 +45,7 @@
 #include "jstk.h"
 #include "linux_jstk.h"
 #include "jstk_axis.h"
+#include "jstk_options.h"
 
 
 
@@ -423,103 +424,24 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* Process button mapping options */
     for (i=0; i<priv->buttons; i++) if (i<MAXBUTTONS) {
       char p[64];
-
       sprintf(p,"MapButton%d",i+1);
       s = xf86CheckStrOption(dev->commonOptions, p, NULL);
       if (s != NULL) {
-        char *param;
-        char *tmp;
-        int value;
-        param = xstrdup(s);
-
-        for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
-        xf86Msg(X_CONFIG, "%s: Option \"mapbutton%d\" \"%s\"\n", 
-          local->name, i+1, param);
-        if (strcmp(param, "none") == 0) {
-          priv->button[i].mapping = MAPPING_NONE;
-        } else if (sscanf(param, "button=%d", &value) == 1) {
-          priv->button[i].mapping = MAPPING_BUTTON;
-          priv->button[i].value   = value;
-        } else {
-          xf86Msg(X_WARNING, "%s: not recognized parameter\n", 
-            local->name);
-        }
-        xfree(param);
+        xf86Msg(X_CONFIG, "%s: Option \"mapbutton%d\" \"%s\"\n",
+                local->name, i+1, s);
+        jstkParseButtonOption(s, &priv->button[i], local->name);
       }
     }
 
     /* Process button mapping options */
     for (i=0; i<priv->axes; i++) if (i<MAXAXES) {
-      char p[64], p2[64];
+      char p[64];
       sprintf(p,"MapAxis%d",i+1);
       s = xf86CheckStrOption(dev->commonOptions, p, NULL);
       if (s != NULL) {
-        char *param;
-        char *tmp;
-        int value;
-        float fvalue;
-        param = xstrdup(s);
-        for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
         xf86Msg(X_CONFIG, "%s: Option \"mapaxis%d\" \"%s\"\n", 
-                local->name, i+1, param);
-
-        if ((s=strstr(param, "mode=")) != NULL) {
-          if (sscanf(s, "mode=%15s", p2) == 1) {
-            if (strcmp(p2, "relative") == 0)
-              priv->axis[i].type = TYPE_BYVALUE;
-            else if (strcmp(p2, "accelerated") == 0)
-              priv->axis[i].type = TYPE_ACCELERATED;
-            else if (strcmp(p2, "absolute") == 0)
-              priv->axis[i].type = TYPE_ABSOLUTE;
-            else {
-              xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
-                      local->name, param);
-            }
-          }else xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
-                        local->name, param);
-        }
-
-        if ((s=strstr(param, "axis=")) != NULL) {
-          if (sscanf(s, "axis=%15s", p2) == 1) {
-            if (strcmp(p2, "x") == 0)
-              priv->axis[i].mapping = MAPPING_X;
-            else if (strcmp(p2, "y") == 0)
-              priv->axis[i].mapping = MAPPING_Y;
-            else if (strcmp(p2, "zx") == 0)
-              priv->axis[i].mapping = MAPPING_ZX;
-            else if (strcmp(p2, "zy") == 0)
-              priv->axis[i].mapping = MAPPING_ZY;
-            else {
-              xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
-                      local->name);
-            }
-          }else xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
-                        local->name);
-        }
-
-        if ((s=strstr(param, "deadzone=")) != NULL ) {
-          if (sscanf(s, "deadzone=%d", &value) == 1) {
-            value = (value<0)?(-value):value;
-            if (value > 30000)
-              xf86Msg(X_WARNING, 
-                "%s: deadzone of %d seems unreasonable. Ignored.\n", 
-                local->name, value);
-            else priv->axis[i].deadzone = value;
-          }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
-                        local->name);
-        }
-        if ((s=strstr(param, "amplify=")) != NULL ) {
-          if (sscanf(s, "amplify=%f", &fvalue) == 1) {
-            if ((fvalue > 10000)||(fvalue < -10000.0))
-              xf86Msg(X_WARNING, 
-                "%s: amplifier of %.3f seems unreasonable. Ignored.\n", 
-                local->name, fvalue);
-            else priv->axis[i].amplify = fvalue;
-          }else xf86Msg(X_WARNING, "%s: error parsing amplifier.\n", 
-                        local->name);
-        }
-
-        xfree(param);
+                local->name, i+1, s);
+        jstkParseAxisOption(s, &priv->axis[i], local->name);
       }
     }
 
