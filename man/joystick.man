@@ -60,6 +60,20 @@ and
 is an optional amplifier of the axis, like
 .B -, +, -5, 0.4, 1.3, ...
 Use positive and negative values to control the direction. Default: 1.0
+.TP 7
+.BI "\*qamplify="<factor> \*q
+Amplifies the movement of all axes by the given factor when pressed. Different
+factors can be combined. 
+.TP 7
+.B "\*qdisable-mouse\*q"
+.TP 7
+.B "\*qdisable-keys\*q"
+.TP 7
+.B "\*qdisable-all\*q"
+Disables either the generation of mouse events, key events or the generation of
+all X events by the driver. Press button again to allow the driver to generate 
+events again.
+
 .RE
 .PP
 .TP 7

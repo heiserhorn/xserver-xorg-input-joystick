@@ -26,15 +26,15 @@
 #include "jstk_options.h"
 
 
+/**
+ * Parses strings like:
+ * x, +y, -zx, 3x, 3.5zy, -8x 
+ * And returns the mapping and stores the optional factor
+ * In the float referenced by 'value'
+ **/
+
 static enum JOYSTICKMAPPING
-jstkGetAxisMapping(float *value, char* param, const char* name) {
-  /* param can be like:
-     x
-     +y
-     -zx
-     3x
-     3.5zy
-     -8x */
+jstkGetAxisMapping(float *value, const char* param, const char* name) {
   if (sscanf(param, "%f", value)==0) {
     *value = 1.0;
     if (param[0]=='-')
@@ -52,6 +52,12 @@ jstkGetAxisMapping(float *value, char* param, const char* name) {
   return MAPPING_NONE;
 }
 
+/**
+ * Interpretes one ButtonMappingX option, given in 'org'
+ * stores the result in *button
+ * name is the name of the InputDevice
+ **/
+
 void
 jstkParseButtonOption(const char* org, 
                       struct BUTTON *button, 
@@ -59,6 +65,7 @@ jstkParseButtonOption(const char* org,
   char *param;
   char *tmp;
   int value;
+  float fvalue;
   char p[64];
   param = xstrdup(org);
 
@@ -70,12 +77,20 @@ jstkParseButtonOption(const char* org,
     button->mapping = MAPPING_BUTTON;
     button->value   = value;
   } else if (sscanf(param, "axis=%15s", p) == 1) {
-    float value;
-    button->mapping = jstkGetAxisMapping(&value, p, name);
-    button->value = (int)(value*1000.0);
+    button->mapping = jstkGetAxisMapping(&fvalue, p, name);
+    button->value = (int)(fvalue*1000.0);
     if (button->mapping == MAPPING_NONE)
       xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
               name, p);
+  } else if (sscanf(param, "amplify=%f", &fvalue) == 1) {
+    button->mapping = MAPPING_SPEED_MULTIPLY;
+    button->value = (int)(fvalue*1000.0);
+  } else if (strcmp(param, "disable-all") == 0) {
+    button->mapping = MAPPING_DISABLE;
+  } else if (strcmp(param, "disable-mouse") == 0) {
+    button->mapping = MAPPING_DISABLE_MOUSE;
+  } else if (strcmp(param, "disable-keys") == 0) {
+    button->mapping = MAPPING_DISABLE_KEYS;
   } else {
     xf86Msg(X_WARNING, "%s: error parsing button parameter.\n", 
             name);
@@ -83,6 +98,12 @@ jstkParseButtonOption(const char* org,
   xfree(param);
 }
 
+
+/**
+ * Interpretes one AxisMappingX option, given in 'org'
+ * stores the result in *axis
+ * name is the name of the InputDevice
+ **/
 
 void
 jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {

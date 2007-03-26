@@ -91,6 +91,9 @@ typedef struct
   Bool         timerrunning;
   float        x,y,zx,zy;      /* Pending subpixel movements */
 
+  Bool         mouse_enabled, keys_enabled;
+  float        amplify;        /* Global amplifier of axis movement */
+
   struct AXIS
   {
     int   value;

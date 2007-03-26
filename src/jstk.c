@@ -102,6 +102,7 @@ xf86JstkRead(LocalDevicePtr local)
 {
   enum JOYSTICKEVENT event;
   int number;
+  int i;
 
   JoystickDevPtr priv = local->private;
 
@@ -117,8 +118,10 @@ xf86JstkRead(LocalDevicePtr local)
   if (event == EVENT_BUTTON) {
     switch (priv->button[number].mapping) {
       case MAPPING_BUTTON:
-        xf86PostButtonEvent(local->dev, 0, priv->button[number].value,
-          priv->button[number].pressed, 0, 0);
+        if (priv->mouse_enabled == TRUE) {
+          xf86PostButtonEvent(local->dev, 0, priv->button[number].value,
+            priv->button[number].pressed, 0, 0);
+        }
         break;
 
       case MAPPING_X:
@@ -127,18 +130,42 @@ xf86JstkRead(LocalDevicePtr local)
       case MAPPING_ZY:
         if (priv->button[number].pressed == 0)
           priv->button[number].temp = 1.0;
-        jstkStartButtonAxisTimer(local, number);
+        if (priv->mouse_enabled == TRUE)
+          jstkStartButtonAxisTimer(local, number);
         break;
 
       case MAPPING_KEY: /* FIXME */
         break;
-      case MAPPING_SPEED_MULTIPLY: /* FIXME */
+      case MAPPING_SPEED_MULTIPLY:
+        priv->amplify = 1.0;
+        for (i=0; i<MAXAXES; i++) {
+          if ((priv->button[i].pressed) && 
+              (priv->button[i].mapping == MAPPING_SPEED_MULTIPLY))
+            priv->amplify *= ((float)(priv->button[i].value)) / 1000.0;
+        }
         break;
-      case MAPPING_DISABLE: /* FIXME */
+      case MAPPING_DISABLE:
+        if (priv->button[number].pressed == 1) {
+          if ((priv->mouse_enabled == TRUE) || (priv->keys_enabled == TRUE)) {
+            priv->mouse_enabled = FALSE;
+            priv->keys_enabled = FALSE;
+          } else {
+            priv->mouse_enabled = TRUE;
+            priv->keys_enabled = TRUE;
+          }
+        }
         break;
-      case MAPPING_DISABLE_MOUSE: /* FIXME */
+      case MAPPING_DISABLE_MOUSE:
+        if (priv->button[number].pressed == 1) {
+          if (priv->mouse_enabled == TRUE) priv->mouse_enabled = FALSE;
+            else priv->mouse_enabled = TRUE;
+        }
         break;
-      case MAPPING_DISABLE_KEYS: /* FIXME */
+      case MAPPING_DISABLE_KEYS:
+        if (priv->button[number].pressed == 1) {
+          if (priv->keys_enabled == TRUE) priv->keys_enabled = FALSE;
+            else priv->keys_enabled = TRUE;
+        }
         break;
 
       default:
@@ -147,16 +174,19 @@ xf86JstkRead(LocalDevicePtr local)
   }
 
   /* An axis was moved */
-  if ((event == EVENT_AXIS) && (priv->axis[number].mapping != MAPPING_NONE)) {
+  if ((event == EVENT_AXIS) && 
+      (priv->axis[number].mapping != MAPPING_NONE)) {
     switch (priv->axis[number].type) {
       case TYPE_BYVALUE:
       case TYPE_ACCELERATED:
         if (priv->axis[number].value == 0)
           priv->axis[number].temp = 1.0;
-        jstkStartAxisTimer(local, number);
+        if (priv->mouse_enabled == TRUE)
+          jstkStartAxisTimer(local, number);
         break;
       case TYPE_ABSOLUTE: /* FIXME */
-        jstkHandleAbsoluteAxis(local, number);
+        if (priv->mouse_enabled == TRUE)
+          jstkHandleAbsoluteAxis(local, number);
         break;
 
       default:
@@ -356,6 +386,9 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->zy = 0.0;
     priv->timer = NULL;
     priv->timerrunning = FALSE;
+    priv->mouse_enabled = TRUE;
+    priv->keys_enabled = TRUE;
+    priv->amplify = 1.0;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {

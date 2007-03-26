@@ -63,22 +63,24 @@ jstkAxisTimer(OsTimerPtr        timer,
 
       p1 = ((pow((abs((float)priv->axis[i].value)-(float)priv->axis[i].deadzone)*
              scale/1700.0, 3.5))+100.0)*
-            ((float)NEXTTIMER/40000.0) * priv->axis[i].amplify;
+            ((float)NEXTTIMER/40000.0);
       p2 = ((pow((abs((float)priv->axis[i].value)-(float)priv->axis[i].deadzone)*
              scale/1000.0, 2.5))+200.0)*
-            ((float)NEXTTIMER/200000.0) * priv->axis[i].amplify;
+            ((float)NEXTTIMER/200000.0);
 
 
     } else if (priv->axis[i].type == TYPE_ACCELERATED) {
-      if (priv->axis[i].temp < 120.0) priv->axis[i].temp *= 1.2;
+      if (priv->axis[i].temp < 120.0) priv->axis[i].temp *= 1.15;
 
-      p1 = (priv->axis[i].temp - 0.1) * (float)NEXTTIMER / 180.0 * priv->axis[i].amplify;
+      p1 = (priv->axis[i].temp - 0.1) * (float)NEXTTIMER / 180.0;
       p2 = p1 / 8.0;
     }
     if (priv->axis[i].value < 0) {
       p1 *= -1.0;
       p2 *= -1.0;
     }
+    p1 *= priv->axis[i].amplify * priv->amplify;
+    p2 *= priv->axis[i].amplify * priv->amplify;
 
     switch (priv->axis[i].mapping) {
       case MAPPING_X:
@@ -103,8 +105,9 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p1;
     float p2;
 
-    if (priv->button[i].temp < 120.0) priv->button[i].temp *= 1.2;
+    if (priv->button[i].temp < 120.0) priv->button[i].temp *= 1.15;
     p1 = (priv->button[i].temp - 0.1) * (float)NEXTTIMER / 180.0 * ((float)priv->button[i].value)/1000.0;
+    p1 *= priv->amplify;
     p2 = p1 / 8.0;
 
     switch (priv->button[i].mapping) {
@@ -157,13 +160,14 @@ jstkAxisTimer(OsTimerPtr        timer,
     priv->zx+=1.0;
   }
 
+  if (priv->mouse_enabled == FALSE) nexttimer = 0;
   if (nexttimer == 0) {
     priv->timerrunning = FALSE;
     priv->x  = 0.0;
     priv->y  = 0.0;
     priv->zx = 0.0;
     priv->zy = 0.0;
-    DBG(2, ErrorF("Stopping Timer\n"));
+//     DBG(2, ErrorF("Stopping Timer\n"));
   }
   xf86UnblockSIGIO (sigstate);
   return nexttimer;
@@ -195,7 +199,7 @@ jstkStartAxisTimer(LocalDevicePtr device, int number) {
       break;
   }
 
-  DBG(2, ErrorF("Starting Timer\n"));
+//   DBG(2, ErrorF("Starting Timer\n"));
   priv->timer = TimerSet(
     priv->timer, 
     0,         /* Relative */
