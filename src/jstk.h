@@ -52,6 +52,7 @@ extern int      debug_level;
 
 #define MAXBUTTONS 32
 #define MAXAXES MAXBUTTONS
+#define MAXKEYSPERBUTTON 4
 
 enum JOYSTICKTYPE {
   TYPE_NONE,
@@ -101,15 +102,16 @@ typedef struct
     float temp,amplify;
     enum JOYSTICKTYPE type;
     enum JOYSTICKMAPPING mapping;
-  }axis[32];                   /* Configuration per axis */
+  }axis[MAXAXES];                   /* Configuration per axis */
 
   struct BUTTON
   {
     char pressed;
     int value;
+    unsigned int keys[MAXKEYSPERBUTTON];
     float temp;
     enum JOYSTICKMAPPING mapping;
-  }button[32];                 /* Configuration per button */
+  }button[MAXBUTTONS];                 /* Configuration per button */
   int axes, buttons;           /* Number of axes and buttons */
 } JoystickDevRec, *JoystickDevPtr;
 

@@ -33,7 +33,6 @@
 #include <xf86Xinput.h>
 #include <xisb.h>
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
-#include <X11/keysym.h>
 
 #include <math.h>
 
@@ -91,7 +90,6 @@ xf86JstkConvert(LocalDevicePtr	local,
 
 
 
-
 /*
  * xf86JstkRead --
  *      This is called, when there is data to read at the device
@@ -134,7 +132,18 @@ xf86JstkRead(LocalDevicePtr local)
           jstkStartButtonAxisTimer(local, number);
         break;
 
-      case MAPPING_KEY: /* FIXME */
+      case MAPPING_KEY:
+        for (i=0;i<MAXKEYSPERBUTTON;i++) {
+          unsigned int k;
+          if (priv->button[number].pressed == 1) 
+            k = priv->button[number].keys[i];
+            else k = priv->button[number].keys[MAXKEYSPERBUTTON - i - 1];
+          if (k != 0) {
+            DBG(1, ErrorF("Generating key %s event with keycode %d\n", 
+              (priv->button[number].pressed)?"press":"release", k));
+            xf86PostKeyboardEvent(local->dev, k, priv->button[number].pressed);
+          }
+        }
         break;
       case MAPPING_SPEED_MULTIPLY:
         priv->amplify = 1.0;
@@ -184,7 +193,7 @@ xf86JstkRead(LocalDevicePtr local)
         if (priv->mouse_enabled == TRUE)
           jstkStartAxisTimer(local, number);
         break;
-      case TYPE_ABSOLUTE: /* FIXME */
+      case TYPE_ABSOLUTE: /* FIXME: add range */
         if (priv->mouse_enabled == TRUE)
           jstkHandleAbsoluteAxis(local, number);
         break;
@@ -216,19 +225,15 @@ xf86JstkProc(DeviceIntPtr       pJstk,
       DBG(1, ErrorF("xf86JstkProc what=INIT\n"));
       for (i=1; i<MAXBUTTONS; i++) map[i] = i;
 
-      if (InitButtonClassDeviceStruct(pJstk,
-                                      priv->buttons,
-                                      map) == FALSE) 
-        {
-          ErrorF("unable to allocate Button class device\n");
-          return !Success;
-        }
+      if (InitButtonClassDeviceStruct(pJstk,priv->buttons,map) == FALSE) {
+        ErrorF("unable to allocate Button class device\n");
+        return !Success;
+      }
 
-      if (InitFocusClassDeviceStruct(pJstk) == FALSE)
-        {
-          ErrorF("unable to init Focus class device\n");
-          return !Success;
-        }
+      if (InitFocusClassDeviceStruct(pJstk) == FALSE) {
+        ErrorF("unable to init Focus class device\n");
+        return !Success;
+      }
 
 //       if (InitPtrFeedbackClassDeviceStruct(pJstk,
 //                                            xf86JstkControlProc) == FALSE)
@@ -238,7 +243,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
 //         }
 
       if (InitValuatorClassDeviceStruct(pJstk, 
-                                    2,    /* FIXME */
+                                    2,
                                     xf86GetMotionEvents, 
                                     local->history_size,
                                     Relative) /* relative or absolute */
@@ -363,7 +368,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv = (JoystickDevPtr) local->private;
   
     local->name = dev->identifier;
-    local->flags = XI86_POINTER_CAPABLE | XI86_SEND_DRAG_EVENTS;
+    local->flags = XI86_POINTER_CAPABLE | XI86_KEYBOARD_CAPABLE | XI86_SEND_DRAG_EVENTS;
     local->device_control = xf86JstkProc;
     local->read_input = xf86JstkRead;
     local->close_proc = NULL;
@@ -373,7 +378,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->fd = -1;
     local->dev = NULL;
     local->private = priv;
-    local->type_name = XI_MOUSE;
+    local->type_name = "JOYSTICK";
     local->history_size  = 0;
     local->always_core_feedback = 0;
     local->conf_idev = dev;
@@ -464,7 +469,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
       if (s != NULL) {
         xf86Msg(X_CONFIG, "%s: Option \"mapbutton%d\" \"%s\"\n",
                 local->name, i+1, s);
-        jstkParseButtonOption(s, &priv->button[i], local->name);
+        jstkParseButtonOption(s, priv, i, local->name);
       }
     }
 

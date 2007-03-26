@@ -30,6 +30,7 @@
 
 #include <xf86Xinput.h>
 #include <xf86_OSproc.h>
+#include <math.h>
 #include "jstk.h"
 #include "jstk_axis.h"
 

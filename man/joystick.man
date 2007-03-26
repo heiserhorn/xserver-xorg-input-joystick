@@ -63,7 +63,14 @@ Use positive and negative values to control the direction. Default: 1.0
 .TP 7
 .BI "\*qamplify="<factor> \*q
 Amplifies the movement of all axes by the given factor when pressed. Different
-factors can be combined. 
+factors can be combined.
+.TP 7
+.BI "\*qkey="<keycode>[,<keycode>[,<keycode>[,<keycode>]]]
+When button is pressed, a series of keydown events with the specified keycode is
+generated. When the button is released, there are keyup events in the opposite
+order generated.
+
+See special section about key events below.
 .TP 7
 .B "\*qdisable-mouse\*q"
 .TP 7
@@ -108,8 +115,21 @@ This can be between
 Default: 10
 
 .RE
+.SH "GENERATING KEY EVENTS"
+Proving a \*qkey=<keycode>[,<keycode>[...]]\*q option will generate X Events with the specified keycode.
+To lookup keycodes for KeySyms, you can use 
+.BR "xmodmap -pk" .
+You can use unused keycodes and map to a KEYSYMNAME of your choice using xmodmap(1).
+
+Example:
+To make the button perform 
+.I "Alt_L+Tab"
+, use \*qkey=64,23\*q. For a lowercase
+.I d
+, use \*qkey=40\*q.
+
 .SH "SEE ALSO"
-__xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__)
+__xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__), xmodmap(1)
 .SH AUTHORS
 Sascha Hlusiak
 .fi

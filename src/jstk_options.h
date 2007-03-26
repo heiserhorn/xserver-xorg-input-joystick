@@ -24,10 +24,10 @@
 #ifndef __JSTK_OPTIONS_H_INCLUDED__
 #define __JSTK_OPTIONS_H_INCLUDED__
 
-
 void jstkParseButtonOption(const char* org, 
-                           struct BUTTON *button, 
-                           const char* name);
+                      JoystickDevPtr priv,
+                      int number,
+                      const char* name);
 void jstkParseAxisOption(const char* org, 
                          struct AXIS *axis,
                          const char* name);
