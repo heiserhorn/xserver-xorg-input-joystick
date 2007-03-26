@@ -127,6 +127,7 @@ xf86ReadJoystickData(JoystickDevPtr joystick,
       ) != sizeof(struct js_event))
     return 0;
 
+  if ((js.type & JS_EVENT_INIT) == JS_EVENT_INIT) return 1;
   switch(js.type & ~JS_EVENT_INIT) {
     case JS_EVENT_BUTTON:
       if (js.number<MAXBUTTONS)
