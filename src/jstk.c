@@ -133,6 +133,7 @@ xf86JstkRead(LocalDevicePtr local)
         break;
 
       case MAPPING_KEY:
+        if (priv->keys_enabled == TRUE)
         for (i=0;i<MAXKEYSPERBUTTON;i++) {
           unsigned int k;
           if (priv->button[number].pressed == 1) 
