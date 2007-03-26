@@ -60,13 +60,17 @@ jstkGetAxisMapping(float *value, const char* param, const char* name) {
 
 void
 jstkParseButtonOption(const char* org, 
-                      struct BUTTON *button, 
+                      JoystickDevPtr priv,
+                      int number,
                       const char* name) {
   char *param;
   char *tmp;
   int value;
   float fvalue;
   char p[64];
+  struct BUTTON* button;
+
+  button = &priv->button[number];
   param = xstrdup(org);
 
   for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
@@ -85,6 +89,19 @@ jstkParseButtonOption(const char* org,
   } else if (sscanf(param, "amplify=%f", &fvalue) == 1) {
     button->mapping = MAPPING_SPEED_MULTIPLY;
     button->value = (int)(fvalue*1000.0);
+  } else if (sscanf(param, "key=%30s", p) == 1) {
+    char *current,*next;
+    current = p;
+    button->mapping = MAPPING_KEY;
+    for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
+      next = strchr(current, ',');
+      if (next) *(next++) = '\0';
+      button->keys[value] = atoi(current);
+      if (button->keys[value] == 0)
+        xf86Msg(X_WARNING, "%s: error parsing key value: %s.\n", 
+                name, current);
+      current = next;
+    } else button->keys[value] = 0;
   } else if (strcmp(param, "disable-all") == 0) {
     button->mapping = MAPPING_DISABLE;
   } else if (strcmp(param, "disable-mouse") == 0) {
