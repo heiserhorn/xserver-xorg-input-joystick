@@ -139,16 +139,19 @@ xf86ReadJoystickData(JoystickDevPtr joystick,
       break;
     case JS_EVENT_AXIS:
       if (js.number<MAXAXES) {
-        joystick->axis[js.number].value=js.value;
         if (abs(js.value)<joystick->axis[js.number].deadzone) {
-          joystick->axis[js.number].value=0;
+          if (joystick->axis[js.number].value != 0) {
+            joystick->axis[js.number].value = 0;
+            if (event != NULL) *event = EVENT_AXIS;
+            if (number != NULL) *number = js.number;
+          }
+        }else{
+          joystick->axis[js.number].value=js.value;
+          if (event != NULL) *event = EVENT_AXIS;
+          if (number != NULL) *number = js.number;
         }
-        if (event != NULL) *event = EVENT_AXIS;
-        if (number != NULL) *number = js.number;
       }
       break;
   }
-
-
   return 1;
 }
