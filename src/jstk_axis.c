@@ -51,9 +51,9 @@ jstkAxisTimer(OsTimerPtr        timer,
 
   sigstate = xf86BlockSIGIO ();
 
-  for (i=0; i<MAXAXES; i++) if (priv->axis[i].value != 0) {
-    float p1 = 1.0;
-    float p2 = 1.0;
+  for (i=0; i<MAXAXES; i++) if ((priv->axis[i].value != 0)&&(priv->axis[i].type != TYPE_NONE)) {
+    float p1 = 0.0;
+    float p2 = 0.0;
     float scale;
 
     nexttimer = NEXTTIMER;
@@ -100,7 +100,6 @@ jstkAxisTimer(OsTimerPtr        timer,
         break;
     }
   }
-
 
   for (i=0; i<MAXBUTTONS; i++) if (priv->button[i].pressed == 1) {
     float p1;
@@ -168,7 +167,7 @@ jstkAxisTimer(OsTimerPtr        timer,
     priv->y  = 0.0;
     priv->zx = 0.0;
     priv->zy = 0.0;
-//     DBG(2, ErrorF("Stopping Timer\n"));
+    DBG(2, ErrorF("Stopping Axis Timer\n"));
   }
   xf86UnblockSIGIO (sigstate);
   return nexttimer;
@@ -200,7 +199,7 @@ jstkStartAxisTimer(LocalDevicePtr device, int number) {
       break;
   }
 
-//   DBG(2, ErrorF("Starting Timer\n"));
+  DBG(2, ErrorF("Starting Axis Timer\n"));
   priv->timer = TimerSet(
     priv->timer, 
     0,         /* Relative */
@@ -235,7 +234,7 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
       break;
   }
 
-  DBG(2, ErrorF("Starting Timer\n"));
+  DBG(2, ErrorF("Starting Axis Timer\n"));
   priv->timer = TimerSet(
     priv->timer, 
     0,         /* Relative */
@@ -266,10 +265,7 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
     if (priv->axis[i].mapping == MAPPING_Y)
       y = rel * screenInfo.screens[0]->height;
   }
-/*  DBG(2, ErrorF("Setting mouse to %dx%d\n",x,y));*/
+  DBG(3, ErrorF("Setting mouse to %dx%d\n",x,y));
   xf86PostMotionEvent(device->dev, 1, 0, 2, x, y);
 }
-
-
-
 

@@ -40,7 +40,9 @@ The higher the DebugLevel, the more output is produced.
 Default: 0
 .TP 7
 .BI "Option \*qMapButton<number>\*q \*q" string \*q
-Sets the mapping of the joystick button to the desired action. Possible options are:
+Sets the mapping of the joystick button to the desired action. Counting of buttons starts with 
+.IR 1 ,
+Possible options are:
 .RS 7
 .TP 7
 .B "none"
@@ -85,7 +87,9 @@ events again.
 .PP
 .TP 7
 .BI "Option \*qMapAxis<number>\*q \*q" string \*q
-Sets the mapping of the axis to the desired action. The parameter may contain:
+Sets the mapping of the axis to the desired action. Counting of axis starts with
+.IR 1 ,
+the parameter may contain:
 .RS 7
 .TP 7
 .BI "\*qmode="<string> \*q
@@ -93,7 +97,7 @@ Where
 .I <string>
 may be one of:
 
-.B relative, accelerated, absolute
+.B none, relative, accelerated, absolute
 .TP 7
 .BI "\*qaxis="[<factor>]<axis> \*q
 Where

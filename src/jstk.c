@@ -114,6 +114,7 @@ xf86JstkRead(LocalDevicePtr local)
 
   /* A button's status changed */
   if (event == EVENT_BUTTON) {
+    DBG(4, ErrorF("Button %d %s. Mapping: %d\n", number, (priv->button[number].value == 1)?"pressed":"released", priv->button[number].mapping));
     switch (priv->button[number].mapping) {
       case MAPPING_BUTTON:
         if (priv->mouse_enabled == TRUE) {
@@ -185,7 +186,9 @@ xf86JstkRead(LocalDevicePtr local)
 
   /* An axis was moved */
   if ((event == EVENT_AXIS) && 
-      (priv->axis[number].mapping != MAPPING_NONE)) {
+      (priv->axis[number].mapping != MAPPING_NONE) &&
+      (priv->axis[number].type != TYPE_NONE)) {
+    DBG(5, ErrorF("Axis %d moved to %d. Mapping: %d\n", number, priv->axis[number].value, priv->axis[number].mapping));
     switch (priv->axis[number].type) {
       case TYPE_BYVALUE:
       case TYPE_ACCELERATED:
@@ -407,24 +410,32 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
     for (i=0; i<MAXBUTTONS; i++) {
       priv->button[i].pressed = 0;
-      priv->button[i].value   = i+1;  /* The button number to simulate */
-      priv->button[i].mapping = MAPPING_BUTTON;
+      priv->button[i].value   = 0;
+      priv->button[i].mapping = MAPPING_NONE;
       priv->button[i].temp    = 1.0;
     }
+
+    /* First three joystick buttons generate mouse clicks */
+    priv->button[0].mapping = MAPPING_BUTTON;
+    priv->button[0].value   = 1;
+    priv->button[1].mapping = MAPPING_BUTTON;
+    priv->button[1].value   = 2;
+    priv->button[2].mapping = MAPPING_BUTTON;
+    priv->button[2].value   = 3;
 
     /* Set default mappings */
     priv->axis[0].type      = TYPE_BYVALUE;
     priv->axis[0].mapping   = MAPPING_X;
     priv->axis[1].type      = TYPE_BYVALUE;
     priv->axis[1].mapping   = MAPPING_Y;
-    priv->axis[2].type      = TYPE_BYVALUE;
+/*    priv->axis[2].type      = TYPE_BYVALUE;
     priv->axis[2].mapping   = MAPPING_ZX;
     priv->axis[3].type      = TYPE_BYVALUE;
     priv->axis[3].mapping   = MAPPING_ZY;
     priv->axis[4].type      = TYPE_ACCELERATED;
     priv->axis[4].mapping   = MAPPING_X;
     priv->axis[5].type      = TYPE_ACCELERATED;
-    priv->axis[5].mapping   = MAPPING_Y;
+    priv->axis[5].mapping   = MAPPING_Y; */
 
 
     xf86CollectInputOptions(local, NULL, NULL);

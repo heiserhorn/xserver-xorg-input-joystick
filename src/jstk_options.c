@@ -141,7 +141,10 @@ jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
         axis->type = TYPE_ACCELERATED;
       else if (strcmp(p, "absolute") == 0)
         axis->type = TYPE_ABSOLUTE;
+      else if (strcmp(p, "none") == 0)
+        axis->type = TYPE_NONE;
       else {
+        axis->type = TYPE_NONE;
         xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
                 name, param);
       }
