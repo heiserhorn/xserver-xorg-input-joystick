@@ -38,8 +38,8 @@
 
 static CARD32
 jstkAxisTimer(OsTimerPtr        timer,
-                         CARD32            atime,
-                         pointer           arg)
+              CARD32            atime,
+              pointer           arg)
 {
 #define NEXTTIMER 15
   DeviceIntPtr          device = (DeviceIntPtr)arg;
@@ -51,39 +51,42 @@ jstkAxisTimer(OsTimerPtr        timer,
 
   sigstate = xf86BlockSIGIO ();
 
-  for (i=0; i<MAXAXES; i++) if ((priv->axis[i].value != 0)&&(priv->axis[i].type != TYPE_NONE)) {
+  for (i=0; i<MAXAXES; i++) if ((priv->axis[i].value != 0)&&
+                                (priv->axis[i].type != TYPE_NONE)) {
     float p1 = 0.0;
     float p2 = 0.0;
     float scale;
+    struct AXIS *axis;
+    axis = &priv->axis[i];
 
     nexttimer = NEXTTIMER;
 
     if (priv->axis[i].type == TYPE_BYVALUE) {
       /* Calculate scale value, so we still get a range from 0 to 32768 */
-      scale = (32768.0/(float)(32768 - priv->axis[i].deadzone));
+      scale = (32768.0/(float)(32768 - axis->deadzone));
 
-      p1 = ((pow((abs((float)priv->axis[i].value)-(float)priv->axis[i].deadzone)*
+      p1 = ((pow((abs((float)axis->value)-(float)axis->deadzone)*
              scale/1700.0, 3.5))+100.0)*
             ((float)NEXTTIMER/40000.0);
-      p2 = ((pow((abs((float)priv->axis[i].value)-(float)priv->axis[i].deadzone)*
+      p2 = ((pow((abs((float)axis->value)-(float)axis->deadzone)*
              scale/1000.0, 2.5))+200.0)*
             ((float)NEXTTIMER/200000.0);
 
 
-    } else if (priv->axis[i].type == TYPE_ACCELERATED) {
-      if (priv->axis[i].temp < 120.0) priv->axis[i].temp *= 1.15;
+    } else if (axis->type == TYPE_ACCELERATED) {
+      if (axis->temp < 120.0) axis->temp *= 1.15;
 
-      p1 = (priv->axis[i].temp - 0.1) * (float)NEXTTIMER / 180.0;
+      p1 = (axis->temp - 0.1) * (float)NEXTTIMER / 180.0;
       p2 = p1 / 8.0;
     }
-    if (priv->axis[i].value < 0) {
+    if (axis->value < 0) {
       p1 *= -1.0;
       p2 *= -1.0;
     }
-    p1 *= priv->axis[i].amplify * priv->amplify;
-    p2 *= priv->axis[i].amplify * priv->amplify;
+    p1 *= axis->amplify * priv->amplify;
+    p2 *= axis->amplify * priv->amplify;
 
-    switch (priv->axis[i].mapping) {
+    switch (axis->mapping) {
       case MAPPING_X:
         priv->x += p1;
         break;
@@ -199,7 +202,7 @@ jstkStartAxisTimer(LocalDevicePtr device, int number) {
       break;
   }
 
-  DBG(2, ErrorF("Starting Axis Timer\n"));
+  DBG(2, ErrorF("Starting Axis Timer (triggered by axis %d)\n", number));
   priv->timer = TimerSet(
     priv->timer, 
     0,         /* Relative */
@@ -234,7 +237,7 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
       break;
   }
 
-  DBG(2, ErrorF("Starting Axis Timer\n"));
+  DBG(2, ErrorF("Starting Axis Timer (triggered by button %d)\n", number));
   priv->timer = TimerSet(
     priv->timer, 
     0,         /* Relative */
