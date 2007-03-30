@@ -28,5 +28,4 @@ void jstkStartAxisTimer(LocalDevicePtr device, int number);
 void jstkStartButtonAxisTimer(LocalDevicePtr device, int number);
 void jstkHandleAbsoluteAxis(LocalDevicePtr device, int number);
 
-
 #endif

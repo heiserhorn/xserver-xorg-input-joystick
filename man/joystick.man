@@ -18,7 +18,10 @@ is an __xservername__ input driver for Linux\'s joystick devices.
 .SH SUPPORTED HARDWARE
 In general, every by the kernel supported joystick should be supported through the
 .B joystick
-driver. See the Linux kernel documentation for a complete list. 
+driver. The driver assumes that the joystick is calibrated and will report axis values
+between 
+.IR "-32768 " and " 32768" .
+See the Linux kernel documentation for a complete list of supported devices. 
 
 .SH CONFIGURATION DETAILS
 Please refer to __xconfigfile__(__filemansuffix__) for general configuration
@@ -70,7 +73,7 @@ factors can be combined.
 .BI "\*qkey="<keycode>[,<keycode>[,<keycode>[,<keycode>]]]
 When button is pressed, a series of keydown events with the specified keycode is
 generated. When the button is released, there are keyup events in the opposite
-order generated.
+order generated. You can specify up to 4 keycodes per button. 
 
 See special section about key events below.
 .TP 7
@@ -116,25 +119,94 @@ Sets the unresponsive range of the axis to
 .IR <number> .
 This can be between
 .IR "0" " and " "30000" .
-Default: 10
-
+Default: 1000
 .RE
+
+.PP
+The default configuration looks as follows:
+
+.nf
+.BI "  Option \*qMapButton1\*q   \*q" button=1 \*q
+.BI "  Option \*qMapButton2\*q   \*q" button=2 \*q
+.BI "  Option \*qMapButton3\*q   \*q" button=3 \*q
+.BI "  Option \*qMapButton4\*q   \*q" none \*q
+\ \ ...
+.BI "  Option \*qMapAxis1\*q     \*q" "mode=relative axis=+1x deadzone=1000" \*q
+.BI "  Option \*qMapAxis2\*q     \*q" "mode=relative axis=+1y deadzone=1000" \*q
+.BI "  Option \*qMapAxis3\*q     \*q" "mode=none" \*q
+\ \ ...
+.fi
+
+.SH "ACCELERATED AXIS CONFIGURATION"
+.B Accelerated
+mode should be selected, if the axis is a
+.IR pad ,
+which reports only three states: negative, center, positive. It will produce a smooth acceleration of the movement
+when the axis is deflected. The speed will be affected by the factor of the axis, but not the acceleration speed.
+
+This example will set up the axis as scrolling vertically inverted, which half of the speed:
+.nf
+.BI "  Option \*qMapAxis1\*q     \*q" "mode=accelerated axis=-0.5zy" \*q
+.fi
+
+THis example maps four buttons to the four half axes, so you can use them like a pad. The movement will get half
+the normal speed:
+.nf
+.BI "  Option \*qMapButton1\*q     \*q" "axis=+0.5x" \*q
+.BI "  Option \*qMapButton2\*q     \*q" "axis=-0.5x" \*q
+.BI "  Option \*qMapButton3\*q     \*q" "axis=+0.5y" \*q
+.BI "  Option \*qMapButton4\*q     \*q" "axis=-0.5y" \*q
+.fi
+
+.SH "ABSOLUTE AXIS CONFIGURATION"
+With the
+.B absolute
+axis mode, the position of the cursor will be fixed to the position, according to the deflection of the axis.
+This fixed position is calculated around the previous position of the cursor. You can specify the range in pixels,
+the cursor can move. The default range is the
+.I width
+of the screen, when mapped to the x-axis and the
+.I height
+of the screen, when mapped to the y-axis. This mode can be combines with the other modes without problems. 
+
+In this example the first axis gets a range from left to the right of the screen. The second axis gets a
+total range of 200 pixels, 100 to the top and 100 to the bottom:
+.nf 
+.BI "  Option \*qMapAxis1\*q     \*q" "mode=absolute axis=x" \*q
+.BI "  Option \*qMapAxis2\*q     \*q" "mode=absolute axis=200y" \*q
+.fi
+
 .SH "GENERATING KEY EVENTS"
-Proving a \*qkey=<keycode>[,<keycode>[...]]\*q option will generate X Events with the specified keycode.
+Proving a \*qkey=<keycode>[,<keycode>[...]]\*q option will generate X Events with the specified keycodes in order,
+when the joystick button is pressed. When the button is released, the keys are released in the reverse order.
 To lookup keycodes for KeySyms, you can use 
 .BR "xmodmap -pk" .
-You can use unused keycodes and map to a KEYSYMNAME of your choice using xmodmap(1).
+You can use unused keycodes and map them to a KeySym of your choice using xmodmap(1). You can specify up to 4
+keycodes per joystick button. 
 
-Example:
-To make the button perform 
+Examples:
+.nf
+.BI "  Option \*qMapButton1\*q     \*q" "key=64,23" \*q
+.fi
+will generate
 .I "Alt_L+Tab"
-, use \*qkey=64,23\*q. For a lowercase
-.I d
-, use \*qkey=40\*q.
+when the button is pressed.
+
+.nf
+.BI "  Option \*qMapButton1\*q     \*q" "key=40" \*q
+.fi
+will generate a lowercase 
+.IR d .
+
+.nf
+.BI "  Option \*qMapButton1\*q     \*q" "key=65" \*q
+.fi
+is for the  
+.IR "space " key.
 
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__), xmodmap(1)
 .SH AUTHORS
-Sascha Hlusiak
+Sascha Hlusiak 
 .fi
 Frederic Lepied (1995-1999)

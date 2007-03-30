@@ -36,9 +36,8 @@
 static enum JOYSTICKMAPPING
 jstkGetAxisMapping(float *value, const char* param, const char* name) {
   if (sscanf(param, "%f", value)==0) {
-    *value = 1.0;
     if (param[0]=='-')
-      *value = -1.0;
+      *value *= -1.0;
   }
   if (strstr(param, "zx") != NULL)
     return MAPPING_ZX;
@@ -155,7 +154,12 @@ jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
   if ((tmp=strstr(param, "axis=")) != NULL) {
     if (sscanf(tmp, "axis=%15s", p) == 1) {
       p[15]='\0';
+      fvalue = 1.0;
       axis->mapping = jstkGetAxisMapping(&fvalue, p, name);
+      if ((axis->type == TYPE_ABSOLUTE) && ((fvalue <= 1.1)&&(fvalue >= -1.1))) {
+        if (axis->mapping == MAPPING_X) fvalue *= (int)screenInfo.screens[0]->width;
+        if (axis->mapping == MAPPING_Y) fvalue *= (int)screenInfo.screens[0]->height;
+      }
       axis->amplify = fvalue;
       if (axis->mapping == MAPPING_NONE)
         xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 

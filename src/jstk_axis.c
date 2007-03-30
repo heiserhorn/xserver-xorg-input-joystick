@@ -246,29 +246,43 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
     device->dev);
 }
 
-
 void
 jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
   JoystickDevPtr priv = device->private;
-  int x,y,i;
-  x = screenInfo.screens[0]->width / 2;
-  y = screenInfo.screens[0]->height / 2;
+  int i,x,y;
+
+  x=0;
+  y=0;
 
   for (i=0; i<MAXAXES; i++) 
-    if ((priv->axis[i].type == TYPE_ABSOLUTE)&&(priv->axis[i].value != 0))
+    if ((priv->axis[i].type == TYPE_ABSOLUTE))
   {
     float rel;
+    int dif;
     rel = (priv->axis[i].value>0)?
            (priv->axis[i].value - priv->axis[i].deadzone):
            (priv->axis[i].value + priv->axis[i].deadzone);
-    rel = (rel)/(2.0*(float)(32768 - priv->axis[i].deadzone)) + 0.5;
+    rel = (rel)/(2.0*(float)(32768 - priv->axis[i].deadzone));
 
-    if (priv->axis[i].mapping == MAPPING_X)
-      x = rel * screenInfo.screens[0]->width;
-    if (priv->axis[i].mapping == MAPPING_Y)
-      y = rel * screenInfo.screens[0]->height;
+    rel *= priv->axis[i].amplify;
+
+    DBG(5, ErrorF("Relative Position of axis %d: %.2f\n",i, rel));
+
+    dif = (int)(rel - priv->axis[i].temp + 0.5);
+    if ((dif >= 1)||(dif <= -1)) {
+      if (priv->axis[i].mapping == MAPPING_X) {
+        x += (dif);
+        priv->axis[i].temp += (float)dif;
+      }
+      if (priv->axis[i].mapping == MAPPING_Y) {
+        y += (int)(dif);
+        priv->axis[i].temp += (float)dif;
+      }
+    }
   }
-  DBG(3, ErrorF("Setting mouse to %dx%d\n",x,y));
-  xf86PostMotionEvent(device->dev, 1, 0, 2, x, y);
+  if ((x != 0) || (y != 0)) {
+    DBG(4, ErrorF("Moving mouse by %dx%d\n",x,y));
+    xf86PostMotionEvent(device->dev, 0, 0, 2, x, y);
+  }
 }
 

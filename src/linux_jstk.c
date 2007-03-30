@@ -49,7 +49,7 @@
  */
 
 int
-xf86JoystickOn(JoystickDevPtr joystick,int init)
+jstkOpenDevice(JoystickDevPtr joystick,int init)
 {
   char joy_name[128];
 
@@ -94,7 +94,7 @@ xf86JoystickOn(JoystickDevPtr joystick,int init)
  */
 
 void
-xf86JoystickOff(JoystickDevPtr joystick)
+jstkCloseDevice(JoystickDevPtr joystick)
 {
   if ((joystick->fd >= 0)) {
     close(joystick->fd);
@@ -115,9 +115,9 @@ xf86JoystickOff(JoystickDevPtr joystick)
  */
 
 int
-xf86ReadJoystickData(JoystickDevPtr joystick, 
-                     enum JOYSTICKEVENT *event, 
-                     int *number)
+jstkReadData(JoystickDevPtr joystick,
+             enum JOYSTICKEVENT *event,
+             int *number)
 {
   struct js_event js;
   if (event != NULL) *event = EVENT_NONE;

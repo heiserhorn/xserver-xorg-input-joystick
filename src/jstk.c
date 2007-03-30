@@ -48,11 +48,6 @@
 
 
 
-/****************************************************************************
- * Forward declarations
- ****************************************************************************/
-
-static Bool xf86JstkProc(DeviceIntPtr pJstk, int what);
 int      debug_level = 0;
 
 
@@ -104,7 +99,7 @@ xf86JstkRead(LocalDevicePtr local)
 
   JoystickDevPtr priv = local->private;
 
-  if (xf86ReadJoystickData(priv, &event, &number)==0) {
+  if (jstkReadData(priv, &event, &number)==0) {
     xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
 
     if (local->fd >= 0)
@@ -115,7 +110,7 @@ xf86JstkRead(LocalDevicePtr local)
   /* A button's status changed */
   if (event == EVENT_BUTTON) {
     DBG(4, ErrorF("Button %d %s. Mapping: %d\n", number, 
-                  (priv->button[number].value == 1)?"pressed":"released", 
+                  (priv->button[number].pressed == 0)?"released":"pressed", 
                   priv->button[number].mapping));
     switch (priv->button[number].mapping) {
       case MAPPING_BUTTON:
@@ -156,15 +151,19 @@ xf86JstkRead(LocalDevicePtr local)
               (priv->button[i].mapping == MAPPING_SPEED_MULTIPLY))
             priv->amplify *= ((float)(priv->button[i].value)) / 1000.0;
         }
+        DBG(2, ErrorF("Global amplify is now %.3f\n", priv->amplify));
+
         break;
       case MAPPING_DISABLE:
         if (priv->button[number].pressed == 1) {
           if ((priv->mouse_enabled == TRUE) || (priv->keys_enabled == TRUE)) {
             priv->mouse_enabled = FALSE;
             priv->keys_enabled = FALSE;
+            DBG(2, ErrorF("All events disabled\n"));
           } else {
             priv->mouse_enabled = TRUE;
             priv->keys_enabled = TRUE;
+            DBG(2, ErrorF("All events enabled\n"));
           }
         }
         break;
@@ -172,12 +171,14 @@ xf86JstkRead(LocalDevicePtr local)
         if (priv->button[number].pressed == 1) {
           if (priv->mouse_enabled == TRUE) priv->mouse_enabled = FALSE;
             else priv->mouse_enabled = TRUE;
+          DBG(2, ErrorF("Mouse events %s\n", priv->mouse_enabled?"enabled":"disabled"));
         }
         break;
       case MAPPING_DISABLE_KEYS:
         if (priv->button[number].pressed == 1) {
           if (priv->keys_enabled == TRUE) priv->keys_enabled = FALSE;
             else priv->keys_enabled = TRUE;
+          DBG(2, ErrorF("Keyboard events %s\n", priv->mouse_enabled?"enabled":"disabled"));
         }
         break;
 
@@ -190,8 +191,9 @@ xf86JstkRead(LocalDevicePtr local)
   if ((event == EVENT_AXIS) && 
       (priv->axis[number].mapping != MAPPING_NONE) &&
       (priv->axis[number].type != TYPE_NONE)) {
-    DBG(5, ErrorF("Axis %d moved to %d. Mapping: %d\n", number, 
-                  priv->axis[number].value, priv->axis[number].mapping));
+    DBG(5, ErrorF("Axis %d moved to %d. Type: %d, Mapping: %d\n", number, 
+                  priv->axis[number].value, priv->axis[number].type,
+                  priv->axis[number].mapping));
     switch (priv->axis[number].type) {
       case TYPE_BYVALUE:
       case TYPE_ACCELERATED:
@@ -283,7 +285,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
       break; 
 
     case DEVICE_ON:
-      i = xf86JoystickOn(priv, FALSE);
+      i = jstkOpenDevice(priv, FALSE);
 
       DBG(1, ErrorF("xf86JstkProc  what=ON name=%s\n", priv->device));
 
@@ -310,7 +312,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
       if (local->fd >= 0)
         RemoveEnabledDevice(local->fd);
       local->fd = -1;
-      xf86JoystickOff(priv);
+      jstkCloseDevice(priv);
       pJstk->public.on = FALSE;
     break;
 
@@ -408,10 +410,10 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
       priv->axis[i].value     = 0;
-      priv->axis[i].deadzone  = 10;
+      priv->axis[i].deadzone  = 1000;
       priv->axis[i].type      = TYPE_BYVALUE;
       priv->axis[i].mapping   = MAPPING_NONE;
-      priv->axis[i].temp      = 1.0;
+      priv->axis[i].temp      = 0.0;
       priv->axis[i].amplify   = 1.0;
     }
     for (i=0; i<MAXBUTTONS; i++) {
@@ -456,10 +458,11 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 
     xf86Msg(X_CONFIG, "%s: device is %s\n", local->name, priv->device);
-    if (xf86JoystickOn(priv, TRUE) == -1) {
+    /* Open the device once, see if it works and get information */
+    if (jstkOpenDevice(priv, TRUE) == -1) {
 	goto SetupProc_fail;
     }
-    xf86JoystickOff(priv);
+    jstkCloseDevice(priv);
 
 
     xf86ProcessCommonOptions(local, local->options);
@@ -502,8 +505,8 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
                 local->name, i+1, s);
         jstkParseAxisOption(s, &priv->axis[i], local->name);
       }
-      DBG(1, ErrorF("Axis %d type is %d, mapped to %d\n", i+1, 
-                    priv->axis[i].type, priv->axis[i].mapping));
+      DBG(1, ErrorF("Axis %d type is %d, mapped to %d, amplify=%.3f\n", i+1, 
+                    priv->axis[i].type, priv->axis[i].mapping,priv->axis[i].amplify));
     }
 
     /* return the LocalDevice */
@@ -580,4 +583,5 @@ _X_EXPORT XF86ModuleData joystickModuleData = {
     xf86JstkPlug,
     xf86JstkUnplug
 };
+
 #endif /* XFree86LOADER */

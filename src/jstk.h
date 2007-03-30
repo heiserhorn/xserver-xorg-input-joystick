@@ -39,6 +39,10 @@
 
 #define DEBUG 1
 
+/**
+ * DEBUG Makros
+ **/
+
 #if DEBUG
 extern int      debug_level;
 #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
@@ -48,10 +52,8 @@ extern int      debug_level;
 
 
 
-
-
 #define MAXBUTTONS 32
-#define MAXAXES MAXBUTTONS
+#define MAXAXES 32
 #define MAXKEYSPERBUTTON 4
 
 enum JOYSTICKTYPE {

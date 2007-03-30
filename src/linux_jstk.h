@@ -25,9 +25,9 @@
 #define _LINUX_JSTK_H_INCLUDED_
 
 
-int  xf86JoystickOn(JoystickDevPtr joystick, int init);
-void xf86JoystickOff(JoystickDevPtr joystick);
-int  xf86ReadJoystickData(JoystickDevPtr joystick, 
-                          enum JOYSTICKEVENT *event, int *number);
+int  jstkOpenDevice(JoystickDevPtr joystick, int init);
+void jstkCloseDevice(JoystickDevPtr joystick);
+int  jstkReadData(JoystickDevPtr joystick,
+                  enum JOYSTICKEVENT *event, int *number);
 
 #endif
