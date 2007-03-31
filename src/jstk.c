@@ -26,6 +26,7 @@
 #include "config.h"
 #endif
 
+#include <stdio.h>
 #include <xf86Version.h>
 
 #include <misc.h>

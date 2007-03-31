@@ -21,6 +21,8 @@
  *
  */
 
+#include <stdio.h>
+#include <string.h>
 #include <xf86.h>
 #include "jstk.h"
 #include "jstk_options.h"

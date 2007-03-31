@@ -66,7 +66,7 @@ jstkAxisTimer(OsTimerPtr        timer,
       scale = (32768.0/(float)(32768 - axis->deadzone));
 
       p1 = ((pow((abs((float)axis->value)-(float)axis->deadzone)*
-             scale/1700.0, 3.5))+100.0)*
+             scale/1700.0, 3.4))+100.0)*
             ((float)NEXTTIMER/40000.0);
       p2 = ((pow((abs((float)axis->value)-(float)axis->deadzone)*
              scale/1000.0, 2.5))+200.0)*
@@ -74,7 +74,7 @@ jstkAxisTimer(OsTimerPtr        timer,
 
 
     } else if (axis->type == TYPE_ACCELERATED) {
-      if (axis->temp < 120.0) axis->temp *= 1.15;
+      if (axis->temp < 100.0) axis->temp *= 1.15;
 
       p1 = (axis->temp - 0.1) * (float)NEXTTIMER / 180.0;
       p2 = p1 / 8.0;
@@ -108,7 +108,7 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p1;
     float p2;
 
-    if (priv->button[i].temp < 120.0) priv->button[i].temp *= 1.15;
+    if (priv->button[i].temp < 100.0) priv->button[i].temp *= 1.15;
     p1 = (priv->button[i].temp - 0.1) * (float)NEXTTIMER / 180.0 * ((float)priv->button[i].value)/1000.0;
     p1 *= priv->amplify;
     p2 = p1 / 8.0;
