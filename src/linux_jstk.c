@@ -28,9 +28,11 @@
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <linux/joystick.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+#include <linux/joystick.h>
 
 #include <xf86.h>
 #include <xf86_OSproc.h>

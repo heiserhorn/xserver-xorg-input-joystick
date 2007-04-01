@@ -21,7 +21,6 @@
  *
  */
 
-// #include <xf86.h>
 
 
 #ifdef HAVE_CONFIG_H
@@ -31,6 +30,9 @@
 #include <xf86Xinput.h>
 #include <xf86_OSproc.h>
 #include <math.h>
+#include <stdlib.h>
+/* #include <xf86.h> */
+
 #include "jstk.h"
 #include "jstk_axis.h"
 
@@ -206,12 +208,13 @@ jstkAxisTimer(OsTimerPtr        timer,
  */
 void
 jstkStartAxisTimer(LocalDevicePtr device, int number) {
+  int pixel;
   JoystickDevPtr priv = device->private;
 
   if (priv->timerrunning) return;
   priv->timerrunning = TRUE;
 
-  int pixel = 1;
+  pixel = 1;
   if (priv->axis[number].value < 0) pixel = -1;
   switch (priv->axis[number].mapping) {
     case MAPPING_X:
@@ -251,12 +254,13 @@ jstkStartAxisTimer(LocalDevicePtr device, int number) {
 
 void
 jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
+  int pixel;
   JoystickDevPtr priv = device->private;
 
   if (priv->timerrunning) return;
   priv->timerrunning = TRUE;
 
-  int pixel = 1;
+  pixel = 1;
   if (priv->button[number].value < 0) pixel = -1;
   switch (priv->button[number].mapping) {
     case MAPPING_X:

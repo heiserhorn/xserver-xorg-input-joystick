@@ -22,7 +22,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <xf86.h>
 #include "jstk.h"
 #include "jstk_options.h"
