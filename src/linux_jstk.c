@@ -41,9 +41,10 @@
 
 /***********************************************************************
  *
- * xf86JoystickOn --
+ * jstkOpenDevice --
  *
  * Open and initialize a joystick device
+ * Returns the filedescriptor, or -1 in case of error
  *
  ***********************************************************************
  */
@@ -52,6 +53,7 @@ int
 jstkOpenDevice(JoystickDevPtr joystick,int init)
 {
   char joy_name[128];
+  int driver_version;
 
   if ((joystick->fd = open(joystick->device, O_RDWR | O_NDELAY, 0)) < 0) {
     xf86Msg(X_ERROR, "Cannot open joystick '%s' (%s)\n", joystick->device,
@@ -59,20 +61,33 @@ jstkOpenDevice(JoystickDevPtr joystick,int init)
     return -1;
   }
 
-/*  ioctl(fd, JSIOCGVERSION, &version);*/
-  if (ioctl(joystick->fd, JSIOCGAXES, &joystick->axes)==-1) {
-    xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed (%s)\n", joystick->device,
+  if (ioctl(joystick->fd, JSIOCGVERSION, &driver_version) == -1) {
+    xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     return -1;
   }
-  if (ioctl(joystick->fd, JSIOCGBUTTONS, &joystick->buttons)==-1) {
-    xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed (%s)\n", joystick->device,
+  if ((driver_version >> 16) < 2) {
+    xf86Msg(X_WARNING, "Joystick: Driver version is only %d.%d.%d\n",
+            driver_version >> 16,
+            (driver_version >> 8) & 0xff,
+            driver_version & 0xff);
+  }
+
+  if (ioctl(joystick->fd, JSIOCGAXES, &joystick->axes) == -1) {
+    xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     return -1;
   }
+  if (ioctl(joystick->fd, JSIOCGBUTTONS, &joystick->buttons) == -1) {
+    xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
+            strerror(errno));
+    return -1;
+  }
+
+  /* Only show these information once, not every time the device is opened */
   if (init != 0) {
-    if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name)==-1) {
-      xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed (%s)\n", 
+    if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name) == -1) {
+      xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
               joystick->device, strerror(errno));
       return -1;
     }
@@ -84,9 +99,10 @@ jstkOpenDevice(JoystickDevPtr joystick,int init)
   return joystick->fd;
 }
 
+
 /***********************************************************************
  *
- * xf86JoystickOff --
+ * jstkCloseDevice --
  *
  * close the handle.
  *
@@ -97,7 +113,7 @@ void
 jstkCloseDevice(JoystickDevPtr joystick)
 {
   if ((joystick->fd >= 0)) {
-    close(joystick->fd);
+    xf86CloseSerial(joystick->fd);
     joystick->fd = -1;
   }
 }
@@ -105,11 +121,12 @@ jstkCloseDevice(JoystickDevPtr joystick)
 
 /***********************************************************************
  *
- * xf86ReadJoystickData --
+ * jstkReadData --
  *
  * Reads data from fd and stores it in the JoystickDevRec struct
  * fills in the type of event and the number of the button/axis
- * return 1 if success, 0 otherwise
+ * return 1 if success, 0 otherwise. Success does not neccessarily
+ * mean that there is a new event waiting.
  *
  ***********************************************************************
  */
@@ -121,37 +138,43 @@ jstkReadData(JoystickDevPtr joystick,
 {
   struct js_event js;
   if (event != NULL) *event = EVENT_NONE;
-  if (xf86ReadSerial(joystick->fd, 
-                     &js, 
+  if (xf86ReadSerial(joystick->fd,
+                     &js,
                      sizeof(struct js_event)
       ) != sizeof(struct js_event))
     return 0;
 
-  if ((js.type & JS_EVENT_INIT) == JS_EVENT_INIT) return 1;
   switch(js.type & ~JS_EVENT_INIT) {
     case JS_EVENT_BUTTON:
-      if (js.number<MAXBUTTONS)
+      if (js.number < MAXBUTTONS)
       {
-        joystick->button[js.number].pressed=js.value;
+        joystick->button[js.number].pressed = js.value;
         if (event != NULL) *event = EVENT_BUTTON;
         if (number != NULL) *number = js.number;
       }
       break;
     case JS_EVENT_AXIS:
-      if (js.number<MAXAXES) {
-        if (abs(js.value)<joystick->axis[js.number].deadzone) {
+      if (js.number < MAXAXES) {
+        if (abs(js.value) < joystick->axis[js.number].deadzone) {
+          /* We only want one event when in deadzone */
           if (joystick->axis[js.number].value != 0) {
             joystick->axis[js.number].value = 0;
             if (event != NULL) *event = EVENT_AXIS;
             if (number != NULL) *number = js.number;
           }
         }else{
-          joystick->axis[js.number].value=js.value;
+          joystick->axis[js.number].value = js.value;
           if (event != NULL) *event = EVENT_AXIS;
           if (number != NULL) *number = js.number;
         }
       }
       break;
+  }
+
+  /* If it is an JS_EVENT_INIT just save the state, but don't report
+     as an event */
+  if ((js.type & JS_EVENT_INIT) == JS_EVENT_INIT) {
+    if (event != NULL) *event = EVENT_NONE;
   }
   return 1;
 }

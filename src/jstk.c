@@ -49,21 +49,21 @@
 
 
 
-int      debug_level = 0;
+int debug_level = 0;
 
 
 /*
  ***************************************************************************
  *
- * xf86JstkConvert --
- *	Convert valuators to X and Y.
+ * jstkConvertProc --
+ *
+ * Convert valuators to X and Y.
  *
  ***************************************************************************
  */
-/* FIXME: What is this for? */
 
 static Bool
-xf86JstkConvert(LocalDevicePtr	local,
+jstkConvertProc(LocalDevicePtr	local,
 		int		first,
 		int		num,
 		int		v0,
@@ -87,12 +87,18 @@ xf86JstkConvert(LocalDevicePtr	local,
 
 
 /*
- * xf86JstkRead --
- *      This is called, when there is data to read at the device
+ ***************************************************************************
+ *
+ * jstkReadProc --
+ *
+ * Called when data is available to read from the device
+ * Reads the data and process the events
+ *
+ ***************************************************************************
  */
 
 static void
-xf86JstkRead(LocalDevicePtr local)
+jstkReadProc(LocalDevicePtr local)
 {
   enum JOYSTICKEVENT event;
   int number;
@@ -111,8 +117,8 @@ xf86JstkRead(LocalDevicePtr local)
   /* A button's status changed */
   if (event == EVENT_BUTTON) {
     DBG(4, ErrorF("Button %d %s. Mapping: %d\n", number, 
-                  (priv->button[number].pressed == 0)?"released":"pressed", 
-                  priv->button[number].mapping));
+                 (priv->button[number].pressed == 0) ? "released" : "pressed", 
+                 priv->button[number].mapping));
     switch (priv->button[number].mapping) {
       case MAPPING_BUTTON:
         if (priv->mouse_enabled == TRUE) {
@@ -125,9 +131,9 @@ xf86JstkRead(LocalDevicePtr local)
       case MAPPING_Y:
       case MAPPING_ZX:
       case MAPPING_ZY:
-        if (priv->button[number].pressed == 0)
-          priv->button[number].temp = 1.0;
-        if (priv->mouse_enabled == TRUE)
+        if (priv->button[number].pressed == 0) /* If button was released */
+          priv->button[number].temp = 1.0;     /* Reset speed counter */
+        else if (priv->mouse_enabled == TRUE)
           jstkStartButtonAxisTimer(local, number);
         break;
 
@@ -138,6 +144,7 @@ xf86JstkRead(LocalDevicePtr local)
           if (priv->button[number].pressed == 1) 
             k = priv->button[number].keys[i];
             else k = priv->button[number].keys[MAXKEYSPERBUTTON - i - 1];
+
           if (k != 0) {
             DBG(2, ErrorF("Generating key %s event with keycode %d\n", 
               (priv->button[number].pressed)?"press":"release", k));
@@ -145,16 +152,19 @@ xf86JstkRead(LocalDevicePtr local)
           }
         }
         break;
+
       case MAPPING_SPEED_MULTIPLY:
         priv->amplify = 1.0;
+        /* Calculate new global amplify value by multiplying them all */
         for (i=0; i<MAXAXES; i++) {
           if ((priv->button[i].pressed) && 
               (priv->button[i].mapping == MAPPING_SPEED_MULTIPLY))
-            priv->amplify *= ((float)(priv->button[i].value)) / 1000.0;
+            priv->amplify *= ((float)priv->button[i].value) / 1000.0f;
         }
         DBG(2, ErrorF("Global amplify is now %.3f\n", priv->amplify));
 
         break;
+
       case MAPPING_DISABLE:
         if (priv->button[number].pressed == 1) {
           if ((priv->mouse_enabled == TRUE) || (priv->keys_enabled == TRUE)) {
@@ -172,14 +182,16 @@ xf86JstkRead(LocalDevicePtr local)
         if (priv->button[number].pressed == 1) {
           if (priv->mouse_enabled == TRUE) priv->mouse_enabled = FALSE;
             else priv->mouse_enabled = TRUE;
-          DBG(2, ErrorF("Mouse events %s\n", priv->mouse_enabled?"enabled":"disabled"));
+          DBG(2, ErrorF("Mouse events %s\n", 
+              priv->mouse_enabled ? "enabled" : "disabled"));
         }
         break;
       case MAPPING_DISABLE_KEYS:
         if (priv->button[number].pressed == 1) {
           if (priv->keys_enabled == TRUE) priv->keys_enabled = FALSE;
             else priv->keys_enabled = TRUE;
-          DBG(2, ErrorF("Keyboard events %s\n", priv->mouse_enabled?"enabled":"disabled"));
+          DBG(2, ErrorF("Keyboard events %s\n", 
+              priv->mouse_enabled ? "enabled" : "disabled"));
         }
         break;
 
@@ -192,18 +204,21 @@ xf86JstkRead(LocalDevicePtr local)
   if ((event == EVENT_AXIS) && 
       (priv->axis[number].mapping != MAPPING_NONE) &&
       (priv->axis[number].type != TYPE_NONE)) {
-    DBG(5, ErrorF("Axis %d moved to %d. Type: %d, Mapping: %d\n", number, 
-                  priv->axis[number].value, priv->axis[number].type,
+    DBG(5, ErrorF("Axis %d moved to %d. Type: %d, Mapping: %d\n", number,
+                  priv->axis[number].value,
+                  priv->axis[number].type,
                   priv->axis[number].mapping));
     switch (priv->axis[number].type) {
       case TYPE_BYVALUE:
       case TYPE_ACCELERATED:
-        if (priv->axis[number].value == 0)
-          priv->axis[number].temp = 1.0;
+        if (priv->axis[number].value == 0) /* When axis was released */
+          priv->axis[number].temp = 1.0;   /* Release speed counter */
+
         if (priv->mouse_enabled == TRUE)
           jstkStartAxisTimer(local, number);
         break;
-      case TYPE_ABSOLUTE: /* FIXME: add range */
+
+      case TYPE_ABSOLUTE:
         if (priv->mouse_enabled == TRUE)
           jstkHandleAbsoluteAxis(local, number);
         break;
@@ -217,25 +232,31 @@ xf86JstkRead(LocalDevicePtr local)
 
 
 /*
- * xf86JstkProc --
- *      Handle the initialization, etc. of a joystick
+ ***************************************************************************
+ *
+ * jstkDeviceControlProc --
+ *
+ * Handles the initialization, etc. of a joystick
+ *
+ ***************************************************************************
  */
+
 static Bool
-xf86JstkProc(DeviceIntPtr       pJstk,
-	     int                what)
+jstkDeviceControlProc(DeviceIntPtr       pJstk,
+                      int                what)
 {
   int i;
-  CARD8                 map[MAXBUTTONS];
-  LocalDevicePtr        local = (LocalDevicePtr)pJstk->public.devicePrivate;
-  JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(pJstk);
+  CARD8            map[MAXBUTTONS];
+  LocalDevicePtr   local = (LocalDevicePtr)pJstk->public.devicePrivate;
+  JoystickDevPtr   priv  = (JoystickDevPtr)XI_PRIVATE(pJstk);
 
   switch (what)
     {
-    case DEVICE_INIT: 
-      DBG(1, ErrorF("xf86JstkProc what=INIT\n"));
+    case DEVICE_INIT:
+      DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
       for (i=1; i<MAXBUTTONS; i++) map[i] = i;
 
-      if (InitButtonClassDeviceStruct(pJstk,priv->buttons,map) == FALSE) {
+      if (InitButtonClassDeviceStruct(pJstk, priv->buttons, map) == FALSE) {
         ErrorF("unable to allocate Button class device\n");
         return !Success;
       }
@@ -245,64 +266,50 @@ xf86JstkProc(DeviceIntPtr       pJstk,
         return !Success;
       }
 
-//       if (InitPtrFeedbackClassDeviceStruct(pJstk,
-//                                            xf86JstkControlProc) == FALSE)
-//         {
-//           ErrorF("unable to init ptr feedback\n");
-//           return !Success;
-//         }
-
       if (InitValuatorClassDeviceStruct(pJstk, 
-                                    2,
-                                    xf86GetMotionEvents, 
-                                    local->history_size,
-                                    Relative) /* relative or absolute */
-          == FALSE) 
-        {
-          ErrorF("unable to allocate Valuator class device\n"); 
-          return !Success;
-        }
-      else 
-        {
-	    InitValuatorAxisStruct(pJstk,
-				   0,
-				   0, /* min val */
-				   screenInfo.screens[0]->width, /* max val */
-				   1, /* resolution */
-				   0, /* min_res */
-				   1); /* max_res */
-	    InitValuatorAxisStruct(pJstk,
-				   1,
-				   0, /* min val */
-				   screenInfo.screens[0]->height, /* max val */
-				   1, /* resolution */
-				   0, /* min_res */
-				   1); /* max_res */
-	    
-	  /* allocate the motion history buffer if needed */
-	  xf86MotionHistoryAllocate(local);
-        }
+                                        2,
+                                        xf86GetMotionEvents, 
+                                        local->history_size,
+                                        Relative) == FALSE) {
+        ErrorF("unable to allocate Valuator class device\n"); 
+        return !Success;
+      } else {
+        InitValuatorAxisStruct(pJstk,
+                               0, /* valuator num */
+                               0, /* min val */
+                               screenInfo.screens[0]->width, /* max val */
+                               1, /* resolution */
+                               0, /* min_res */
+                               1); /* max_res */
+        InitValuatorAxisStruct(pJstk,
+                               1, /* valuator num */
+                               0, /* min val */
+                               screenInfo.screens[0]->height, /* max val */
+                               1, /* resolution */
+                               0, /* min_res */
+                               1); /* max_res */
 
+        /* allocate the motion history buffer if needed */
+        xf86MotionHistoryAllocate(local);
+      }
       break; 
 
     case DEVICE_ON:
       i = jstkOpenDevice(priv, FALSE);
 
-      DBG(1, ErrorF("xf86JstkProc  what=ON name=%s\n", priv->device));
+      DBG(1, ErrorF("jstkDeviceControlProc  what=ON name=%s\n", priv->device));
 
       if (i != 0)
       {
         pJstk->public.on = TRUE;
         local->fd = priv->fd;
         AddEnabledDevice(local->fd);
-      }
-      else
-        return !Success;
-    break;
+      } else return !Success;
+      break;
 
     case DEVICE_OFF:
     case DEVICE_CLOSE:
-      DBG(1, ErrorF("xf86JstkProc  what=%s\n", 
+      DBG(1, ErrorF("jstkDeviceControlProc  what=%s\n", 
         (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 
       if (priv->timerrunning == TRUE) {
@@ -315,7 +322,7 @@ xf86JstkProc(DeviceIntPtr       pJstk,
       local->fd = -1;
       jstkCloseDevice(priv);
       pJstk->public.on = FALSE;
-    break;
+      break;
 
     default:
       ErrorF("unsupported mode=%d\n", what);
@@ -336,77 +343,63 @@ xf86JstkProc(DeviceIntPtr       pJstk,
  */
 #ifdef XFree86LOADER
 
-/*
- * xf86JstckUnplug --
- *
- * called when the module subsection is found in XF86Config
- */
-static void
-xf86JstkUnplug(pointer	p)
-{
-/*    LocalDevicePtr local = (LocalDevicePtr) p;
-    JoystickDevPtr priv = (JoystickDevPtr) local->private;
-    
-    
-    xf86JstkProc(local->dev, DEVICE_OFF);
-    
-    xfree (priv);
-    xfree (local);*/
-    DBG(1, ErrorF("xf86JstkUnplug\n"));
-}
 
 /*
- * xf86JstckPlug --
+ ***************************************************************************
  *
- * called when the module subsection is found in XF86Config
+ * jstkCorePreInit --
+ *
+ * Called when a device will be instantiated
+ *
+ ***************************************************************************
  */
 
 static InputInfoPtr
-xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
+jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 {
-    LocalDevicePtr	local = NULL;
-    JoystickDevPtr	priv = NULL;
+    LocalDevicePtr      local = NULL;
+    JoystickDevPtr      priv = NULL;
     char                *s;
     int                 i;
 
-    DBG(1, ErrorF("xf86JstkCorePreInit\n"));
+    DBG(0, ErrorF("jstkCorePreInit\n"));
     local = xf86AllocateInput(drv, 0);
     if (!local) {
-        goto SetupProc_fail;
+      goto SetupProc_fail;
     }
 
     local->private = (JoystickDevPtr)xalloc(sizeof(JoystickDevRec));
-    priv = (JoystickDevPtr) local->private;
+    priv = (JoystickDevPtr)local->private;
 
-    local->name = dev->identifier;
-    local->flags = XI86_POINTER_CAPABLE;
+    local->name   = dev->identifier;
+    local->flags  = XI86_POINTER_CAPABLE;
     local->flags |= XI86_KEYBOARD_CAPABLE;
     local->flags |= XI86_SEND_DRAG_EVENTS;
-    local->device_control = xf86JstkProc;
-    local->read_input = xf86JstkRead;
+    local->device_control = jstkDeviceControlProc;
+    local->read_input = jstkReadProc;
     local->close_proc = NULL;
     local->control_proc = NULL;
     local->switch_mode = NULL;
-    local->conversion_proc = xf86JstkConvert;
+    local->conversion_proc = jstkConvertProc;
     local->fd = -1;
     local->dev = NULL;
     local->private = priv;
     local->type_name = "JOYSTICK";
-    local->history_size  = 0;
+    local->history_size = 0;
     local->always_core_feedback = 0;
     local->conf_idev = dev;
 
     priv->fd = -1;
     priv->device = NULL;
-    priv->x  = 0.0;
-    priv->y  = 0.0;
-    priv->zx = 0.0;
-    priv->zy = 0.0;
+    priv->x  = 0.0f;
+    priv->y  = 0.0f;
+    priv->zx = 0.0f;
+    priv->zy = 0.0f;
     priv->timer = NULL;
     priv->timerrunning = FALSE;
     priv->mouse_enabled = TRUE;
     priv->keys_enabled = TRUE;
-    priv->amplify = 1.0;
+    priv->amplify = 1.0f;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
@@ -414,14 +407,14 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
       priv->axis[i].deadzone  = 1000;
       priv->axis[i].type      = TYPE_BYVALUE;
       priv->axis[i].mapping   = MAPPING_NONE;
-      priv->axis[i].temp      = 0.0;
-      priv->axis[i].amplify   = 1.0;
+      priv->axis[i].temp      = 0.0f;
+      priv->axis[i].amplify   = 1.0f;
     }
     for (i=0; i<MAXBUTTONS; i++) {
       priv->button[i].pressed = 0;
       priv->button[i].value   = 0;
       priv->button[i].mapping = MAPPING_NONE;
-      priv->button[i].temp    = 1.0;
+      priv->button[i].temp    = 1.0f;
     }
 
     /* First three joystick buttons generate mouse clicks */
@@ -432,19 +425,11 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->button[2].mapping = MAPPING_BUTTON;
     priv->button[2].value   = 3;
 
-    /* Set default mappings */
+    /* Two axes by default */
     priv->axis[0].type      = TYPE_BYVALUE;
     priv->axis[0].mapping   = MAPPING_X;
     priv->axis[1].type      = TYPE_BYVALUE;
     priv->axis[1].mapping   = MAPPING_Y;
-/*    priv->axis[2].type      = TYPE_BYVALUE;
-    priv->axis[2].mapping   = MAPPING_ZX;
-    priv->axis[3].type      = TYPE_BYVALUE;
-    priv->axis[3].mapping   = MAPPING_ZY;
-    priv->axis[4].type      = TYPE_ACCELERATED;
-    priv->axis[4].mapping   = MAPPING_X;
-    priv->axis[5].type      = TYPE_ACCELERATED;
-    priv->axis[5].mapping   = MAPPING_Y; */
 
 
     xf86CollectInputOptions(local, NULL, NULL);
@@ -454,14 +439,14 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->device = xf86CheckStrOption(dev->commonOptions, "Device", NULL);
 
     if (!priv->device) {
-	xf86Msg (X_ERROR, "%s: No Device specified.\n", local->name);
-	goto SetupProc_fail;
+      xf86Msg (X_ERROR, "%s: No Device specified.\n", local->name);
+      goto SetupProc_fail;
     }
 
     xf86Msg(X_CONFIG, "%s: device is %s\n", local->name, priv->device);
     /* Open the device once, see if it works and get information */
     if (jstkOpenDevice(priv, TRUE) == -1) {
-	goto SetupProc_fail;
+      goto SetupProc_fail;
     }
     jstkCloseDevice(priv);
 
@@ -472,12 +457,12 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     debug_level = xf86SetIntOption(dev->commonOptions, "DebugLevel", 0);
     if (debug_level > 0) {
       xf86Msg(X_CONFIG, "%s: debug level set to %d\n", 
-        local->name, debug_level);
+              local->name, debug_level);
     }
 #else
     if (xf86SetIntOption(dev->commonOptions, "DebugLevel", 0) != 0) {
       xf86Msg(X_WARNING, "%s: DebugLevel: Compiled without Debug support!\n", 
-        local->name);
+              local->name);
     }
 #endif
 
@@ -493,7 +478,7 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         jstkParseButtonOption(s, priv, i, local->name);
       }
       DBG(1, ErrorF("Button %d mapped to %d (value=%d)\n", i+1, 
-                    priv->button[i].mapping,priv->button[i].value));
+                    priv->button[i].mapping, priv->button[i].value));
     }
 
     /* Process button mapping options */
@@ -507,7 +492,9 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         jstkParseAxisOption(s, &priv->axis[i], local->name);
       }
       DBG(1, ErrorF("Axis %d type is %d, mapped to %d, amplify=%.3f\n", i+1, 
-                    priv->axis[i].type, priv->axis[i].mapping,priv->axis[i].amplify));
+                    priv->axis[i].type,
+                    priv->axis[i].mapping,
+                    priv->axis[i].amplify));
     }
 
     /* return the LocalDevice */
@@ -523,48 +510,100 @@ xf86JstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 }
 
 
+
 /*
- * xf86JstkCoreUnInit --
+ ***************************************************************************
  *
- * called when the driver is unloaded.
+ * jstkCoreUnInit --
+ *
+ * Called when a device is unplugged and needs to be removed
+ *
+ ***************************************************************************
  */
+
 static void
-xf86JstkCoreUnInit(InputDriverPtr    drv,
-                   LocalDevicePtr    local,
-                   int               flags)
+jstkCoreUnInit(InputDriverPtr    drv,
+               LocalDevicePtr    local,
+               int               flags)
 {
     JoystickDevPtr device = (JoystickDevPtr) local->private;
 
-    DBG(1, ErrorF("xf86JstkCoreUnInit\n"));
+    DBG(0, ErrorF("jstkCoreUnInit\n"));
 
-    xf86JstkProc(local->dev, DEVICE_OFF);
+    jstkDeviceControlProc(local->dev, DEVICE_OFF);
 
     xfree (device);
     xf86DeleteInput(local, 0);
 }
 
+
+
+
 _X_EXPORT InputDriverRec JOYSTICK = {
     1,
     "joystick",
     NULL,
-    xf86JstkCorePreInit,
-    xf86JstkCoreUnInit,
+    jstkCorePreInit,
+    jstkCoreUnInit,
     NULL,
     0
 };
 
+
+/*
+ ***************************************************************************
+ *
+ * jstkPlug --
+ *
+ * Called when the driver is loaded
+ *
+ ***************************************************************************
+ */
+
 static pointer
-xf86JstkPlug(pointer	module,
-             pointer	options,
-             int	*errmaj,
-             int	*errmin)
+jstkDriverPlug(pointer  module,
+               pointer  options,
+               int      *errmaj,
+               int      *errmin)
 {
-    DBG(1, ErrorF("xf86JstkPlug\n"));
+    DBG(0, ErrorF("jstkDriverPlug\n"));
     xf86AddInputDriver(&JOYSTICK, module, 0);
     return module;
 }
 
-static XF86ModuleVersionInfo xf86JstkVersionRec =
+
+/*
+ ***************************************************************************
+ *
+ * jstkDriverUnplug --
+ *
+ * Called when the driver is unloaded
+ * NOTICE: When does this actually happen? What needs to be cleaned up?
+ *
+ ***************************************************************************
+ */
+
+static void
+jstkDriverUnplug(pointer p)
+{
+/*    LocalDevicePtr local = (LocalDevicePtr) p;
+    JoystickDevPtr priv = (JoystickDevPtr) local->private;
+    jstkDeviceControlProc(local->dev, DEVICE_OFF);
+    xfree (priv);
+    xfree (local);*/
+    DBG(0, ErrorF("jstkDriverUnplug\n"));
+}
+
+
+
+/*
+ ***************************************************************************
+ *
+ * Module information for X.Org
+ *
+ ***************************************************************************
+ */
+static XF86ModuleVersionInfo jstkVersionRec =
 {
 	"joystick",
 	MODULEVENDORSTRING,
@@ -579,10 +618,18 @@ static XF86ModuleVersionInfo xf86JstkVersionRec =
 				/* a tool */
 };
 
+
+/*
+ ***************************************************************************
+ *
+ * Exported module Data for X.Org
+ *
+ ***************************************************************************
+ */
 _X_EXPORT XF86ModuleData joystickModuleData = {
-    &xf86JstkVersionRec,
-    xf86JstkPlug,
-    xf86JstkUnplug
+    &jstkVersionRec,
+    jstkDriverPlug,
+    jstkDriverUnplug
 };
 
 #endif /* XFree86LOADER */

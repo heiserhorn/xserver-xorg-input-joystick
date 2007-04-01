@@ -28,20 +28,26 @@
 #include "jstk_options.h"
 
 
-/**
+
+/***********************************************************************
+ *
+ * jstkGetAxisMapping --
+ *
  * Parses strings like:
  * x, +y, -zx, 3x, 3.5zy, -8x 
  * And returns the mapping and stores the optional factor
  * In the float referenced by 'value'
- **/
+ *
+ ***********************************************************************
+ */
 
 static enum JOYSTICKMAPPING
 jstkGetAxisMapping(float *value, const char* param, const char* name) {
   if (sscanf(param, "%f", value)==0) {
-    if (param[0]=='-')
+    if (param[0] == '-')
       *value *= -1.0;
   }
-  if (strstr(param, "zx") != NULL)
+if (strstr(param, "zx") != NULL)
     return MAPPING_ZX;
   else if (strstr(param, "zy") != NULL)
     return MAPPING_ZY;
@@ -53,14 +59,20 @@ jstkGetAxisMapping(float *value, const char* param, const char* name) {
   return MAPPING_NONE;
 }
 
-/**
+
+/***********************************************************************
+ *
+ * jstkParseButtonOption --
+ *
  * Interpretes one ButtonMappingX option, given in 'org'
  * stores the result in *button
  * name is the name of the InputDevice
- **/
+ *
+ ***********************************************************************
+ */
 
 void
-jstkParseButtonOption(const char* org, 
+jstkParseButtonOption(const char* org,
                       JoystickDevPtr priv,
                       int number,
                       const char* name) {
@@ -72,8 +84,8 @@ jstkParseButtonOption(const char* org,
   struct BUTTON* button;
 
   button = &priv->button[number];
-  param = xstrdup(org);
 
+  param = xstrdup(org);
   for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
 
   if (strcmp(param, "none") == 0) {
@@ -91,7 +103,7 @@ jstkParseButtonOption(const char* org,
     button->mapping = MAPPING_SPEED_MULTIPLY;
     button->value = (int)(fvalue*1000.0);
   } else if (sscanf(param, "key=%30s", p) == 1) {
-    char *current,*next;
+    char *current, *next;
     current = p;
     button->mapping = MAPPING_KEY;
     for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
@@ -117,11 +129,16 @@ jstkParseButtonOption(const char* org,
 }
 
 
-/**
+/***********************************************************************
+ *
+ * jstkParseAxisOption --
+ *
  * Interpretes one AxisMappingX option, given in 'org'
  * stores the result in *axis
  * name is the name of the InputDevice
- **/
+ *
+ ***********************************************************************
+ */
 
 void
 jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
@@ -153,26 +170,29 @@ jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
                   name, param);
   }
 
-  if ((tmp=strstr(param, "axis=")) != NULL) {
+  if ((tmp = strstr(param, "axis=")) != NULL) {
     if (sscanf(tmp, "axis=%15s", p) == 1) {
-      p[15]='\0';
+      p[15] = '\0';
       fvalue = 1.0;
       axis->mapping = jstkGetAxisMapping(&fvalue, p, name);
-      if ((axis->type == TYPE_ABSOLUTE) && ((fvalue <= 1.1)&&(fvalue >= -1.1))) {
-        if (axis->mapping == MAPPING_X) fvalue *= (int)screenInfo.screens[0]->width;
-        if (axis->mapping == MAPPING_Y) fvalue *= (int)screenInfo.screens[0]->height;
+      if ((axis->type == TYPE_ABSOLUTE) &&
+          ((fvalue <= 1.1)&&(fvalue >= -1.1))) {
+        if (axis->mapping == MAPPING_X)
+          fvalue *= (int)screenInfo.screens[0]->width;
+        if (axis->mapping == MAPPING_Y)
+          fvalue *= (int)screenInfo.screens[0]->height;
       }
       axis->amplify = fvalue;
       if (axis->mapping == MAPPING_NONE)
-        xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
+        xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n",
                 name, p);
-    }else xf86Msg(X_WARNING, "%s: error parsing axis.\n", 
+    }else xf86Msg(X_WARNING, "%s: error parsing axis.\n",
                   name);
   }
 
-  if ((tmp=strstr(param, "deadzone=")) != NULL ) {
+  if ((tmp = strstr(param, "deadzone=")) != NULL ) {
     if (sscanf(tmp, "deadzone=%d", &value) == 1) {
-      value = (value<0)?(-value):value;
+      value = (value < 0) ? (-value) : (value);
       if (value > 30000)
         xf86Msg(X_WARNING, 
           "%s: deadzone of %d seems unreasonable. Ignored.\n", 
@@ -181,6 +201,5 @@ jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
     }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
                   name);
   }
-
   xfree(param);
 }

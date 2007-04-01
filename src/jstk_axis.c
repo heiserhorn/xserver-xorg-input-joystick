@@ -35,7 +35,17 @@
 #include "jstk_axis.h"
 
 
-
+/***********************************************************************
+ *
+ * jstkAxisTimer --
+ *
+ * The timer that will generate PointerMove-events. Checks every axis
+ * and every button for it's mapping.
+ * Return 0, when timer can be stopped, because there is no active
+ * movement
+ *
+ ***********************************************************************
+ */
 static CARD32
 jstkAxisTimer(OsTimerPtr        timer,
               CARD32            atime,
@@ -43,18 +53,18 @@ jstkAxisTimer(OsTimerPtr        timer,
 {
 #define NEXTTIMER 15
   DeviceIntPtr          device = (DeviceIntPtr)arg;
-  JoystickDevPtr        priv = (JoystickDevPtr) XI_PRIVATE(device);
+  JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(device);
 
   int sigstate, i;
   int nexttimer;
   nexttimer = 0;
 
-  sigstate = xf86BlockSIGIO ();
+  sigstate = xf86BlockSIGIO();
 
-  for (i=0; i<MAXAXES; i++) if ((priv->axis[i].value != 0)&&
+  for (i=0; i<MAXAXES; i++) if ((priv->axis[i].value != 0) &&
                                 (priv->axis[i].type != TYPE_NONE)) {
-    float p1 = 0.0;
-    float p2 = 0.0;
+    float p1 = 0.0f;     /* Pixels to move cursor */
+    float p2 = 0.0f;     /* Pixels to scroll */
     float scale;
     struct AXIS *axis;
     axis = &priv->axis[i];
@@ -63,29 +73,33 @@ jstkAxisTimer(OsTimerPtr        timer,
 
     if (priv->axis[i].type == TYPE_BYVALUE) {
       /* Calculate scale value, so we still get a range from 0 to 32768 */
-      scale = (32768.0/(float)(32768 - axis->deadzone));
+      scale = (32768.0f / (float)(32768 - axis->deadzone));
 
-      p1 = ((pow((abs((float)axis->value)-(float)axis->deadzone)*
-             scale/1700.0, 3.4))+100.0)*
-            ((float)NEXTTIMER/40000.0);
-      p2 = ((pow((abs((float)axis->value)-(float)axis->deadzone)*
-             scale/1000.0, 2.5))+200.0)*
-            ((float)NEXTTIMER/200000.0);
+      /* How many pixels should this axis move the cursor */
+      p1 = ((pow((abs((float)axis->value) - (float)axis->deadzone) *
+             scale / 1700.0f, 3.4f)) + 100.0f) *
+            ((float)NEXTTIMER / 40000.0f);
+      /* How many "pixels" should this axis scroll */
+      p2 = ((pow((abs((float)axis->value) - (float)axis->deadzone) *
+             scale / 1000.0f, 2.5f)) + 200.0f) *
+            ((float)NEXTTIMER / 200000.0f);
 
 
     } else if (axis->type == TYPE_ACCELERATED) {
-      if (axis->temp < 100.0) axis->temp *= 1.15;
+      /* Stop to accelerate at a certain speed */
+      if (axis->temp < 100.0f) axis->temp *= 1.15f;
 
-      p1 = (axis->temp - 0.1) * (float)NEXTTIMER / 180.0;
-      p2 = p1 / 8.0;
+      p1 = (axis->temp - 0.1f) * (float)NEXTTIMER / 180.0f;
+      p2 = p1 / 8.0f;
     }
     if (axis->value < 0) {
-      p1 *= -1.0;
-      p2 *= -1.0;
+      p1 = -p1;
+      p2 = -p2;
     }
     p1 *= axis->amplify * priv->amplify;
     p2 *= axis->amplify * priv->amplify;
 
+    /* Apply movement to global amount of pixels to move */
     switch (axis->mapping) {
       case MAPPING_X:
         priv->x += p1;
@@ -108,11 +122,13 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p1;
     float p2;
 
-    if (priv->button[i].temp < 100.0) priv->button[i].temp *= 1.15;
-    p1 = (priv->button[i].temp - 0.1) * (float)NEXTTIMER / 180.0 * ((float)priv->button[i].value)/1000.0;
+    if (priv->button[i].temp < 100.0f) priv->button[i].temp *= 1.15f;
+    p1 = (priv->button[i].temp - 0.1) * (float)NEXTTIMER / 180.0f *
+         ((float)priv->button[i].value) / 1000.0f;
     p1 *= priv->amplify;
-    p2 = p1 / 8.0;
+    p2 = p1 / 8.0f;
 
+    /* Apply movement to global amount of pixels to move */
     switch (priv->button[i].mapping) {
       case MAPPING_X:
         priv->x += p1;
@@ -135,29 +151,31 @@ jstkAxisTimer(OsTimerPtr        timer,
     }
   }
 
-
-  if (((int)priv->x != 0)||((int)priv->y != 0))
+  /* Actually move the cursor, if there is enough movement in the buffer */
+  if (((int)priv->x != 0)||((int)priv->y != 0)) {
     xf86PostMotionEvent(device, 0, 0, 2, (int)priv->x, (int)priv->y);
-  priv->x = priv->x - (int)priv->x;
-  priv->y = priv->y - (int)priv->y;
+    priv->x = priv->x - (int)priv->x;
+    priv->y = priv->y - (int)priv->y;
+  }
 
-  while (priv->zy >= 1.0) {
+  /* Generate scrolling events */
+  while (priv->zy >= 1.0) {  /* down */
     xf86PostButtonEvent(device, 0, 5, 1, 0, 0);
     xf86PostButtonEvent(device, 0, 5, 0, 0, 0);
     priv->zy-=1.0;
   }
-  while (priv->zy <= -1.0) {
+  while (priv->zy <= -1.0) { /* up */
     xf86PostButtonEvent(device, 0, 4, 1, 0, 0);
     xf86PostButtonEvent(device, 0, 4, 0, 0, 0);
     priv->zy+=1.0;
   }
 
-  while (priv->zx >= 1.0) {
+  while (priv->zx >= 1.0) {  /* right */
     xf86PostButtonEvent(device, 0, 7, 1, 0, 0);
     xf86PostButtonEvent(device, 0, 7, 0, 0, 0);
     priv->zx-=1.0;
   }
-  while (priv->zx <= -1.0) {
+  while (priv->zx <= -1.0) { /* left */
     xf86PostButtonEvent(device, 0, 6, 1, 0, 0);
     xf86PostButtonEvent(device, 0, 6, 0, 0, 0);
     priv->zx+=1.0;
@@ -176,6 +194,16 @@ jstkAxisTimer(OsTimerPtr        timer,
   return nexttimer;
 }
 
+
+/***********************************************************************
+ *
+ * jstkStartAxisTimer --
+ *
+ * Starts the timer for the movement.
+ * Will already prepare for moving one pixel, for "tipping" the stick
+ *
+ ***********************************************************************
+ */
 void
 jstkStartAxisTimer(LocalDevicePtr device, int number) {
   JoystickDevPtr priv = device->private;
@@ -206,10 +234,20 @@ jstkStartAxisTimer(LocalDevicePtr device, int number) {
   priv->timer = TimerSet(
     priv->timer, 
     0,         /* Relative */
-    5,
+    1,         /* What about NOW? */
     jstkAxisTimer,
     device->dev);
 }
+
+/***********************************************************************
+ *
+ * jstkStartButtonAxisTimer --
+ *
+ * Starts the timer for the movement.
+ * Will already prepare for moving one pixel, for "tipping" the stick
+ *
+ ***********************************************************************
+ */
 
 void
 jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
@@ -241,11 +279,20 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
   priv->timer = TimerSet(
     priv->timer, 
     0,         /* Relative */
-    5,
+    1,         /* What about NOW? */
     jstkAxisTimer,
     device->dev);
 }
 
+/***********************************************************************
+ *
+ * jstkHandleAbsoluteAxis --
+ *
+ * Sums up absolute movement of all axes and sets the cursor to the
+ * desired Position on the screen. 
+ *
+ ***********************************************************************
+ */
 void
 jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
   JoystickDevPtr priv = device->private;
@@ -255,20 +302,22 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
   y=0;
 
   for (i=0; i<MAXAXES; i++) 
-    if ((priv->axis[i].type == TYPE_ABSOLUTE))
+    if (priv->axis[i].type == TYPE_ABSOLUTE)
   {
     float rel;
     int dif;
-    rel = (priv->axis[i].value>0)?
-           (priv->axis[i].value - priv->axis[i].deadzone):
+    rel = (priv->axis[i].value > 0) ?
+           (priv->axis[i].value - priv->axis[i].deadzone) :
            (priv->axis[i].value + priv->axis[i].deadzone);
-    rel = (rel)/(2.0*(float)(32768 - priv->axis[i].deadzone));
+    rel = (rel) / (2.0f * (float)(32768 - priv->axis[i].deadzone));
+    /* rel contains numbers between -0.5 and +0.5 now */
 
     rel *= priv->axis[i].amplify;
 
-    DBG(5, ErrorF("Relative Position of axis %d: %.2f\n",i, rel));
+    DBG(5, ErrorF("Relative Position of axis %d: %.2f\n", i, rel));
 
-    dif = (int)(rel - priv->axis[i].temp + 0.5);
+    /* Calculate difference to previous position on screen in pixels */
+    dif = (int)(rel - priv->axis[i].temp + 0.5f);
     if ((dif >= 1)||(dif <= -1)) {
       if (priv->axis[i].mapping == MAPPING_X) {
         x += (dif);
@@ -280,8 +329,9 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
       }
     }
   }
+  /* Still move relative, but relative to previous position of the axis */
   if ((x != 0) || (y != 0)) {
-    DBG(4, ErrorF("Moving mouse by %dx%d\n",x,y));
+    DBG(4, ErrorF("Moving mouse by %dx%d pixels\n", x, y));
     xf86PostMotionEvent(device->dev, 0, 0, 2, x, y);
   }
 }
