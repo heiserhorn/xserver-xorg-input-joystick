@@ -1,3 +1,9 @@
+xserver-xorg-input-joystick (1:1.2.0-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- Brice Goglin <Brice.Goglin@ens-lyon.org>  Sun, 01 Apr 2007 11:31:17 +0200
+
 xserver-xorg-input-joystick (1:1.1.1-1) experimental; urgency=low
 
   [ Julien Cristau ]

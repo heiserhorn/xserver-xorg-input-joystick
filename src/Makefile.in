@@ -75,7 +75,8 @@ am__installdirs = "$(DESTDIR)$(@DRIVER_NAME@_drv_ladir)"
 @DRIVER_NAME@_drv_laLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(@DRIVER_NAME@_drv_la_LTLIBRARIES)
 @DRIVER_NAME@_drv_la_LIBADD =
-am_@DRIVER_NAME@_drv_la_OBJECTS = xf86Jstk.lo
+am_@DRIVER_NAME@_drv_la_OBJECTS = jstk.lo linux_jstk.lo jstk_axis.lo \
+	jstk_options.lo
 @DRIVER_NAME@_drv_la_OBJECTS = $(am_@DRIVER_NAME@_drv_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -223,7 +224,11 @@ target_alias = @target_alias@
 @DRIVER_NAME@_drv_la_LTLIBRARIES = @DRIVER_NAME@_drv.la
 @DRIVER_NAME@_drv_la_LDFLAGS = -module -avoid-version
 @DRIVER_NAME@_drv_ladir = @inputdir@
-@DRIVER_NAME@_drv_la_SOURCES = xf86Jstk.c
+@DRIVER_NAME@_drv_la_SOURCES = jstk.c jstk.h \
+                               linux_jstk.c linux_jstk.h \
+    			       jstk_axis.c jstk_axis.h \
+    			       jstk_options.c jstk_options.h
+
 all: all-am
 
 .SUFFIXES:
@@ -293,7 +298,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xf86Jstk.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jstk.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jstk_axis.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jstk_options.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linux_jstk.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
