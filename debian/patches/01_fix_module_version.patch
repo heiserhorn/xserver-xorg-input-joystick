@@ -1,0 +1,17 @@
+---
+ src/jstk.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: xserver-xorg-input-joystick/src/jstk.c
+===================================================================
+--- xserver-xorg-input-joystick.orig/src/jstk.c	2007-04-01 12:55:54.000000000 +0200
++++ xserver-xorg-input-joystick/src/jstk.c	2007-04-01 12:57:31.000000000 +0200
+@@ -610,7 +610,7 @@
+ 	MODINFOSTRING1,
+ 	MODINFOSTRING2,
+ 	XORG_VERSION_CURRENT,
+-	1, 1, 1,
++	PACKAGE_VERSION_MAJOR, PACKAGE_VERSION_MINOR, PACKAGE_VERSION_PATCHLEVEL,
+ 	ABI_CLASS_XINPUT,
+ 	ABI_XINPUT_VERSION,
+ 	MOD_CLASS_XINPUT,
