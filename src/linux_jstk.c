@@ -68,7 +68,7 @@ jstkOpenDevice(JoystickDevPtr joystick,int init)
             strerror(errno));
     return -1;
   }
-  if ((driver_version >> 16) < 2) {
+  if ((driver_version >> 16) < 1) {
     xf86Msg(X_WARNING, "Joystick: Driver version is only %d.%d.%d\n",
             driver_version >> 16,
             (driver_version >> 8) & 0xff,
