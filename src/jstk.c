@@ -43,7 +43,7 @@
 
 
 #include "jstk.h"
-#include "linux_jstk.h"
+#include "jstk_hw.h"
 #include "jstk_axis.h"
 #include "jstk_options.h"
 
@@ -103,14 +103,16 @@ jstkReadProc(LocalDevicePtr local)
   enum JOYSTICKEVENT event;
   int number;
   int i;
+  int r;
 
   JoystickDevPtr priv = local->private;
 
-  if (jstkReadData(priv, &event, &number)==0) {
+  do {
+  if ((r=jstkReadData(priv, &event, &number))==0) {
     xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
 
     if (local->fd >= 0)
-      RemoveEnabledDevice(local->fd);
+       RemoveEnabledDevice(local->fd);
     return;
   }
 
@@ -227,6 +229,7 @@ jstkReadProc(LocalDevicePtr local)
         break;
     }
   }
+  while (r == 2);
 }
 
 
@@ -389,6 +392,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     priv->fd = -1;
     priv->device = NULL;
+    priv->devicedata = NULL;
     priv->x  = 0.0f;
     priv->y  = 0.0f;
     priv->zx = 0.0f;

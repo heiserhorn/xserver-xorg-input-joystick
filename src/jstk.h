@@ -88,6 +88,7 @@ enum JOYSTICKEVENT {
 typedef struct
 {
   int          fd;             /* Actual file descriptor */
+  void         *devicedata;    /* Extra platform device dependend data */
   char         *device;        /* Name of the device */
 
   OsTimerPtr   timer;
