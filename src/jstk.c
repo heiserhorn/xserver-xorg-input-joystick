@@ -295,11 +295,11 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
       break; 
 
     case DEVICE_ON:
-      i = jstkOpenDevice(priv, FALSE);
+      i = jstkOpenDevice(priv);
 
       DBG(1, ErrorF("jstkDeviceControlProc  what=ON name=%s\n", priv->device));
 
-      if (i != 0)
+      if (i != -1)
       {
         pJstk->public.on = TRUE;
         local->fd = priv->fd;
@@ -400,6 +400,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->mouse_enabled = TRUE;
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
+    priv->axes = 0;
+    priv->buttons = 0;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
@@ -444,12 +446,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 
     xf86Msg(X_CONFIG, "%s: device is %s\n", local->name, priv->device);
-    /* Open the device once, see if it works and get information */
-    if (jstkOpenDevice(priv, TRUE) == -1) {
-      goto SetupProc_fail;
-    }
-    jstkCloseDevice(priv);
-
 
     xf86ProcessCommonOptions(local, local->options);
 
@@ -468,7 +464,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
 
     /* Process button mapping options */
-    for (i=0; i<priv->buttons; i++) if (i<MAXBUTTONS) {
+    for (i=0; i<MAXBUTTONS; i++) {
       char p[64];
       sprintf(p,"MapButton%d",i+1);
       s = xf86CheckStrOption(dev->commonOptions, p, NULL);
@@ -482,7 +478,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 
     /* Process button mapping options */
-    for (i=0; i<priv->axes; i++) if (i<MAXAXES) {
+    for (i=0; i<MAXAXES; i++) {
       char p[64];
       sprintf(p,"MapAxis%d",i+1);
       s = xf86CheckStrOption(dev->commonOptions, p, NULL);
