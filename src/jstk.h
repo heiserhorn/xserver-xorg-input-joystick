@@ -114,7 +114,7 @@ typedef struct
     float temp;
     enum JOYSTICKMAPPING mapping;
   }button[MAXBUTTONS];                 /* Configuration per button */
-  int axes, buttons;           /* Number of axes and buttons */
+  unsigned char axes, buttons;         /* Number of axes and buttons */
 } JoystickDevRec, *JoystickDevPtr;
 
 

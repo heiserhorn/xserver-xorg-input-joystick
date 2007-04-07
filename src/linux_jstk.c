@@ -28,6 +28,7 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
@@ -82,12 +83,15 @@ jstkOpenDevice(JoystickDevPtr joystick)
     close(joystick->fd);
     return -1;
   }
+  if (joystick->axes > 32) joystick->axes = 32;
+
   if (ioctl(joystick->fd, JSIOCGBUTTONS, &joystick->buttons) == -1) {
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     close(joystick->fd);
     return -1;
   }
+  if (joystick->buttons > 32) joystick->buttons = 32;
 
   {
     if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name) == -1) {

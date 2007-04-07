@@ -295,11 +295,9 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
       break; 
 
     case DEVICE_ON:
-      i = jstkOpenDevice(priv);
-
       DBG(1, ErrorF("jstkDeviceControlProc  what=ON name=%s\n", priv->device));
 
-      if (i != -1)
+      if (jstkOpenDevice(priv) != -1)
       {
         pJstk->public.on = TRUE;
         local->fd = priv->fd;
