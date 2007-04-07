@@ -505,8 +505,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     if (priv)
         xfree(priv);
     if (local)
-        xfree(local);
-    return NULL;
+        local->private = NULL;
+    return local;
 }
 
 
@@ -586,11 +586,6 @@ jstkDriverPlug(pointer  module,
 static void
 jstkDriverUnplug(pointer p)
 {
-/*    LocalDevicePtr local = (LocalDevicePtr) p;
-    JoystickDevPtr priv = (JoystickDevPtr) local->private;
-    jstkDeviceControlProc(local->dev, DEVICE_OFF);
-    xfree (priv);
-    xfree (local);*/
     DBG(0, ErrorF("jstkDriverUnplug\n"));
 }
 
