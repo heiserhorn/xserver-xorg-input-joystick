@@ -52,7 +52,7 @@
  */
 
 int
-jstkOpenDevice(JoystickDevPtr joystick,int init)
+jstkOpenDevice(JoystickDevPtr joystick)
 {
   char joy_name[128];
   int driver_version;
@@ -66,6 +66,7 @@ jstkOpenDevice(JoystickDevPtr joystick,int init)
   if (ioctl(joystick->fd, JSIOCGVERSION, &driver_version) == -1) {
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
+    close(joystick->fd);
     return -1;
   }
   if ((driver_version >> 16) < 1) {
@@ -78,19 +79,21 @@ jstkOpenDevice(JoystickDevPtr joystick,int init)
   if (ioctl(joystick->fd, JSIOCGAXES, &joystick->axes) == -1) {
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
+    close(joystick->fd);
     return -1;
   }
   if (ioctl(joystick->fd, JSIOCGBUTTONS, &joystick->buttons) == -1) {
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
+    close(joystick->fd);
     return -1;
   }
 
-  /* Only show these information once, not every time the device is opened */
-  if (init != 0) {
+  {
     if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name) == -1) {
       xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
               joystick->device, strerror(errno));
+      close(joystick->fd);
       return -1;
     }
 
