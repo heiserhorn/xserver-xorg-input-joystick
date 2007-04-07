@@ -39,7 +39,7 @@
 #include <xf86_OSproc.h>
 
 #include "jstk.h"
-#include "linux_jstk.h"
+#include "jstk_hw.h"
 
 
 /***********************************************************************

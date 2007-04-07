@@ -229,7 +229,7 @@ jstkReadProc(LocalDevicePtr local)
         break;
     }
   }
-  while (r == 2);
+  } while (r == 2);
 }
 
 

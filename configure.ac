@@ -62,6 +62,24 @@ AH_TOP([#include "xorg-server.h"])
 #    AC_DEFINE(XKB,1,[Enable XKB support])
 #fi
 
+case $host_os in
+  linux*)
+    IS_LINUX="yes"
+    ;;
+
+  freebsd* | kfreebsd-gnu* | netbsd* | openbsd*)
+    IS_BSD="yes"
+    ;;
+
+  *)
+    AC_MSG_ERROR([Your operating system is not supported by the joystick driver.
+                  Contact xorg@lists.freedesktop.org if you are interested in
+                  porting it.])
+    ;;
+esac
+AM_CONDITIONAL(LINUX, [test "x$IS_LINUX" = xyes])
+AM_CONDITIONAL(BSD, [test "x$IS_BSD" = xyes])
+
 AC_ARG_WITH(xorg-module-dir,
             AC_HELP_STRING([--with-xorg-module-dir=DIR],
                            [Default xorg module directory [[default=$libdir/xorg/modules]]]),
