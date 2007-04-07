@@ -256,7 +256,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
       DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
       for (i=1; i<MAXBUTTONS; i++) map[i] = i;
 
-      if (InitButtonClassDeviceStruct(pJstk, priv->buttons, map) == FALSE) {
+      if (InitButtonClassDeviceStruct(pJstk, MAXBUTTONS, map) == FALSE) {
         ErrorF("unable to allocate Button class device\n");
         return !Success;
       }

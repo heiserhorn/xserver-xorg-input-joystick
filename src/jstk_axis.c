@@ -310,9 +310,11 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
   {
     float rel;
     int dif;
-    rel = (priv->axis[i].value > 0) ?
-           (priv->axis[i].value - priv->axis[i].deadzone) :
-           (priv->axis[i].value + priv->axis[i].deadzone);
+    if (priv->axis[i].value >= priv->axis[i].deadzone)
+      rel = (priv->axis[i].value - priv->axis[i].deadzone);
+    if (priv->axis[i].value <= -priv->axis[i].deadzone)
+      rel = (priv->axis[i].value + priv->axis[i].deadzone);
+
     rel = (rel) / (2.0f * (float)(32768 - priv->axis[i].deadzone));
     /* rel contains numbers between -0.5 and +0.5 now */
 
