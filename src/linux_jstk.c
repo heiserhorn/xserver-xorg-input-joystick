@@ -101,7 +101,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
       return -1;
     }
 
-    xf86Msg(X_INFO, "Joystick: %s. %d buttons, %d axes\n", 
+    xf86Msg(X_INFO, "Joystick: %s. %d axes, %d buttons\n", 
       joy_name, joystick->axes, joystick->buttons);
   }
 
