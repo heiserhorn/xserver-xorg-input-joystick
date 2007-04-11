@@ -21,6 +21,12 @@
  *
  */
 
+/**
+ * This provides the backend for Linux joystick devices.
+ * Usable in FreeBSD with the linux_js module.
+ * Devices are usually /dev/input/js?
+ **/
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

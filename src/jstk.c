@@ -440,14 +440,12 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     xf86OptionListReport(local->options);
 
     /* Joystick device is mandatory */
-    priv->device = xf86CheckStrOption(dev->commonOptions, "Device", NULL);
+   priv->device = xf86SetStrOption(dev->commonOptions, "Device", NULL);
 
     if (!priv->device) {
       xf86Msg (X_ERROR, "%s: No Device specified.\n", local->name);
       goto SetupProc_fail;
     }
-
-    xf86Msg(X_CONFIG, "%s: device is %s\n", local->name, priv->device);
 
     xf86ProcessCommonOptions(local, local->options);
 
@@ -469,30 +467,27 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     for (i=0; i<MAXBUTTONS; i++) {
       char p[64];
       sprintf(p,"MapButton%d",i+1);
-      s = xf86CheckStrOption(dev->commonOptions, p, NULL);
+      s = xf86SetStrOption(dev->commonOptions, p, NULL);
       if (s != NULL) {
-        xf86Msg(X_CONFIG, "%s: Option \"mapbutton%d\" \"%s\"\n",
-                local->name, i+1, s);
         jstkParseButtonOption(s, priv, i, local->name);
       }
-      DBG(1, ErrorF("Button %d mapped to %d (value=%d)\n", i+1, 
-                    priv->button[i].mapping, priv->button[i].value));
+      DBG(1, xf86Msg(X_CONFIG, "Button %d mapped to %d (value=%d)\n", i+1, 
+                     priv->button[i].mapping, priv->button[i].value));
     }
 
     /* Process button mapping options */
     for (i=0; i<MAXAXES; i++) {
       char p[64];
       sprintf(p,"MapAxis%d",i+1);
-      s = xf86CheckStrOption(dev->commonOptions, p, NULL);
+      s = xf86SetStrOption(dev->commonOptions, p, NULL);
       if (s != NULL) {
-        xf86Msg(X_CONFIG, "%s: Option \"mapaxis%d\" \"%s\"\n", 
-                local->name, i+1, s);
         jstkParseAxisOption(s, &priv->axis[i], local->name);
       }
-      DBG(1, ErrorF("Axis %d type is %d, mapped to %d, amplify=%.3f\n", i+1, 
-                    priv->axis[i].type,
-                    priv->axis[i].mapping,
-                    priv->axis[i].amplify));
+      DBG(1, xf86Msg(X_CONFIG, 
+                     "Axis %d type is %d, mapped to %d, amplify=%.3f\n", i+1, 
+                     priv->axis[i].type,
+                     priv->axis[i].mapping,
+                     priv->axis[i].amplify));
     }
 
     /* return the LocalDevice */
@@ -531,6 +526,7 @@ jstkCoreUnInit(InputDriverPtr    drv,
     jstkDeviceControlProc(local->dev, DEVICE_OFF);
 
     xfree (device);
+    local->private = NULL;
     xf86DeleteInput(local, 0);
 }
 

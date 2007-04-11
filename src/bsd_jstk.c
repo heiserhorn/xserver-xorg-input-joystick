@@ -21,6 +21,10 @@
  *
  */
 
+/**
+ * This provides the backend for USB-HIDs for NetBSD, OpenBSD and FreeBSD
+ * Needs the uhid module loaded. Device names are /dev/uhid?
+ **/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -45,13 +49,14 @@
 
 
 struct jstk_bsd_hid_data {
-  int dlen;
-  char *data_buf;
-  struct hid_item axis_item[MAXAXES];
-  struct hid_item button_item[MAXBUTTONS];
-  struct hid_item hat_item[MAXAXES];
-  int hats;
-  int hotdata;
+  int dlen;                                /* Length of one data chunk */
+  char *data_buf;                          /* Data buffer with right size */
+  struct hid_item axis_item[MAXAXES];      /* Axis HID items */
+  struct hid_item button_item[MAXBUTTONS]; /* Button HID items */
+  struct hid_item hat_item[MAXAXES];       /* HID items for hats */
+  int hats;                                /* Number of hats */
+  int hotdata;                             /* Is unprocessed data available
+                                              in data_buf? */
 };
 
 
@@ -87,33 +92,31 @@ jstkOpenDevice(JoystickDevPtr joystick)
   joystick->axes = 0;
   joystick->buttons = 0;
 
-  if ((rd = hid_get_report_desc(joystick->fd)) == 0)
-    {
-      xf86Msg(X_ERROR, "Joystick: hid_get_report_desc failed: %s\n",
-              strerror(errno));
-      close(joystick->fd);
-      return -1;
-    }
+  if ((rd = hid_get_report_desc(joystick->fd)) == 0) {
+    xf86Msg(X_ERROR, "Joystick: hid_get_report_desc failed: %s\n",
+            strerror(errno));
+    close(joystick->fd);
+    return -1;
+  }
 
-  if (ioctl(joystick->fd, USB_GET_REPORT_ID, &report_id) < 0)
-    {
-      xf86Msg(X_ERROR, "Joystick: ioctl USB_GET_REPORT_ID failed: %s\n",
-              strerror(errno));
-      close(joystick->fd);
-      return -1;
-    }
+  if (ioctl(joystick->fd, USB_GET_REPORT_ID, &report_id) < 0) {
+    xf86Msg(X_ERROR, "Joystick: ioctl USB_GET_REPORT_ID failed: %s\n",
+            strerror(errno));
+    close(joystick->fd);
+    return -1;
+  }
 
-  bsddata = (struct jstk_bsd_hid_data*) malloc(sizeof(struct jstk_bsd_hid_data));
+  bsddata = (struct jstk_bsd_hid_data*)
+            malloc(sizeof(struct jstk_bsd_hid_data));
   bsddata->dlen = hid_report_size(rd, hid_input, report_id);
 
-  if ((bsddata->data_buf = malloc(bsddata->dlen)) == NULL)
-    {
-      fprintf(stderr, "error: couldn't malloc %d bytes\n", bsddata->dlen);
-      hid_dispose_report_desc(rd);
-      free(bsddata);
-      close(joystick->fd);
-      return -1;
-    }
+  if ((bsddata->data_buf = malloc(bsddata->dlen)) == NULL) {
+    fprintf(stderr, "error: couldn't malloc %d bytes\n", bsddata->dlen);
+    hid_dispose_report_desc(rd);
+    free(bsddata);
+    close(joystick->fd);
+    return -1;
+  }
 
   is_joystick = 0;
   got_something = 0;
@@ -122,25 +125,22 @@ jstkOpenDevice(JoystickDevPtr joystick)
   bsddata->hats = 0;
 
   for (d = hid_start_parse(rd, 1 << hid_input, report_id);
-       hid_get_item(d, &h); )
-    {
+       hid_get_item(d, &h); ) {
       int usage, page;
 
       page = HID_PAGE(h.usage);
       usage = HID_USAGE(h.usage);
 
-      /* This test is somewhat too simplistic, but this is how MicroSoft
-       * does, so I guess it works for all joysticks/game pads. */
       is_joystick = is_joystick ||
-	(h.kind == hid_collection &&
-	 page == HUP_GENERIC_DESKTOP &&
-	 (usage == HUG_JOYSTICK || usage == HUG_GAME_PAD));
+        (h.kind == hid_collection &&
+         page == HUP_GENERIC_DESKTOP &&
+         (usage == HUG_JOYSTICK || usage == HUG_GAME_PAD));
 
       if (h.kind != hid_input)
-	continue;
+        continue;
 
       if (!is_joystick)
-	continue;
+        continue;
 
       if (page == HUP_GENERIC_DESKTOP)
 	{
@@ -148,7 +148,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
 	    {
               if ((bsddata->hats < MAXAXES) && (joystick->axes <= MAXAXES-2)) {
 	        got_something = 1;
-	        memcpy(&bsddata->hat_item[bsddata->hats],&h,sizeof(h));
+	        memcpy(&bsddata->hat_item[bsddata->hats], &h, sizeof(h));
                 bsddata->hats++;
                 joystick->axes += 2;
               }
@@ -157,7 +157,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
 	    {
               if (joystick->axes < MAXAXES) {
 		got_something = 1;
-		memcpy(&bsddata->axis_item[cur_axis],&h,sizeof(h));
+		memcpy(&bsddata->axis_item[cur_axis], &h, sizeof(h));
 		cur_axis++;
                 joystick->axes++;
 	      }
@@ -175,14 +175,13 @@ jstkOpenDevice(JoystickDevPtr joystick)
     }
   hid_end_parse(d);
 
-  if (!got_something)
-    {
-      free(bsddata->data_buf);
-      xf86Msg(X_ERROR, "Joystick: Didn't find any usable axes.\n");
-      free(bsddata);
-      close(joystick->fd);
-      return -1;
-    }
+  if (!got_something) {
+    free(bsddata->data_buf);
+    xf86Msg(X_ERROR, "Joystick: Didn't find any usable axes.\n");
+    free(bsddata);
+    close(joystick->fd);
+    return -1;
+  }
 
   bsddata->hotdata = 0;
   joystick->devicedata = (void*) bsddata;
@@ -235,7 +234,8 @@ jstkReadData(JoystickDevPtr joystick,
              int *number)
 {
   int j,d;
-  struct jstk_bsd_hid_data *bsddata = (struct jstk_bsd_hid_data*)(joystick->devicedata);
+  struct jstk_bsd_hid_data *bsddata = 
+      (struct jstk_bsd_hid_data*)(joystick->devicedata);
 
   if (event != NULL) *event = EVENT_NONE;
   if (bsddata->hotdata == 0) {
@@ -253,8 +253,10 @@ jstkReadData(JoystickDevPtr joystick,
   for (j=0; j<joystick->axes - (bsddata->hats * 2); j++)
     {
       d = hid_get_data(bsddata->data_buf, &bsddata->axis_item[j]);
-      d = d - (bsddata->axis_item[j].logical_maximum - bsddata->axis_item[j].logical_minimum) / 2;
-      d = d * 65536 / (bsddata->axis_item[j].logical_maximum - bsddata->axis_item[j].logical_minimum);
+      d = d - (bsddata->axis_item[j].logical_maximum 
+               - bsddata->axis_item[j].logical_minimum) / 2;
+      d = d * 65536 / (bsddata->axis_item[j].logical_maximum 
+                       - bsddata->axis_item[j].logical_minimum);
       if (abs(d) < joystick->axis[j].deadzone) d = 0;
       if (d != joystick->axis[j].value) {
         joystick->axis[j].value = d;
@@ -267,8 +269,11 @@ jstkReadData(JoystickDevPtr joystick,
   for (j=0; j<bsddata->hats; j++)
     {
       int a;
-      int v1_data[9] = { 0, 32767, 32767, 32767, 0, -32768, -32768, -32768, 0 };
-      int v2_data[9] = { -32768, -32768, 0, 32767, 32767, 32767, 0, -32767, 0 };
+      int v1_data[9] = 
+        { 0, 32767, 32767, 32767, 0, -32768, -32768, -32768, 0 };
+      int v2_data[9] =
+        { -32768, -32768, 0, 32767, 32767, 32767, 0, -32767, 0 };
+
       a = j*2 + joystick->axes - bsddata->hats *2;
       d = hid_get_data(bsddata->data_buf, &bsddata->hat_item[j]) 
         - bsddata->hat_item[j].logical_minimum;
@@ -288,9 +293,10 @@ jstkReadData(JoystickDevPtr joystick,
 
   for (j=0; j<joystick->buttons; j++)
     {
+       int pressed = (d == bsddata->button_item[j].logical_minimum) ? 0 : 1;
        d = hid_get_data(bsddata->data_buf, &bsddata->button_item[j]);
-       if (((d == bsddata->button_item[j].logical_minimum)?0:1) != joystick->button[j].pressed) {
-         joystick->button[j].pressed = (d == bsddata->button_item[j].logical_minimum)?0:1;
+       if (pressed != joystick->button[j].pressed) {
+         joystick->button[j].pressed = pressed;
          if (event != NULL) *event = EVENT_BUTTON;
          if (number != NULL) *number = j;
          return 2;
