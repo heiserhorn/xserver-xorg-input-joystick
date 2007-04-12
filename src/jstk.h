@@ -56,66 +56,63 @@ extern int      debug_level;
 #define MAXAXES 32
 #define MAXKEYSPERBUTTON 4
 
-enum JOYSTICKTYPE {
-  TYPE_NONE,
-  TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
-  TYPE_ACCELERATED, /* Speed is accelerated */
-  TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
-};
+typedef enum {
+    TYPE_NONE,
+    TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
+    TYPE_ACCELERATED, /* Speed is accelerated */
+    TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
+} JOYSTICKTYPE;
 
-enum JOYSTICKMAPPING {
-  MAPPING_NONE=0,
-  MAPPING_X,
-  MAPPING_Y,
-  MAPPING_ZX,
-  MAPPING_ZY,
-  MAPPING_BUTTON,
-  MAPPING_KEY,
-  MAPPING_SPEED_MULTIPLY,
-  MAPPING_DISABLE,
-  MAPPING_DISABLE_MOUSE,
-  MAPPING_DISABLE_KEYS
-};
-
-enum JOYSTICKEVENT {
-  EVENT_NONE=0,
-  EVENT_BUTTON,
-  EVENT_AXIS
-};
-
+typedef enum {
+    MAPPING_NONE=0,
+    MAPPING_X,
+    MAPPING_Y,
+    MAPPING_ZX,
+    MAPPING_ZY,
+    MAPPING_BUTTON,
+    MAPPING_KEY,
+    MAPPING_SPEED_MULTIPLY,
+    MAPPING_DISABLE,
+    MAPPING_DISABLE_MOUSE,
+    MAPPING_DISABLE_KEYS
+} JOYSTICKMAPPING ;
 
 
 typedef struct
 {
-  int          fd;             /* Actual file descriptor */
-  void         *devicedata;    /* Extra platform device dependend data */
-  char         *device;        /* Name of the device */
-
-  OsTimerPtr   timer;
-  Bool         timerrunning;
-  float        x,y,zx,zy;      /* Pending subpixel movements */
-
-  Bool         mouse_enabled, keys_enabled;
-  float        amplify;        /* Global amplifier of axis movement */
-
-  struct AXIS
-  {
     int   value;
     int   deadzone;
     float temp,amplify;
-    enum JOYSTICKTYPE type;
-    enum JOYSTICKMAPPING mapping;
-  }axis[MAXAXES];                   /* Configuration per axis */
+    JOYSTICKTYPE type;
+    JOYSTICKMAPPING mapping;
+} AXIS;
 
-  struct BUTTON
-  {
-    char pressed;
-    int value;
-    unsigned int keys[MAXKEYSPERBUTTON];
-    float temp;
-    enum JOYSTICKMAPPING mapping;
-  }button[MAXBUTTONS];                 /* Configuration per button */
-  unsigned char axes, buttons;         /* Number of axes and buttons */
+typedef struct
+{
+   char pressed;
+   int value;
+   unsigned int keys[MAXKEYSPERBUTTON];
+   float temp;
+   JOYSTICKMAPPING mapping;
+} BUTTON;
+
+
+typedef struct
+{
+    int          fd;             /* Actual file descriptor */
+    void         *devicedata;    /* Extra platform device dependend data */
+    char         *device;        /* Name of the device */
+
+    OsTimerPtr   timer;
+    Bool         timerrunning;
+    float        x,y,zx,zy;      /* Pending subpixel movements */
+
+    Bool         mouse_enabled, keys_enabled;
+    float        amplify;        /* Global amplifier of axis movement */
+
+    AXIS axis[MAXAXES];                  /* Configuration per axis */
+    BUTTON button[MAXBUTTONS];           /* Configuration per button */
+    unsigned char axes, buttons;         /* Number of axes and buttons */
 } JoystickDevRec, *JoystickDevPtr;
 
 

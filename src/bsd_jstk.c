@@ -49,14 +49,14 @@
 
 
 struct jstk_bsd_hid_data {
-  int dlen;                                /* Length of one data chunk */
-  char *data_buf;                          /* Data buffer with right size */
-  struct hid_item axis_item[MAXAXES];      /* Axis HID items */
-  struct hid_item button_item[MAXBUTTONS]; /* Button HID items */
-  struct hid_item hat_item[MAXAXES];       /* HID items for hats */
-  int hats;                                /* Number of hats */
-  int hotdata;                             /* Is unprocessed data available
-                                              in data_buf? */
+    int dlen;                                /* Length of one data chunk */
+    char *data_buf;                          /* Data buffer with right size */
+    struct hid_item axis_item[MAXAXES];      /* Axis HID items */
+    struct hid_item button_item[MAXBUTTONS]; /* Button HID items */
+    struct hid_item hat_item[MAXAXES];       /* HID items for hats */
+    int hats;                                /* Number of hats */
+    int hotdata;                             /* Is unprocessed data available
+                                                in data_buf? */
 };
 
 
@@ -230,7 +230,7 @@ jstkCloseDevice(JoystickDevPtr joystick)
 
 int
 jstkReadData(JoystickDevPtr joystick,
-             enum JOYSTICKEVENT *event,
+             JOYSTICKEVENT *event,
              int *number)
 {
   int j,d;
@@ -253,6 +253,7 @@ jstkReadData(JoystickDevPtr joystick,
   for (j=0; j<joystick->axes - (bsddata->hats * 2); j++)
     {
       d = hid_get_data(bsddata->data_buf, &bsddata->axis_item[j]);
+      /* Scale the range to our expected range of -32768 to 32767 */
       d = d - (bsddata->axis_item[j].logical_maximum 
                - bsddata->axis_item[j].logical_minimum) / 2;
       d = d * 65536 / (bsddata->axis_item[j].logical_maximum 

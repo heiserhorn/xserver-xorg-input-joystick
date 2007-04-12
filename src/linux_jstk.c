@@ -148,7 +148,7 @@ jstkCloseDevice(JoystickDevPtr joystick)
 
 int
 jstkReadData(JoystickDevPtr joystick,
-             enum JOYSTICKEVENT *event,
+             JOYSTICKEVENT *event,
              int *number)
 {
   struct js_event js;

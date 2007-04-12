@@ -29,7 +29,7 @@ void jstkParseButtonOption(const char* org,
                       int number,
                       const char* name);
 void jstkParseAxisOption(const char* org, 
-                         struct AXIS *axis,
+                         AXIS *axis,
                          const char* name);
 
 #endif

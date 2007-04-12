@@ -43,13 +43,14 @@
  ***********************************************************************
  */
 
-static enum JOYSTICKMAPPING
-jstkGetAxisMapping(float *value, const char* param, const char* name) {
+static JOYSTICKMAPPING
+jstkGetAxisMapping(float *value, const char* param, const char* name) 
+{
   if (sscanf(param, "%f", value)==0) {
     if (param[0] == '-')
       *value *= -1.0;
   }
-if (strstr(param, "zx") != NULL)
+  if (strstr(param, "zx") != NULL)
     return MAPPING_ZX;
   else if (strstr(param, "zy") != NULL)
     return MAPPING_ZY;
@@ -77,13 +78,14 @@ void
 jstkParseButtonOption(const char* org,
                       JoystickDevPtr priv,
                       int number,
-                      const char* name) {
+                      const char* name)
+{
   char *param;
   char *tmp;
   int value;
   float fvalue;
   char p[64];
-  struct BUTTON* button;
+  BUTTON* button;
 
   button = &priv->button[number];
 
@@ -143,7 +145,8 @@ jstkParseButtonOption(const char* org,
  */
 
 void
-jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
+jstkParseAxisOption(const char* org, AXIS *axis, const char *name)
+{
   char *param;
   char *tmp;
   int value;
