@@ -65,7 +65,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
   unsigned char axes, buttons;
   int driver_version;
 
-  if ((joystick->fd = open(joystick->device, O_RDWR | O_NDELAY, 0)) < 0) {
+  if ((joystick->fd = open(joystick->device, O_RDONLY | O_NDELAY, 0)) < 0) {
     xf86Msg(X_ERROR, "Cannot open joystick '%s' (%s)\n", joystick->device,
             strerror(errno));
     return -1;
@@ -75,6 +75,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
   if ((driver_version >> 16) < 1) {
@@ -88,6 +89,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
 
@@ -95,6 +97,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
 
@@ -102,6 +105,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
       xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
               joystick->device, strerror(errno));
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
 

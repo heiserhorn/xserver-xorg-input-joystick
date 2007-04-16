@@ -96,6 +96,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_ERROR, "Joystick: hid_get_report_desc failed: %s\n",
             strerror(errno));
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
 
@@ -103,6 +104,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_ERROR, "Joystick: ioctl USB_GET_REPORT_ID failed: %s\n",
             strerror(errno));
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
 
@@ -115,6 +117,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     hid_dispose_report_desc(rd);
     free(bsddata);
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
 
@@ -182,6 +185,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_ERROR, "Joystick: Didn't find any usable axes.\n");
     free(bsddata);
     close(joystick->fd);
+    joystick->fd = -1;
     return -1;
   }
 
