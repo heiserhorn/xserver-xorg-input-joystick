@@ -35,10 +35,7 @@
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
 
 #include <math.h>
-
-#ifdef XFree86LOADER
 #include <xf86Module.h>
-#endif
 
 
 #include "jstk.h"
@@ -123,7 +120,7 @@ jstkReadProc(LocalDevicePtr local)
     switch (priv->button[number].mapping) {
       case MAPPING_BUTTON:
         if (priv->mouse_enabled == TRUE) {
-          xf86PostButtonEvent(local->dev, 0, priv->button[number].value,
+          xf86PostButtonEvent(local->dev, 0, priv->button[number].buttonnumber,
             priv->button[number].pressed, 0, 0);
         }
         break;
@@ -133,7 +130,7 @@ jstkReadProc(LocalDevicePtr local)
       case MAPPING_ZX:
       case MAPPING_ZY:
         if (priv->button[number].pressed == 0) /* If button was released */
-          priv->button[number].temp = 1.0;     /* Reset speed counter */
+          priv->button[number].currentspeed = 1.0;     /* Reset speed counter */
         else if (priv->mouse_enabled == TRUE)
           jstkStartButtonAxisTimer(local, number);
         break;
@@ -160,7 +157,7 @@ jstkReadProc(LocalDevicePtr local)
         for (i=0; i<MAXAXES; i++) {
           if ((priv->button[i].pressed) && 
               (priv->button[i].mapping == MAPPING_SPEED_MULTIPLY))
-            priv->amplify *= ((float)priv->button[i].value) / 1000.0f;
+            priv->amplify *= priv->button[i].amplify;
         }
         DBG(2, ErrorF("Global amplify is now %.3f\n", priv->amplify));
 
@@ -213,7 +210,7 @@ jstkReadProc(LocalDevicePtr local)
       case TYPE_BYVALUE:
       case TYPE_ACCELERATED:
         if (priv->axis[number].value == 0) /* When axis was released */
-          priv->axis[number].temp = 1.0;   /* Release speed counter */
+          priv->axis[number].currentspeed = 1.0;   /* Release speed counter */
 
         if (priv->mouse_enabled == TRUE)
           jstkStartAxisTimer(local, number);
@@ -337,16 +334,6 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
 /*
  ***************************************************************************
  *
- * Dynamic loading functions
- *
- ***************************************************************************
- */
-#ifdef XFree86LOADER
-
-
-/*
- ***************************************************************************
- *
  * jstkCorePreInit --
  *
  * Called when a device will be instantiated
@@ -406,27 +393,27 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
-      priv->axis[i].value     = 0;
-      priv->axis[i].deadzone  = 1000;
-      priv->axis[i].type      = TYPE_BYVALUE;
-      priv->axis[i].mapping   = MAPPING_NONE;
-      priv->axis[i].temp      = 0.0f;
-      priv->axis[i].amplify   = 1.0f;
+      priv->axis[i].value        = 0;
+      priv->axis[i].deadzone     = 1000;
+      priv->axis[i].type         = TYPE_BYVALUE;
+      priv->axis[i].mapping      = MAPPING_NONE;
+      priv->axis[i].currentspeed = 0.0f;
+      priv->axis[i].amplify      = 1.0f;
     }
     for (i=0; i<MAXBUTTONS; i++) {
-      priv->button[i].pressed = 0;
-      priv->button[i].value   = 0;
-      priv->button[i].mapping = MAPPING_NONE;
-      priv->button[i].temp    = 1.0f;
+      priv->button[i].pressed      = 0;
+      priv->button[i].buttonnumber = 0;
+      priv->button[i].mapping      = MAPPING_NONE;
+      priv->button[i].currentspeed = 1.0f;
     }
 
     /* First three joystick buttons generate mouse clicks */
-    priv->button[0].mapping = MAPPING_BUTTON;
-    priv->button[0].value   = 1;
-    priv->button[1].mapping = MAPPING_BUTTON;
-    priv->button[1].value   = 2;
-    priv->button[2].mapping = MAPPING_BUTTON;
-    priv->button[2].value   = 3;
+    priv->button[0].mapping      = MAPPING_BUTTON;
+    priv->button[0].buttonnumber = 1;
+    priv->button[1].mapping      = MAPPING_BUTTON;
+    priv->button[1].buttonnumber = 2;
+    priv->button[2].mapping      = MAPPING_BUTTON;
+    priv->button[2].buttonnumber = 3;
 
     /* Two axes by default */
     priv->axis[0].type      = TYPE_BYVALUE;
@@ -470,8 +457,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
       if (s != NULL) {
         jstkParseButtonOption(s, priv, i, local->name);
       }
-      DBG(1, xf86Msg(X_CONFIG, "Button %d mapped to %d (value=%d)\n", i+1, 
-                     priv->button[i].mapping, priv->button[i].value));
+      DBG(1, xf86Msg(X_CONFIG, "Button %d mapped to %d\n", i+1, 
+                     priv->button[i].mapping));
     }
 
     /* Process button mapping options */
@@ -621,5 +608,3 @@ _X_EXPORT XF86ModuleData joystickModuleData = {
     jstkDriverPlug,
     jstkDriverUnplug
 };
-
-#endif /* XFree86LOADER */

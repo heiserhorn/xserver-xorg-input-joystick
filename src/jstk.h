@@ -44,61 +44,67 @@
  **/
 
 #if DEBUG
-extern int      debug_level;
-#define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
+    extern int      debug_level;
+    #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
-#define DBG(lvl, f)
+    #define DBG(lvl, f)
 #endif
 
 
-
-#define MAXBUTTONS 32
-#define MAXAXES 32
-#define MAXKEYSPERBUTTON 4
-
-typedef enum {
-    TYPE_NONE,
+typedef enum _JOYSTICKTYPE{
+    TYPE_NONE,        /* Axis value is not relevant */
     TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
     TYPE_ACCELERATED, /* Speed is accelerated */
     TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
 } JOYSTICKTYPE;
 
-typedef enum {
-    MAPPING_NONE=0,
-    MAPPING_X,
-    MAPPING_Y,
-    MAPPING_ZX,
-    MAPPING_ZY,
-    MAPPING_BUTTON,
-    MAPPING_KEY,
-    MAPPING_SPEED_MULTIPLY,
-    MAPPING_DISABLE,
-    MAPPING_DISABLE_MOUSE,
-    MAPPING_DISABLE_KEYS
-} JOYSTICKMAPPING ;
+typedef enum _JOYSTICKMAPPING{
+    MAPPING_NONE,           /* Nothing */
+    MAPPING_X,              /* X-Axis */
+    MAPPING_Y,              /* Y-Axis */
+    MAPPING_ZX,             /* Horizontal scrolling */
+    MAPPING_ZY,             /* Vertical scrolling */
+    MAPPING_BUTTON,         /* Mouse button */
+    MAPPING_KEY,            /* Keyboard event */
+    MAPPING_SPEED_MULTIPLY, /* Will amplify all axis movement */
+    MAPPING_DISABLE,        /* Disable mouse and key events */
+    MAPPING_DISABLE_MOUSE,  /* Disable only mouse events */
+    MAPPING_DISABLE_KEYS    /* Disable only key events */
+} JOYSTICKMAPPING;
 
 
-typedef struct
-{
-    int   value;
-    int   deadzone;
-    float temp,amplify;
-    JOYSTICKTYPE type;
+typedef struct _AXIS {
+    JOYSTICKTYPE    type;
     JOYSTICKMAPPING mapping;
+    int             value;
+    int             deadzone;
+    union {
+        float       currentspeed;
+        float       previousposition;
+    };
+    float           amplify;
 } AXIS;
 
-typedef struct
-{
-   char pressed;
-   int value;
-   unsigned int keys[MAXKEYSPERBUTTON];
-   float temp;
+#define MAXKEYSPERBUTTON 4
+
+typedef struct _BUTTON {
    JOYSTICKMAPPING mapping;
+   char pressed;
+   union {
+       int buttonnumber;    /* MAPPING_BUTTON */
+       struct {
+           float amplify;       /* MAPPING_X/Y/ZX/ZY, 
+                                   MAPPING_SPEED_MULTIPLY */
+           float currentspeed;  /* MAPPING_X/Y/ZX/ZY */
+       };
+       unsigned int keys[MAXKEYSPERBUTTON]; /* MAPPING_KEY */
+   };
 } BUTTON;
 
+#define MAXBUTTONS 32
+#define MAXAXES 32
 
-typedef struct
-{
+typedef struct _JoystickDevRec {
     int          fd;             /* Actual file descriptor */
     void         *devicedata;    /* Extra platform device dependend data */
     char         *device;        /* Name of the device */
@@ -114,6 +120,5 @@ typedef struct
     BUTTON button[MAXBUTTONS];           /* Configuration per button */
     unsigned char axes, buttons;         /* Number of axes and buttons */
 } JoystickDevRec, *JoystickDevPtr;
-
 
 #endif

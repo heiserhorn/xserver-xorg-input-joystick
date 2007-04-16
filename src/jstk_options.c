@@ -95,17 +95,17 @@ jstkParseButtonOption(const char* org,
   if (strcmp(param, "none") == 0) {
     button->mapping = MAPPING_NONE;
   } else if (sscanf(param, "button=%d", &value) == 1) {
-    button->mapping = MAPPING_BUTTON;
-    button->value   = value;
+    button->mapping      = MAPPING_BUTTON;
+    button->buttonnumber = value;
   } else if (sscanf(param, "axis=%15s", p) == 1) {
     button->mapping = jstkGetAxisMapping(&fvalue, p, name);
-    button->value = (int)(fvalue*1000.0);
+    button->amplify = fvalue;
     if (button->mapping == MAPPING_NONE)
       xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
               name, p);
   } else if (sscanf(param, "amplify=%f", &fvalue) == 1) {
     button->mapping = MAPPING_SPEED_MULTIPLY;
-    button->value = (int)(fvalue*1000.0);
+    button->amplify = fvalue;
   } else if (sscanf(param, "key=%30s", p) == 1) {
     char *current, *next;
     current = p;

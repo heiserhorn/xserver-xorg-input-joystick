@@ -24,7 +24,7 @@
 #ifndef _LINUX_JSTK_H_INCLUDED_
 #define _LINUX_JSTK_H_INCLUDED_
 
-typedef enum {
+typedef enum _JOYSTICKEVENT {
     EVENT_NONE=0,
     EVENT_BUTTON,
     EVENT_AXIS

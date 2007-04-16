@@ -13,7 +13,8 @@ joystick \- Joystick input driver
 .fi
 .SH DESCRIPTION
 .B joystick
-is an __xservername__ input driver for Joysticks, using either Linux\'s joystick devices or *BSD\'s uhid devices.
+is an __xservername__ input driver for Joysticks, using either Linux\'s
+joystick devices or *BSD\'s uhid devices.
 
 .SH SUPPORTED HARDWARE
 In general, every by the kernel supported joystick should be supported through the

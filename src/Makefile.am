@@ -32,7 +32,7 @@
     			       jstk_axis.c jstk_axis.h \
     			       jstk_options.c jstk_options.h
 
-BSD_SRCS = bsd_jstk.c
+BSD_SRCS   = bsd_jstk.c
 LINUX_SRCS = linux_jstk.c
 
 if BSD
