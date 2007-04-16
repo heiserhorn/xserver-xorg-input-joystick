@@ -62,6 +62,7 @@ int
 jstkOpenDevice(JoystickDevPtr joystick)
 {
   char joy_name[128];
+  unsigned char axes, buttons;
   int driver_version;
 
   if ((joystick->fd = open(joystick->device, O_RDWR | O_NDELAY, 0)) < 0) {
@@ -83,33 +84,29 @@ jstkOpenDevice(JoystickDevPtr joystick)
             driver_version & 0xff);
   }
 
-  if (ioctl(joystick->fd, JSIOCGAXES, &joystick->axes) == -1) {
+  if (ioctl(joystick->fd, JSIOCGAXES, &axes) == -1) {
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     close(joystick->fd);
     return -1;
   }
-  if (joystick->axes > 32) joystick->axes = 32;
 
-  if (ioctl(joystick->fd, JSIOCGBUTTONS, &joystick->buttons) == -1) {
+  if (ioctl(joystick->fd, JSIOCGBUTTONS, &buttons) == -1) {
     xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", joystick->device,
             strerror(errno));
     close(joystick->fd);
     return -1;
   }
-  if (joystick->buttons > 32) joystick->buttons = 32;
 
-  {
-    if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name) == -1) {
+  if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name) == -1) {
       xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
               joystick->device, strerror(errno));
-      close(joystick->fd);
-      return -1;
-    }
-
-    xf86Msg(X_INFO, "Joystick: %s. %d axes, %d buttons\n", 
-      joy_name, joystick->axes, joystick->buttons);
+    close(joystick->fd);
+    return -1;
   }
+
+  xf86Msg(X_INFO, "Joystick: %s. %d axes, %d buttons\n", 
+          joy_name, axes, buttons);
 
   return joystick->fd;
 }

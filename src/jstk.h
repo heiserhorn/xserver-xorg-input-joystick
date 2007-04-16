@@ -105,20 +105,19 @@ typedef struct _BUTTON {
 #define MAXAXES 32
 
 typedef struct _JoystickDevRec {
-    int          fd;             /* Actual file descriptor */
-    void         *devicedata;    /* Extra platform device dependend data */
-    char         *device;        /* Name of the device */
+    int          fd;          /* Actual file descriptor */
+    void         *devicedata; /* Extra platform device dependend data */
+    char         *device;     /* Name of the device */
 
-    OsTimerPtr   timer;
+    OsTimerPtr   timer;       /* Timer for axis movement */
     Bool         timerrunning;
-    float        x,y,zx,zy;      /* Pending subpixel movements */
+    float        x,y,zx,zy;   /* Pending subpixel movements */
 
     Bool         mouse_enabled, keys_enabled;
-    float        amplify;        /* Global amplifier of axis movement */
+    float        amplify;     /* Global amplifier of axis movement */
 
-    AXIS axis[MAXAXES];                  /* Configuration per axis */
-    BUTTON button[MAXBUTTONS];           /* Configuration per button */
-    unsigned char axes, buttons;         /* Number of axes and buttons */
+    AXIS axis[MAXAXES];           /* Configuration per axis */
+    BUTTON button[MAXBUTTONS];    /* Configuration per button */
 } JoystickDevRec, *JoystickDevPtr;
 
 #endif

@@ -388,8 +388,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->mouse_enabled = TRUE;
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
-    priv->axes = 0;
-    priv->buttons = 0;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
