@@ -52,7 +52,8 @@
  *
  * jstkOpenDevice --
  *
- * Open and initialize a joystick device
+ * Open and initialize a joystick device. The device name is
+ * taken from JoystickDevPtr 
  * Returns the filedescriptor, or -1 in case of error
  *
  ***********************************************************************
@@ -185,12 +186,6 @@ jstkReadData(JoystickDevPtr joystick,
         }
       }
       break;
-  }
-
-  /* If it is an JS_EVENT_INIT just save the state, but don't report
-     as an event */
-  if ((js.type & JS_EVENT_INIT) == JS_EVENT_INIT) {
-    if (event != NULL) *event = EVENT_NONE;
   }
   return 1;
 }
