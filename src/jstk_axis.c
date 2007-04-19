@@ -89,9 +89,9 @@ jstkAxisTimer(OsTimerPtr        timer,
 
     } else if (axis->type == TYPE_ACCELERATED) {
       /* Stop to accelerate at a certain speed */
-      if (axis->currentspeed < 100.0f) axis->currentspeed *= 1.15f;
-
-      p1 = (axis->currentspeed - 0.1f) * (float)NEXTTIMER / 180.0f;
+      if (axis->currentspeed < 100.0f) axis->currentspeed = 
+                                     (axis->currentspeed + 3.0) * 1.07f - 3.0;
+      p1 = axis->currentspeed * (float)NEXTTIMER / 180.0f;
       p2 = p1 / 8.0f;
     }
     if (axis->value < 0) {
@@ -124,9 +124,10 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p1;
     float p2;
 
-    if (priv->button[i].currentspeed < 100.0f) priv->button[i].currentspeed *= 1.15f;
-    p1 = (priv->button[i].currentspeed - 0.1) * (float)NEXTTIMER / 180.0f *
-         priv->button[i].amplify;
+    if (priv->button[i].currentspeed < 100.0f) priv->button[i].currentspeed = 
+                           (priv->button[i].currentspeed + 3.0) * 1.07f - 3.0;
+   p1 = priv->button[i].currentspeed * (float)NEXTTIMER / 180.0f *
+        priv->button[i].amplify;
     p1 *= priv->amplify;
     p2 = p1 / 8.0f;
 
