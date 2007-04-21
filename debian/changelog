@@ -1,9 +1,11 @@
-xserver-xorg-input-joystick (1:1.2.0-1) UNRELEASED; urgency=low
+xserver-xorg-input-joystick (1:1.2.1-1) UNRELEASED; urgency=low
 
   * New upstream release.
-  * Add 01_fix_module_version.patch.
+  * Add XS-Vcs-*.
+  * Add a link to www.X.org and a reference to the xf86-input-joystick
+    module in the long description.
 
- -- Brice Goglin <Brice.Goglin@ens-lyon.org>  Sun, 01 Apr 2007 13:13:25 +0200
+ -- Brice Goglin <Brice.Goglin@ens-lyon.org>  Sat, 21 Apr 2007 03:45:07 +0200
 
 xserver-xorg-input-joystick (1:1.1.1-1) experimental; urgency=low
 
