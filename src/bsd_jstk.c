@@ -78,7 +78,7 @@ struct jstk_bsd_hid_data {
 int
 jstkOpenDevice(JoystickDevPtr joystick)
 {
-  int cur_axis, cur_button;
+  int cur_axis;
   int is_joystick, report_id = 0;
   int got_something;
   struct hid_data *d;
@@ -124,7 +124,6 @@ jstkOpenDevice(JoystickDevPtr joystick)
   is_joystick = 0;
   got_something = 0;
   cur_axis = 0;
-  cur_button = 0;
   bsddata->hats = 0;
   bsddata->axes = 0;
   bsddata->buttons = 0;
@@ -172,8 +171,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
 	{
           if (bsddata->buttons < MAXBUTTONS) {
 	    got_something = 1;
-            memcpy(&bsddata->button_item[cur_button], &h, sizeof(h));
-            cur_button++;
+            memcpy(&bsddata->button_item[bsddata->buttons], &h, sizeof(h));
             bsddata->buttons++;
           }
 	}
@@ -192,7 +190,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
   bsddata->hotdata = 0;
   joystick->devicedata = (void*) bsddata;
   xf86Msg(X_INFO, "Joystick: %d buttons, %d axes\n", 
-      bsddata->axes, bsddata->buttons);
+      bsddata->buttons, bsddata->axes);
 
   return joystick->fd;
 }
@@ -300,8 +298,9 @@ jstkReadData(JoystickDevPtr joystick,
 
   for (j=0; j<bsddata->buttons; j++)
     {
-       int pressed = (d == bsddata->button_item[j].logical_minimum) ? 0 : 1;
+       int pressed;
        d = hid_get_data(bsddata->data_buf, &bsddata->button_item[j]);
+       pressed = (d == bsddata->button_item[j].logical_minimum) ? 0 : 1;
        if (pressed != joystick->button[j].pressed) {
          joystick->button[j].pressed = pressed;
          if (event != NULL) *event = EVENT_BUTTON;
