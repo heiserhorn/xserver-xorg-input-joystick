@@ -68,7 +68,7 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p1 = 0.0f;     /* Pixels to move cursor */
     float p2 = 0.0f;     /* Pixels to scroll */
     float scale;
-    struct AXIS *axis;
+    AXIS *axis;
     axis = &priv->axis[i];
 
     nexttimer = NEXTTIMER;
@@ -89,9 +89,9 @@ jstkAxisTimer(OsTimerPtr        timer,
 
     } else if (axis->type == TYPE_ACCELERATED) {
       /* Stop to accelerate at a certain speed */
-      if (axis->temp < 100.0f) axis->temp *= 1.15f;
-
-      p1 = (axis->temp - 0.1f) * (float)NEXTTIMER / 180.0f;
+      if (axis->currentspeed < 100.0f) axis->currentspeed = 
+                                     (axis->currentspeed + 3.0) * 1.07f - 3.0;
+      p1 = axis->currentspeed * (float)NEXTTIMER / 180.0f;
       p2 = p1 / 8.0f;
     }
     if (axis->value < 0) {
@@ -124,9 +124,10 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p1;
     float p2;
 
-    if (priv->button[i].temp < 100.0f) priv->button[i].temp *= 1.15f;
-    p1 = (priv->button[i].temp - 0.1) * (float)NEXTTIMER / 180.0f *
-         ((float)priv->button[i].value) / 1000.0f;
+    if (priv->button[i].currentspeed < 100.0f) priv->button[i].currentspeed = 
+                           (priv->button[i].currentspeed + 3.0) * 1.07f - 3.0;
+   p1 = priv->button[i].currentspeed * (float)NEXTTIMER / 180.0f *
+        priv->button[i].amplify;
     p1 *= priv->amplify;
     p2 = p1 / 8.0f;
 
@@ -207,7 +208,8 @@ jstkAxisTimer(OsTimerPtr        timer,
  ***********************************************************************
  */
 void
-jstkStartAxisTimer(LocalDevicePtr device, int number) {
+jstkStartAxisTimer(LocalDevicePtr device, int number) 
+{
   int pixel;
   JoystickDevPtr priv = device->private;
 
@@ -253,7 +255,8 @@ jstkStartAxisTimer(LocalDevicePtr device, int number) {
  */
 
 void
-jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
+jstkStartButtonAxisTimer(LocalDevicePtr device, int number) 
+{
   int pixel;
   JoystickDevPtr priv = device->private;
 
@@ -261,7 +264,7 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
   priv->timerrunning = TRUE;
 
   pixel = 1;
-  if (priv->button[number].value < 0) pixel = -1;
+  if (priv->button[number].amplify < 0) pixel = -1;
   switch (priv->button[number].mapping) {
     case MAPPING_X:
       priv->x += pixel;
@@ -298,7 +301,8 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number) {
  ***********************************************************************
  */
 void
-jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
+jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) 
+{
   JoystickDevPtr priv = device->private;
   int i,x,y;
 
@@ -310,9 +314,11 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
   {
     float rel;
     int dif;
-    rel = (priv->axis[i].value > 0) ?
-           (priv->axis[i].value - priv->axis[i].deadzone) :
-           (priv->axis[i].value + priv->axis[i].deadzone);
+    if (priv->axis[i].value >= priv->axis[i].deadzone)
+      rel = (priv->axis[i].value - priv->axis[i].deadzone);
+    if (priv->axis[i].value <= -priv->axis[i].deadzone)
+      rel = (priv->axis[i].value + priv->axis[i].deadzone);
+
     rel = (rel) / (2.0f * (float)(32768 - priv->axis[i].deadzone));
     /* rel contains numbers between -0.5 and +0.5 now */
 
@@ -321,15 +327,15 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number) {
     DBG(5, ErrorF("Relative Position of axis %d: %.2f\n", i, rel));
 
     /* Calculate difference to previous position on screen in pixels */
-    dif = (int)(rel - priv->axis[i].temp + 0.5f);
+    dif = (int)(rel - priv->axis[i].previousposition + 0.5f);
     if ((dif >= 1)||(dif <= -1)) {
       if (priv->axis[i].mapping == MAPPING_X) {
         x += (dif);
-        priv->axis[i].temp += (float)dif;
+        priv->axis[i].previousposition += (float)dif;
       }
       if (priv->axis[i].mapping == MAPPING_Y) {
         y += (int)(dif);
-        priv->axis[i].temp += (float)dif;
+        priv->axis[i].previousposition += (float)dif;
       }
     }
   }

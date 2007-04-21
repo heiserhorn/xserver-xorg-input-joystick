@@ -43,13 +43,14 @@
  ***********************************************************************
  */
 
-static enum JOYSTICKMAPPING
-jstkGetAxisMapping(float *value, const char* param, const char* name) {
+static JOYSTICKMAPPING
+jstkGetAxisMapping(float *value, const char* param, const char* name) 
+{
   if (sscanf(param, "%f", value)==0) {
     if (param[0] == '-')
       *value *= -1.0;
   }
-if (strstr(param, "zx") != NULL)
+  if (strstr(param, "zx") != NULL)
     return MAPPING_ZX;
   else if (strstr(param, "zy") != NULL)
     return MAPPING_ZY;
@@ -77,13 +78,14 @@ void
 jstkParseButtonOption(const char* org,
                       JoystickDevPtr priv,
                       int number,
-                      const char* name) {
+                      const char* name)
+{
   char *param;
   char *tmp;
   int value;
   float fvalue;
   char p[64];
-  struct BUTTON* button;
+  BUTTON* button;
 
   button = &priv->button[number];
 
@@ -93,17 +95,18 @@ jstkParseButtonOption(const char* org,
   if (strcmp(param, "none") == 0) {
     button->mapping = MAPPING_NONE;
   } else if (sscanf(param, "button=%d", &value) == 1) {
-    button->mapping = MAPPING_BUTTON;
-    button->value   = value;
+    button->mapping      = MAPPING_BUTTON;
+    button->buttonnumber = value;
   } else if (sscanf(param, "axis=%15s", p) == 1) {
     button->mapping = jstkGetAxisMapping(&fvalue, p, name);
-    button->value = (int)(fvalue*1000.0);
+    button->amplify = fvalue;
+    button->currentspeed = 1.0;
     if (button->mapping == MAPPING_NONE)
       xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
               name, p);
   } else if (sscanf(param, "amplify=%f", &fvalue) == 1) {
     button->mapping = MAPPING_SPEED_MULTIPLY;
-    button->value = (int)(fvalue*1000.0);
+    button->amplify = fvalue;
   } else if (sscanf(param, "key=%30s", p) == 1) {
     char *current, *next;
     current = p;
@@ -143,7 +146,8 @@ jstkParseButtonOption(const char* org,
  */
 
 void
-jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
+jstkParseAxisOption(const char* org, AXIS *axis, const char *name)
+{
   char *param;
   char *tmp;
   int value;
@@ -157,9 +161,10 @@ jstkParseAxisOption(const char* org, struct AXIS *axis, const char *name) {
       p[15]='\0';
       if (strcmp(p, "relative") == 0)
         axis->type = TYPE_BYVALUE;
-      else if (strcmp(p, "accelerated") == 0)
+      else if (strcmp(p, "accelerated") == 0) {
         axis->type = TYPE_ACCELERATED;
-      else if (strcmp(p, "absolute") == 0)
+        axis->currentspeed = 1.0;
+      } else if (strcmp(p, "absolute") == 0)
         axis->type = TYPE_ABSOLUTE;
       else if (strcmp(p, "none") == 0)
         axis->type = TYPE_NONE;
