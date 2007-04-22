@@ -2,10 +2,11 @@ xserver-xorg-input-joystick (1:1.2.1-2) unstable; urgency=low
 
   [ Brice Goglin ]
   * Bump Build-Depends: xserver-xorg-dev to >= 2:1.2.99.902.
+    (needed to let xsfbs get access to serverminver)
   * Build-Depends: quilt, needed to apply patches.
   * Generate Provides: line automatically.
 
- -- Drew Parsons <dparsons@debian.org>  Sun, 22 Apr 2007 19:21:07 +1000
+ -- Drew Parsons <dparsons@debian.org>  Sun, 22 Apr 2007 19:34:23 +1000
 
 xserver-xorg-input-joystick (1:1.2.1-1) unstable; urgency=low
 
