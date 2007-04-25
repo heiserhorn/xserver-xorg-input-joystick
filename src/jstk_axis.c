@@ -126,8 +126,8 @@ jstkAxisTimer(OsTimerPtr        timer,
 
     if (priv->button[i].currentspeed < 100.0f) priv->button[i].currentspeed = 
                            (priv->button[i].currentspeed + 3.0) * 1.07f - 3.0;
-   p1 = priv->button[i].currentspeed * (float)NEXTTIMER / 180.0f *
-        priv->button[i].amplify;
+    p1 = priv->button[i].currentspeed * (float)NEXTTIMER / 180.0f *
+         priv->button[i].amplify;
     p1 *= priv->amplify;
     p2 = p1 / 8.0f;
 

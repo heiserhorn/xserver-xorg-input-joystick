@@ -154,7 +154,7 @@ This example will set up the axis as scrolling vertically inverted, which half o
 .BI "  Option \*qMapAxis1\*q     \*q" "mode=accelerated axis=-0.5zy" \*q
 .fi
 
-THis example maps four buttons to the four half axes, so you can use them like a pad. The movement will get half
+This example maps four buttons to the four half axes, so you can use them like a pad. The movement will get half
 the normal speed:
 .nf
 .BI "  Option \*qMapButton1\*q     \*q" "axis=+0.5x" \*q
