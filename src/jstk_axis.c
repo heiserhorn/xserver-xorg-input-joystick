@@ -163,24 +163,24 @@ jstkAxisTimer(OsTimerPtr        timer,
 
   /* Generate scrolling events */
   while (priv->zy >= 1.0) {  /* down */
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[1], 1, 0, 0);
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[1], 0, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 1, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 0, 0, 0);
     priv->zy-=1.0;
   }
   while (priv->zy <= -1.0) { /* up */
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[0], 1, 0, 0);
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[0], 0, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 1, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 0, 0, 0);
     priv->zy+=1.0;
   }
 
   while (priv->zx >= 1.0) {  /* right */
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[3], 1, 0, 0);
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[3], 0, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 1, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 0, 0, 0);
     priv->zx-=1.0;
   }
   while (priv->zx <= -1.0) { /* left */
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[2], 1, 0, 0);
-    xf86PostButtonEvent(device, 0, priv->scrollbuttonmap[2], 0, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 1, 0, 0);
+    xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 0, 0, 0);
     priv->zx+=1.0;
   }
 

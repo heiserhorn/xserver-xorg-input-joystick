@@ -111,9 +111,16 @@ typedef struct _JoystickDevRec {
     Bool         mouse_enabled, keys_enabled;
     float        amplify;     /* Global amplifier of axis movement */
 
-    int buttonmap_size;
-    CARD8 scrollbuttonmap[4];     /* Logical button numbers for scrollwheel */
-    CARD8 buttonmap[MAXBUTTONS+1];
+    struct _BUTTONMAP {
+        int size;
+        CARD8 scrollbutton[4];     /* Logical button numbers for scrollwheel */
+        CARD8 map[MAXBUTTONS+1];
+    } buttonmap;
+    struct _KEYMAP {
+        int size;
+        KeySym map[MAXBUTTONS+1];
+    } keymap;
+
     AXIS axis[MAXAXES];           /* Configuration per axis */
     BUTTON button[MAXBUTTONS];    /* Configuration per button */
 } JoystickDevRec, *JoystickDevPtr;

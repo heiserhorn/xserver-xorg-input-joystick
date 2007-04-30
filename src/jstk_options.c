@@ -21,6 +21,11 @@
  *
  */
 
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,12 +50,12 @@ jstkGetButtonNumberInMap(JoystickDevPtr priv,
                          int buttonnumber)
 {
     int j;
-    for (j=1; j<=priv->buttonmap_size; j++)
-        if (priv->buttonmap[j] == buttonnumber)
+    for (j=1; j<=priv->buttonmap.size; j++)
+        if (priv->buttonmap.map[j] == buttonnumber)
             break;
     if (j > MAXBUTTONS+1) return 0;
-    priv->buttonmap[j] = buttonnumber;
-    if (j > priv->buttonmap_size) priv->buttonmap_size = j;
+    priv->buttonmap.map[j] = buttonnumber;
+    if (j > priv->buttonmap.size) priv->buttonmap.size = j;
     return j;
 }
 
@@ -139,7 +144,7 @@ jstkParseButtonOption(const char* org,
     for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
       next = strchr(current, ',');
       if (next) *(next++) = '\0';
-      button->keys[value] = atoi(current);
+      button->keys[value] = atoi(current); 
       if (button->keys[value] == 0)
         xf86Msg(X_WARNING, "%s: error parsing key value: %s.\n", 
                 name, current);

@@ -41,6 +41,7 @@
 #include "jstk.h"
 #include "jstk_hw.h"
 #include "jstk_axis.h"
+#include "jstk_key.h"
 #include "jstk_options.h"
 
 
@@ -259,9 +260,9 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
       int m;
       DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
       /* We want the first 7 button numbers fixed */
-      if (priv->buttonmap_size != 0) {
-          if (InitButtonClassDeviceStruct(pJstk, priv->buttonmap_size, 
-                     priv->buttonmap) == FALSE) {
+      if (priv->buttonmap.size != 0) {
+          if (InitButtonClassDeviceStruct(pJstk, priv->buttonmap.size, 
+                     priv->buttonmap.map) == FALSE) {
             ErrorF("unable to allocate Button class device\n");
             return !Success;
           }
@@ -270,6 +271,8 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
             return !Success;
           }
       }
+      jstkInitKeys(pJstk, priv);
+
       m = 2;
       for (i=0; i<MAXAXES; i++) 
           if (priv->axis[i].type != TYPE_NONE)
@@ -309,8 +312,6 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                                    0, /* min_res */
                                    1); /* max_res */
         }
-
-
         /* allocate the motion history buffer if needed */
         xf86MotionHistoryAllocate(local);
       }
@@ -412,7 +413,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->mouse_enabled = TRUE;
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
-    priv->buttonmap_size = 0;
+    priv->buttonmap.size = 0;
+    priv->keymap.size = 0;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
@@ -445,10 +447,12 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->axis[1].type      = TYPE_BYVALUE;
     priv->axis[1].mapping   = MAPPING_Y;
 
-    priv->scrollbuttonmap[0] = jstkGetButtonNumberInMap(priv, 4);
-    priv->scrollbuttonmap[1] = jstkGetButtonNumberInMap(priv, 5);
-    priv->scrollbuttonmap[2] = jstkGetButtonNumberInMap(priv, 6);
-    priv->scrollbuttonmap[3] = jstkGetButtonNumberInMap(priv, 7);
+    priv->buttonmap.scrollbutton[0] = jstkGetButtonNumberInMap(priv, 4);
+    priv->buttonmap.scrollbutton[1] = jstkGetButtonNumberInMap(priv, 5);
+    priv->buttonmap.scrollbutton[2] = jstkGetButtonNumberInMap(priv, 6);
+    priv->buttonmap.scrollbutton[3] = jstkGetButtonNumberInMap(priv, 7);
+    priv->buttonmap.map[0] = 0;
+
 
     xf86CollectInputOptions(local, NULL, NULL);
     xf86OptionListReport(local->options);
