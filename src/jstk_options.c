@@ -31,6 +31,31 @@
 
 
 
+
+
+/***********************************************************************
+ *
+ * jstkGetAxisMapping --
+ *
+ ***********************************************************************
+ */
+
+int
+jstkGetButtonNumberInMap(JoystickDevPtr priv,
+                         int buttonnumber)
+{
+    int j;
+    for (j=1; j<=priv->buttonmap_size; j++)
+        if (priv->buttonmap[j] == buttonnumber)
+            break;
+    if (j > MAXBUTTONS+1) return 0;
+    priv->buttonmap[j] = buttonnumber;
+    if (j > priv->buttonmap_size) priv->buttonmap_size = j;
+    return j;
+}
+
+
+
 /***********************************************************************
  *
  * jstkGetAxisMapping --
@@ -96,7 +121,7 @@ jstkParseButtonOption(const char* org,
     button->mapping = MAPPING_NONE;
   } else if (sscanf(param, "button=%d", &value) == 1) {
     button->mapping      = MAPPING_BUTTON;
-    button->buttonnumber = value;
+    button->buttonnumber = jstkGetButtonNumberInMap(priv, value);
   } else if (sscanf(param, "axis=%15s", p) == 1) {
     button->mapping = jstkGetAxisMapping(&fvalue, p, name);
     button->amplify = fvalue;

@@ -24,6 +24,9 @@
 #ifndef __JSTK_OPTIONS_H_INCLUDED__
 #define __JSTK_OPTIONS_H_INCLUDED__
 
+int jstkGetButtonNumberInMap(JoystickDevPtr priv,
+                             int buttonnumber);
+
 void jstkParseButtonOption(const char* org, 
                       JoystickDevPtr priv,
                       int number,

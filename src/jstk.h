@@ -52,14 +52,14 @@
 
 
 typedef enum _JOYSTICKTYPE{
-    TYPE_NONE,        /* Axis value is not relevant */
+    TYPE_NONE=0,        /* Axis value is not relevant */
     TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
     TYPE_ACCELERATED, /* Speed is accelerated */
     TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
 } JOYSTICKTYPE;
 
 typedef enum _JOYSTICKMAPPING{
-    MAPPING_NONE,           /* Nothing */
+    MAPPING_NONE=0,           /* Nothing */
     MAPPING_X,              /* X-Axis */
     MAPPING_Y,              /* Y-Axis */
     MAPPING_ZX,             /* Horizontal scrolling */
@@ -77,6 +77,7 @@ typedef struct _AXIS {
     JOYSTICKTYPE    type;
     JOYSTICKMAPPING mapping;
     int             value;
+    int             valuator;
     int             deadzone;
     float           currentspeed;
     float           previousposition;
@@ -110,6 +111,9 @@ typedef struct _JoystickDevRec {
     Bool         mouse_enabled, keys_enabled;
     float        amplify;     /* Global amplifier of axis movement */
 
+    int buttonmap_size;
+    CARD8 scrollbuttonmap[4];     /* Logical button numbers for scrollwheel */
+    CARD8 buttonmap[MAXBUTTONS+1];
     AXIS axis[MAXAXES];           /* Configuration per axis */
     BUTTON button[MAXBUTTONS];    /* Configuration per button */
 } JoystickDevRec, *JoystickDevPtr;

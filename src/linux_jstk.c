@@ -165,9 +165,11 @@ jstkReadData(JoystickDevPtr joystick,
     case JS_EVENT_BUTTON:
       if (js.number < MAXBUTTONS)
       {
-        joystick->button[js.number].pressed = js.value;
-        if (event != NULL) *event = EVENT_BUTTON;
-        if (number != NULL) *number = js.number;
+        if (joystick->button[js.number].pressed != js.value) {
+          joystick->button[js.number].pressed = js.value;
+          if (event != NULL) *event = EVENT_BUTTON;
+          if (number != NULL) *number = js.number;
+        }
       }
       break;
     case JS_EVENT_AXIS:

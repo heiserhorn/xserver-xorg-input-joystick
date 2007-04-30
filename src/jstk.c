@@ -200,31 +200,36 @@ jstkReadProc(LocalDevicePtr local)
 
   /* An axis was moved */
   if ((event == EVENT_AXIS) && 
-      (priv->axis[number].mapping != MAPPING_NONE) &&
       (priv->axis[number].type != TYPE_NONE)) {
     DBG(5, ErrorF("Axis %d moved to %d. Type: %d, Mapping: %d\n", number,
                   priv->axis[number].value,
                   priv->axis[number].type,
                   priv->axis[number].mapping));
-    switch (priv->axis[number].type) {
-      case TYPE_BYVALUE:
-      case TYPE_ACCELERATED:
-        if (priv->axis[number].value == 0) /* When axis was released */
-          priv->axis[number].currentspeed = 1.0;   /* Release speed counter */
 
-        if (priv->mouse_enabled == TRUE)
-          jstkStartAxisTimer(local, number);
-        break;
+    if (priv->axis[number].valuator != -1)
+        xf86PostMotionEvent(local->dev, 1, priv->axis[number].valuator, 
+                            1, priv->axis[number].value);
 
-      case TYPE_ABSOLUTE:
-        if (priv->mouse_enabled == TRUE)
-          jstkHandleAbsoluteAxis(local, number);
-        break;
+    if (priv->axis[number].mapping != MAPPING_NONE) {
+      switch (priv->axis[number].type) {
+        case TYPE_BYVALUE:
+        case TYPE_ACCELERATED:
+          if (priv->axis[number].value == 0) /* When axis was released */
+            priv->axis[number].currentspeed = 1.0;   /* Release speed counter */
 
-      default:
-        break;
+          if (priv->mouse_enabled == TRUE)
+            jstkStartAxisTimer(local, number);
+          break;
+
+        case TYPE_ABSOLUTE:
+          if (priv->mouse_enabled == TRUE)
+            jstkHandleAbsoluteAxis(local, number);
+          break;
+        default:
+          break;
+      }
     }
-  }
+    }
   } while (r == 2);
 }
 
@@ -245,7 +250,6 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                       int                what)
 {
   int i;
-  CARD8            map[MAXBUTTONS+1];
   LocalDevicePtr   local = (LocalDevicePtr)pJstk->public.devicePrivate;
   JoystickDevPtr   priv  = (JoystickDevPtr)XI_PRIVATE(pJstk);
 
@@ -254,16 +258,10 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
     case DEVICE_INIT: {
       int m;
       DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
-      m=0;
-      for (i=0; i<MAXBUTTONS; i++) 
-          if (priv->button[i].mapping == MAPPING_BUTTON)
-      {
-          m++;
-          map[m] = priv->button[i].buttonnumber;
-          priv->button[i].buttonnumber = m;
-      }
-      if (m != 0) {
-          if (InitButtonClassDeviceStruct(pJstk, m, map) == FALSE) {
+      /* We want the first 7 button numbers fixed */
+      if (priv->buttonmap_size != 0) {
+          if (InitButtonClassDeviceStruct(pJstk, priv->buttonmap_size, 
+                     priv->buttonmap) == FALSE) {
             ErrorF("unable to allocate Button class device\n");
             return !Success;
           }
@@ -272,9 +270,13 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
             return !Success;
           }
       }
+      m = 2;
+      for (i=0; i<MAXAXES; i++) 
+          if (priv->axis[i].type != TYPE_NONE)
+              priv->axis[i].valuator = m++;
 
       if (InitValuatorClassDeviceStruct(pJstk, 
-                                        2,
+                                        m,
                                         xf86GetMotionEvents, 
                                         local->history_size,
                                         Relative) == FALSE) {
@@ -295,6 +297,19 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                                1, /* resolution */
                                0, /* min_res */
                                1); /* max_res */
+
+        for (i=0; i<MAXAXES; i++) 
+            if (priv->axis[i].type != TYPE_NONE)
+        {
+            InitValuatorAxisStruct(pJstk,
+                                   priv->axis[i].valuator, /* valuator num */
+                                   -32768, /* min val */
+                                   32767,  /* max val */
+                                   1, /* resolution */
+                                   0, /* min_res */
+                                   1); /* max_res */
+        }
+
 
         /* allocate the motion history buffer if needed */
         xf86MotionHistoryAllocate(local);
@@ -397,15 +412,17 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->mouse_enabled = TRUE;
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
+    priv->buttonmap_size = 0;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
       priv->axis[i].value        = 0;
       priv->axis[i].deadzone     = 1000;
-      priv->axis[i].type         = TYPE_BYVALUE;
+      priv->axis[i].type         = TYPE_NONE;
       priv->axis[i].mapping      = MAPPING_NONE;
       priv->axis[i].currentspeed = 0.0f;
       priv->axis[i].amplify      = 1.0f;
+      priv->axis[i].valuator     = -1;
     }
     for (i=0; i<MAXBUTTONS; i++) {
       priv->button[i].pressed      = 0;
@@ -428,6 +445,10 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->axis[1].type      = TYPE_BYVALUE;
     priv->axis[1].mapping   = MAPPING_Y;
 
+    priv->scrollbuttonmap[0] = jstkGetButtonNumberInMap(priv, 4);
+    priv->scrollbuttonmap[1] = jstkGetButtonNumberInMap(priv, 5);
+    priv->scrollbuttonmap[2] = jstkGetButtonNumberInMap(priv, 6);
+    priv->scrollbuttonmap[3] = jstkGetButtonNumberInMap(priv, 7);
 
     xf86CollectInputOptions(local, NULL, NULL);
     xf86OptionListReport(local->options);
