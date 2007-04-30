@@ -78,10 +78,8 @@ typedef struct _AXIS {
     JOYSTICKMAPPING mapping;
     int             value;
     int             deadzone;
-    union {
-        float       currentspeed;
-        float       previousposition;
-    };
+    float           currentspeed;
+    float           previousposition;
     float           amplify;
 } AXIS;
 
@@ -90,15 +88,11 @@ typedef struct _AXIS {
 typedef struct _BUTTON {
    JOYSTICKMAPPING mapping;
    char pressed;
-   union {
-       int buttonnumber;    /* MAPPING_BUTTON */
-       struct {
-           float amplify;       /* MAPPING_X/Y/ZX/ZY, 
-                                   MAPPING_SPEED_MULTIPLY */
-           float currentspeed;  /* MAPPING_X/Y/ZX/ZY */
-       };
-       unsigned int keys[MAXKEYSPERBUTTON]; /* MAPPING_KEY */
-   };
+   int buttonnumber;    /* MAPPING_BUTTON */
+   float amplify;       /* MAPPING_X/Y/ZX/ZY, 
+                           MAPPING_SPEED_MULTIPLY */
+   float currentspeed;  /* MAPPING_X/Y/ZX/ZY */
+   unsigned int keys[MAXKEYSPERBUTTON]; /* MAPPING_KEY */
 } BUTTON;
 
 #define MAXBUTTONS 32

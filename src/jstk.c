@@ -245,24 +245,32 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                       int                what)
 {
   int i;
-  CARD8            map[MAXBUTTONS];
+  CARD8            map[MAXBUTTONS+1];
   LocalDevicePtr   local = (LocalDevicePtr)pJstk->public.devicePrivate;
   JoystickDevPtr   priv  = (JoystickDevPtr)XI_PRIVATE(pJstk);
 
   switch (what)
     {
-    case DEVICE_INIT:
+    case DEVICE_INIT: {
+      int m;
       DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
-      for (i=1; i<MAXBUTTONS; i++) map[i] = i;
-
-      if (InitButtonClassDeviceStruct(pJstk, MAXBUTTONS, map) == FALSE) {
-        ErrorF("unable to allocate Button class device\n");
-        return !Success;
+      m=0;
+      for (i=0; i<MAXBUTTONS; i++) 
+          if (priv->button[i].mapping == MAPPING_BUTTON)
+      {
+          m++;
+          map[m] = priv->button[i].buttonnumber;
+          priv->button[i].buttonnumber = m;
       }
-
-      if (InitFocusClassDeviceStruct(pJstk) == FALSE) {
-        ErrorF("unable to init Focus class device\n");
-        return !Success;
+      if (m != 0) {
+          if (InitButtonClassDeviceStruct(pJstk, m, map) == FALSE) {
+            ErrorF("unable to allocate Button class device\n");
+            return !Success;
+          }
+          if (InitFocusClassDeviceStruct(pJstk) == FALSE) {
+            ErrorF("unable to init Focus class device\n");
+            return !Success;
+          }
       }
 
       if (InitValuatorClassDeviceStruct(pJstk, 
@@ -291,7 +299,8 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
         /* allocate the motion history buffer if needed */
         xf86MotionHistoryAllocate(local);
       }
-      break; 
+      break;
+    }
 
     case DEVICE_ON:
       DBG(1, ErrorF("jstkDeviceControlProc  what=ON name=%s\n", priv->device));
