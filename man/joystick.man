@@ -209,9 +209,12 @@ will generate a lowercase
 is for the  
 .IR "space " key.
 
+.SH "NOTES"
+The driver does no hotplugging. The joystick needs to be plugged in when the driver is loaded. If the joystick is unplugged, the driver deactivates itself.
+
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__), xmodmap(1)
 .SH AUTHORS
-Sascha Hlusiak 
+Sascha Hlusiak (2007)
 .fi
 Frederic Lepied (1995-1999)

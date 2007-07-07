@@ -34,11 +34,20 @@
 #include <X11/extensions/XKBsrv.h>
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>
-// #include <xf86Xinput.h>
 #include "jstk.h"
 #include "jstk_key.h"
 
 #define MIN_KEYCODE 8
+
+
+/**
+ * Xorg should allow us to have a separate keymap
+ * If a keyboard is defined, there already is a keymap and we have to use it
+ * If not, we have to provide our own keymap
+ *
+ * Since we don't know we do NOTHING. :-( So we assume, you have a keyboard attached
+ **/
+
 
 int
 jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
