@@ -30,7 +30,6 @@
 
 @DRIVER_NAME@_drv_la_SOURCES = jstk.c jstk.h jstk_hw.h \
     			       jstk_axis.c jstk_axis.h \
-    			       jstk_key.c jstk_key.h \
     			       jstk_options.c jstk_options.h
 
 BSD_SRCS   = bsd_jstk.c

@@ -128,9 +128,10 @@ jstkParseButtonOption(const char* org,
     button->mapping      = MAPPING_BUTTON;
     button->buttonnumber = jstkGetButtonNumberInMap(priv, value);
   } else if (sscanf(param, "axis=%15s", p) == 1) {
+    p[15]='\0';
     button->mapping = jstkGetAxisMapping(&fvalue, p, name);
     button->amplify = fvalue;
-    button->currentspeed = 1.0;
+    button->currentspeed = 1.0f;
     if (button->mapping == MAPPING_NONE)
       xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
               name, p);
@@ -139,6 +140,7 @@ jstkParseButtonOption(const char* org,
     button->amplify = fvalue;
   } else if (sscanf(param, "key=%30s", p) == 1) {
     char *current, *next;
+    p[30]='\0';
     current = p;
     button->mapping = MAPPING_KEY;
     for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
@@ -188,12 +190,12 @@ jstkParseAxisOption(const char* org, AXIS *axis, const char *name)
 
   if ((tmp=strstr(param, "mode=")) != NULL) {
     if (sscanf(tmp, "mode=%15s", p) == 1) {
-      p[15]='\0';
+      p[15] = '\0';
       if (strcmp(p, "relative") == 0)
         axis->type = TYPE_BYVALUE;
       else if (strcmp(p, "accelerated") == 0) {
         axis->type = TYPE_ACCELERATED;
-        axis->currentspeed = 1.0;
+        axis->currentspeed = 1.0f;
       } else if (strcmp(p, "absolute") == 0)
         axis->type = TYPE_ABSOLUTE;
       else if (strcmp(p, "none") == 0)
@@ -210,7 +212,7 @@ jstkParseAxisOption(const char* org, AXIS *axis, const char *name)
   if ((tmp = strstr(param, "axis=")) != NULL) {
     if (sscanf(tmp, "axis=%15s", p) == 1) {
       p[15] = '\0';
-      fvalue = 1.0;
+      fvalue = 1.0f;
       axis->mapping = jstkGetAxisMapping(&fvalue, p, name);
       if ((axis->type == TYPE_ABSOLUTE) &&
           ((fvalue <= 1.1)&&(fvalue >= -1.1))) {

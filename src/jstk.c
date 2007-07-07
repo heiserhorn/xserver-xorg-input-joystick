@@ -41,7 +41,6 @@
 #include "jstk.h"
 #include "jstk_hw.h"
 #include "jstk_axis.h"
-#include "jstk_key.h"
 #include "jstk_options.h"
 
 
@@ -271,7 +270,6 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
             return !Success;
           }
       }
-      jstkInitKeys(pJstk, priv);
 
       m = 2;
       for (i=0; i<MAXAXES; i++) 
