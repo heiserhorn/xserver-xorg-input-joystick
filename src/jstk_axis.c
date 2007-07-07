@@ -31,7 +31,6 @@
 #include <xf86_OSproc.h>
 #include <math.h>
 #include <stdlib.h>
-/* #include <xf86.h> */
 
 #include "jstk.h"
 #include "jstk_axis.h"
@@ -90,7 +89,7 @@ jstkAxisTimer(OsTimerPtr        timer,
     } else if (axis->type == TYPE_ACCELERATED) {
       /* Stop to accelerate at a certain speed */
       if (axis->currentspeed < 100.0f) axis->currentspeed = 
-                                     (axis->currentspeed + 3.0) * 1.07f - 3.0;
+                                     (axis->currentspeed + 3.0f) * 1.07f - 3.0f;
       p1 = axis->currentspeed * (float)NEXTTIMER / 180.0f;
       p2 = p1 / 8.0f;
     }
@@ -125,7 +124,7 @@ jstkAxisTimer(OsTimerPtr        timer,
     float p2;
 
     if (priv->button[i].currentspeed < 100.0f) priv->button[i].currentspeed = 
-                           (priv->button[i].currentspeed + 3.0) * 1.07f - 3.0;
+                           (priv->button[i].currentspeed + 3.0f) * 1.07f - 3.0f;
     p1 = priv->button[i].currentspeed * (float)NEXTTIMER / 180.0f *
          priv->button[i].amplify;
     p1 *= priv->amplify;
@@ -162,35 +161,35 @@ jstkAxisTimer(OsTimerPtr        timer,
   }
 
   /* Generate scrolling events */
-  while (priv->zy >= 1.0) {  /* down */
+  while (priv->zy >= 1.0f) {  /* down */
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 1, 0, 0);
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 0, 0, 0);
-    priv->zy-=1.0;
+    priv->zy-=1.0f;
   }
-  while (priv->zy <= -1.0) { /* up */
+  while (priv->zy <= -1.0f) { /* up */
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 1, 0, 0);
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 0, 0, 0);
-    priv->zy+=1.0;
+    priv->zy+=1.0f;
   }
 
-  while (priv->zx >= 1.0) {  /* right */
+  while (priv->zx >= 1.0f) {  /* right */
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 1, 0, 0);
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 0, 0, 0);
-    priv->zx-=1.0;
+    priv->zx-=1.0f;
   }
-  while (priv->zx <= -1.0) { /* left */
+  while (priv->zx <= -1.0f) { /* left */
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 1, 0, 0);
     xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 0, 0, 0);
-    priv->zx+=1.0;
+    priv->zx+=1.0f;
   }
 
   if (priv->mouse_enabled == FALSE) nexttimer = 0;
   if (nexttimer == 0) {
     priv->timerrunning = FALSE;
-    priv->x  = 0.0;
-    priv->y  = 0.0;
-    priv->zx = 0.0;
-    priv->zy = 0.0;
+    priv->x  = 0.0f;
+    priv->y  = 0.0f;
+    priv->zx = 0.0f;
+    priv->zy = 0.0f;
     DBG(2, ErrorF("Stopping Axis Timer\n"));
   }
   xf86UnblockSIGIO (sigstate);
