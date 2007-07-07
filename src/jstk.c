@@ -374,7 +374,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     char                *s;
     int                 i;
 
-    DBG(0, ErrorF("jstkCorePreInit\n"));
     local = xf86AllocateInput(drv, 0);
     if (!local) {
       goto SetupProc_fail;
@@ -539,8 +538,6 @@ jstkCoreUnInit(InputDriverPtr    drv,
 {
     JoystickDevPtr device = (JoystickDevPtr) local->private;
 
-    DBG(0, ErrorF("jstkCoreUnInit\n"));
-
     jstkDeviceControlProc(local->dev, DEVICE_OFF);
 
     xfree (device);
@@ -578,7 +575,6 @@ jstkDriverPlug(pointer  module,
                int      *errmaj,
                int      *errmin)
 {
-    DBG(0, ErrorF("jstkDriverPlug\n"));
     xf86AddInputDriver(&JOYSTICK, module, 0);
     return module;
 }
@@ -598,7 +594,6 @@ jstkDriverPlug(pointer  module,
 static void
 jstkDriverUnplug(pointer p)
 {
-    DBG(0, ErrorF("jstkDriverUnplug\n"));
 }
 
 
