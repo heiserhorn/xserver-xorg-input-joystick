@@ -13,13 +13,14 @@ joystick \- Joystick input driver
 .fi
 .SH DESCRIPTION
 .B joystick
-is an __xservername__ input driver for Joysticks, using either Linux\'s
-joystick devices or *BSD\'s uhid devices.
+is an __xservername__ input driver for Joysticks, using either Linux's
+joystick devices or *BSD's uhid devices. The driver reports cursor movement
+as well as raw axis values through valuators. 
 
 .SH SUPPORTED HARDWARE
 In general, every by the kernel supported joystick should be supported through the
 .B joystick
-driver. The driver assumes that the joystick is calibrated and will report axis values
+driver. The driver assumes that the joystick is calibrated and reports axis values
 between 
 .IR "-32768 " and " 32768" .
 See the Linux kernel documentation for a complete list of supported devices. 
@@ -95,7 +96,7 @@ events again.
 .PP
 .TP 7
 .BI "Option \*qMapAxis<number>\*q \*q" string \*q
-Sets the mapping of the axis to the desired action. Counting of axis starts with
+Sets the mapping of the axis to the desired action. Counting of axes starts with
 .IR 1 ,
 the parameter may contain:
 .RS 7
@@ -103,9 +104,13 @@ the parameter may contain:
 .BI "\*qmode="<string> \*q
 Where
 .I <string>
-may be one of:
+can be one of:
 
 .B none, relative, accelerated, absolute
+
+Every axis which's mode is not
+.B none
+will be reported as an additional valuator.
 .TP 7
 .BI "\*qaxis="[<factor>]<axis> \*q
 Where
@@ -209,12 +214,24 @@ will generate a lowercase
 is for the  
 .IR "space " key.
 
+.SH "VALUATORS"
+The driver reports relative cursor movement as valuators 0 and 1.
+
+Every axis will be associated with an additional valuator,
+reporting the absolute raw values of the axis in the range of
+.IR "-32768 " to " 32768" .
+
+Axes in the mode 
+.B "\*qnone\*q"
+will be ignored. The mode has no effect on the reported value. The axis does not need to be assigned to a direction.
+
 .SH "NOTES"
-The driver does no hotplugging. The joystick needs to be plugged in when the driver is loaded. If the joystick is unplugged, the driver deactivates itself.
+The driver does not do hotplugging. The joystick needs to be plugged in when the driver is loaded.
+If the joystick is unplugged, the driver deactivates itself.
 
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__), xmodmap(1)
 .SH AUTHORS
-Sascha Hlusiak (2007)
+Sascha Hlusiak (2007),
 .fi
 Frederic Lepied (1995-1999)
