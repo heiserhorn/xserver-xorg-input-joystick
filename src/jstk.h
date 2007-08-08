@@ -52,7 +52,7 @@
 
 
 typedef enum _JOYSTICKTYPE{
-    TYPE_NONE=0,        /* Axis value is not relevant */
+    TYPE_NONE=0,      /* Axis value is not relevant */
     TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
     TYPE_ACCELERATED, /* Speed is accelerated */
     TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
@@ -72,19 +72,22 @@ typedef enum _JOYSTICKMAPPING{
     MAPPING_DISABLE_KEYS    /* Disable only key events */
 } JOYSTICKMAPPING;
 
+#define MAXKEYSPERBUTTON 4
+
+typedef unsigned int KEYSCANCODES [MAXKEYSPERBUTTON];
 
 typedef struct _AXIS {
     JOYSTICKTYPE    type;
     JOYSTICKMAPPING mapping;
-    int             value;
+    int             value, oldvalue;
     int             valuator;
     int             deadzone;
     float           currentspeed;
     float           previousposition;
     float           amplify;
+    KEYSCANCODES    keys_low;  /* MAPPING_KEY */
+    KEYSCANCODES    keys_high; /* MAPPING_KEY */
 } AXIS;
-
-#define MAXKEYSPERBUTTON 4
 
 typedef struct _BUTTON {
    JOYSTICKMAPPING mapping;
@@ -93,7 +96,7 @@ typedef struct _BUTTON {
    float amplify;       /* MAPPING_X/Y/ZX/ZY, 
                            MAPPING_SPEED_MULTIPLY */
    float currentspeed;  /* MAPPING_X/Y/ZX/ZY */
-   unsigned int keys[MAXKEYSPERBUTTON]; /* MAPPING_KEY */
+   KEYSCANCODES keys;   /* MAPPING_KEY */
 } BUTTON;
 
 #define MAXBUTTONS 32

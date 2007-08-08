@@ -81,6 +81,38 @@ jstkConvertProc(LocalDevicePtr	local,
 }
 
 
+/*
+ ***************************************************************************
+ *
+ * jstkGenerateKeys
+ *
+ * Generates a series of keydown or keyup events of the specified 
+ * KEYSCANCODES
+ *
+ ***************************************************************************
+ */
+static void
+jstkGenerateKeys(LocalDevicePtr local, KEYSCANCODES keys, char pressed)
+{
+    int i;
+    unsigned int k;
+    JoystickDevPtr priv = local->private;
+    if (priv->keys_enabled == FALSE) return;
+
+    for (i=0;i<MAXKEYSPERBUTTON;i++) {
+        if (pressed != 0) 
+            k = keys[i];
+        else k = keys[MAXKEYSPERBUTTON - i - 1];
+
+        if (k != 0) {
+            DBG(2, ErrorF("Generating key %s event with keycode %d\n", 
+                (pressed)?"press":"release", k));
+            xf86PostKeyboardEvent(local->dev, k, pressed);
+        }
+    }
+}
+
+
 
 /*
  ***************************************************************************
@@ -104,132 +136,140 @@ jstkReadProc(LocalDevicePtr local)
   JoystickDevPtr priv = local->private;
 
   do {
-  if ((r=jstkReadData(priv, &event, &number))==0) {
-    xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
+    if ((r=jstkReadData(priv, &event, &number))==0) {
+      xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
 
-    if (local->fd >= 0)
-       RemoveEnabledDevice(local->fd);
-    return;
-  }
-
-  /* A button's status changed */
-  if (event == EVENT_BUTTON) {
-    DBG(4, ErrorF("Button %d %s. Mapping: %d\n", number, 
-                 (priv->button[number].pressed == 0) ? "released" : "pressed", 
-                 priv->button[number].mapping));
-    switch (priv->button[number].mapping) {
-      case MAPPING_BUTTON:
-        if (priv->mouse_enabled == TRUE) {
-          xf86PostButtonEvent(local->dev, 0, priv->button[number].buttonnumber,
-            priv->button[number].pressed, 0, 0);
-        }
-        break;
-
-      case MAPPING_X:
-      case MAPPING_Y:
-      case MAPPING_ZX:
-      case MAPPING_ZY:
-        if (priv->button[number].pressed == 0) /* If button was released */
-          priv->button[number].currentspeed = 1.0;     /* Reset speed counter */
-        else if (priv->mouse_enabled == TRUE)
-          jstkStartButtonAxisTimer(local, number);
-        break;
-
-      case MAPPING_KEY:
-        if (priv->keys_enabled == TRUE)
-        for (i=0;i<MAXKEYSPERBUTTON;i++) {
-          unsigned int k;
-          if (priv->button[number].pressed == 1) 
-            k = priv->button[number].keys[i];
-            else k = priv->button[number].keys[MAXKEYSPERBUTTON - i - 1];
-
-          if (k != 0) {
-            DBG(2, ErrorF("Generating key %s event with keycode %d\n", 
-              (priv->button[number].pressed)?"press":"release", k));
-            xf86PostKeyboardEvent(local->dev, k, priv->button[number].pressed);
-          }
-        }
-        break;
-
-      case MAPPING_SPEED_MULTIPLY:
-        priv->amplify = 1.0;
-        /* Calculate new global amplify value by multiplying them all */
-        for (i=0; i<MAXAXES; i++) {
-          if ((priv->button[i].pressed) && 
-              (priv->button[i].mapping == MAPPING_SPEED_MULTIPLY))
-            priv->amplify *= priv->button[i].amplify;
-        }
-        DBG(2, ErrorF("Global amplify is now %.3f\n", priv->amplify));
-
-        break;
-
-      case MAPPING_DISABLE:
-        if (priv->button[number].pressed == 1) {
-          if ((priv->mouse_enabled == TRUE) || (priv->keys_enabled == TRUE)) {
-            priv->mouse_enabled = FALSE;
-            priv->keys_enabled = FALSE;
-            DBG(2, ErrorF("All events disabled\n"));
-          } else {
-            priv->mouse_enabled = TRUE;
-            priv->keys_enabled = TRUE;
-            DBG(2, ErrorF("All events enabled\n"));
-          }
-        }
-        break;
-      case MAPPING_DISABLE_MOUSE:
-        if (priv->button[number].pressed == 1) {
-          if (priv->mouse_enabled == TRUE) priv->mouse_enabled = FALSE;
-            else priv->mouse_enabled = TRUE;
-          DBG(2, ErrorF("Mouse events %s\n", 
-              priv->mouse_enabled ? "enabled" : "disabled"));
-        }
-        break;
-      case MAPPING_DISABLE_KEYS:
-        if (priv->button[number].pressed == 1) {
-          if (priv->keys_enabled == TRUE) priv->keys_enabled = FALSE;
-            else priv->keys_enabled = TRUE;
-          DBG(2, ErrorF("Keyboard events %s\n", 
-              priv->mouse_enabled ? "enabled" : "disabled"));
-        }
-        break;
-
-      default:
-        break;
+      if (local->fd >= 0)
+         RemoveEnabledDevice(local->fd);
+      return;
     }
-  }
 
-  /* An axis was moved */
-  if ((event == EVENT_AXIS) && 
-      (priv->axis[number].type != TYPE_NONE)) {
-    DBG(5, ErrorF("Axis %d moved to %d. Type: %d, Mapping: %d\n", number,
-                  priv->axis[number].value,
-                  priv->axis[number].type,
-                  priv->axis[number].mapping));
-
-    if (priv->axis[number].valuator != -1)
-        xf86PostMotionEvent(local->dev, 1, priv->axis[number].valuator, 
-                            1, priv->axis[number].value);
-
-    if (priv->axis[number].mapping != MAPPING_NONE) {
-      switch (priv->axis[number].type) {
-        case TYPE_BYVALUE:
-        case TYPE_ACCELERATED:
-          if (priv->axis[number].value == 0) /* When axis was released */
-            priv->axis[number].currentspeed = 1.0;   /* Release speed counter */
-
-          if (priv->mouse_enabled == TRUE)
-            jstkStartAxisTimer(local, number);
+    /* A button's status changed */
+    if (event == EVENT_BUTTON) {
+      DBG(4, ErrorF("Button %d %s. Mapping: %d\n", number, 
+                   (priv->button[number].pressed == 0) ? "released" : "pressed", 
+                   priv->button[number].mapping));
+      switch (priv->button[number].mapping) {
+        case MAPPING_BUTTON:
+          if (priv->mouse_enabled == TRUE) {
+            xf86PostButtonEvent(local->dev, 0, priv->button[number].buttonnumber,
+              priv->button[number].pressed, 0, 0);
+          }
           break;
 
-        case TYPE_ABSOLUTE:
-          if (priv->mouse_enabled == TRUE)
-            jstkHandleAbsoluteAxis(local, number);
+        case MAPPING_X:
+        case MAPPING_Y:
+        case MAPPING_ZX:
+        case MAPPING_ZY:
+          if (priv->button[number].pressed == 0) /* If button was released */
+            priv->button[number].currentspeed = 1.0;     /* Reset speed counter */
+          else if (priv->mouse_enabled == TRUE)
+            jstkStartButtonAxisTimer(local, number);
           break;
+
+        case MAPPING_KEY:
+          jstkGenerateKeys(local, priv->button[number].keys, priv->button[number].pressed);
+          break;
+
+        case MAPPING_SPEED_MULTIPLY:
+          priv->amplify = 1.0;
+          /* Calculate new global amplify value by multiplying them all */
+          for (i=0; i<MAXAXES; i++) {
+            if ((priv->button[i].pressed) && 
+                (priv->button[i].mapping == MAPPING_SPEED_MULTIPLY))
+              priv->amplify *= priv->button[i].amplify;
+          }
+          DBG(2, ErrorF("Global amplify is now %.3f\n", priv->amplify));
+
+          break;
+
+        case MAPPING_DISABLE:
+          if (priv->button[number].pressed == 1) {
+            if ((priv->mouse_enabled == TRUE) || (priv->keys_enabled == TRUE)) {
+              priv->mouse_enabled = FALSE;
+              priv->keys_enabled = FALSE;
+              DBG(2, ErrorF("All events disabled\n"));
+            } else {
+              priv->mouse_enabled = TRUE;
+              priv->keys_enabled = TRUE;
+              DBG(2, ErrorF("All events enabled\n"));
+            }
+          }
+          break;
+        case MAPPING_DISABLE_MOUSE:
+          if (priv->button[number].pressed == 1) {
+            if (priv->mouse_enabled == TRUE) priv->mouse_enabled = FALSE;
+              else priv->mouse_enabled = TRUE;
+            DBG(2, ErrorF("Mouse events %s\n", 
+                priv->mouse_enabled ? "enabled" : "disabled"));
+          }
+          break;
+        case MAPPING_DISABLE_KEYS:
+          if (priv->button[number].pressed == 1) {
+            if (priv->keys_enabled == TRUE) priv->keys_enabled = FALSE;
+              else priv->keys_enabled = TRUE;
+            DBG(2, ErrorF("Keyboard events %s\n", 
+                priv->mouse_enabled ? "enabled" : "disabled"));
+          }
+          break;
+
         default:
           break;
       }
     }
-    }
+
+    /* An axis was moved */
+    if ((event == EVENT_AXIS) && 
+        (priv->axis[number].type != TYPE_NONE)) {
+      DBG(5, ErrorF("Axis %d moved to %d. Type: %d, Mapping: %d\n", number,
+                    priv->axis[number].value,
+                    priv->axis[number].type,
+                    priv->axis[number].mapping));
+
+      if (priv->axis[number].valuator != -1)
+          xf86PostMotionEvent(local->dev, 1, priv->axis[number].valuator, 
+                              1, priv->axis[number].value);
+
+      switch (priv->axis[number].mapping) {
+        case MAPPING_X:
+        case MAPPING_Y:
+        case MAPPING_ZX:
+        case MAPPING_ZY: {
+          switch (priv->axis[number].type) {
+            case TYPE_BYVALUE:
+            case TYPE_ACCELERATED:
+              if (priv->axis[number].value == 0) /* When axis was released */
+                priv->axis[number].currentspeed = 1.0;   /* Release speed counter */
+              if (priv->mouse_enabled == TRUE)
+                jstkStartAxisTimer(local, number);
+              break;
+
+            case TYPE_ABSOLUTE:
+              if (priv->mouse_enabled == TRUE)
+                jstkHandleAbsoluteAxis(local, number);
+              break;
+            default:
+              break;
+          } /* switch (priv->axis[number].type) */
+          break;
+        } /* case MAPPING_ZY */
+
+        case MAPPING_KEY:
+          if ((priv->axis[number].value > 0) != (priv->axis[number].oldvalue > 0))
+            jstkGenerateKeys(local, 
+                             priv->axis[number].keys_high,
+                             (priv->axis[number].value > 0) ? 1:0);
+
+          if ((priv->axis[number].value < 0) != (priv->axis[number].oldvalue < 0))
+            jstkGenerateKeys(local,
+                             priv->axis[number].keys_low,
+                             (priv->axis[number].value < 0) ? 1:0);
+          break;
+
+        case MAPPING_NONE:
+        default: break;
+      } /* switch (priv->axis{number].mapping) */
+    } /* if (event == EVENT_AXIS) */
   } while (r == 2);
 }
 
@@ -370,7 +410,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     LocalDevicePtr      local = NULL;
     JoystickDevPtr      priv = NULL;
     char                *s;
-    int                 i;
+    int                 i, j;
 
     local = xf86AllocateInput(drv, 0);
     if (!local) {
@@ -416,18 +456,23 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
       priv->axis[i].value        = 0;
+      priv->axis[i].oldvalue     = 0;
       priv->axis[i].deadzone     = 1000;
       priv->axis[i].type         = TYPE_NONE;
       priv->axis[i].mapping      = MAPPING_NONE;
       priv->axis[i].currentspeed = 0.0f;
       priv->axis[i].amplify      = 1.0f;
       priv->axis[i].valuator     = -1;
+      for (j=0; j<MAXKEYSPERBUTTON; j++)
+          priv->axis[i].keys_low[j] = priv->axis[i].keys_high[j] = 0;
     }
     for (i=0; i<MAXBUTTONS; i++) {
       priv->button[i].pressed      = 0;
       priv->button[i].buttonnumber = 0;
       priv->button[i].mapping      = MAPPING_NONE;
       priv->button[i].currentspeed = 1.0f;
+      for (j=0; j<MAXKEYSPERBUTTON; j++)
+          priv->button[i].keys[j] = 0;
     }
 
     /* First three joystick buttons generate mouse clicks */

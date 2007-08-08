@@ -229,6 +229,42 @@ jstkParseAxisOption(const char* org, AXIS *axis, const char *name)
                   name);
   }
 
+  if ((tmp = strstr(param, "keylow=")) != NULL) {
+    if (sscanf(tmp, "keylow=%30s", p) == 1) {
+      char *current, *next;
+      p[30]='\0';
+      current = p;
+      axis->mapping = MAPPING_KEY;
+      for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
+        next = strchr(current, ',');
+        if (next) *(next++) = '\0';
+        axis->keys_low[value] = atoi(current); 
+        if (axis->keys_low[value] == 0)
+          xf86Msg(X_WARNING, "%s: error parsing keylow value: %s.\n", 
+                  name, current);
+        current = next;
+      } else axis->keys_low[value] = 0;
+    }
+  }
+
+  if ((tmp = strstr(param, "keyhigh=")) != NULL) {
+    if (sscanf(tmp, "keyhigh=%30s", p) == 1) {
+      char *current, *next;
+      p[30]='\0';
+      current = p;
+      axis->mapping = MAPPING_KEY;
+      for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
+        next = strchr(current, ',');
+        if (next) *(next++) = '\0';
+        axis->keys_high[value] = atoi(current); 
+        if (axis->keys_high[value] == 0)
+          xf86Msg(X_WARNING, "%s: error parsing keyhigh value: %s.\n", 
+                  name, current);
+        current = next;
+      } else axis->keys_high[value] = 0;
+    }
+  }
+
   if ((tmp = strstr(param, "deadzone=")) != NULL ) {
     if (sscanf(tmp, "deadzone=%d", &value) == 1) {
       value = (value < 0) ? (-value) : (value);
