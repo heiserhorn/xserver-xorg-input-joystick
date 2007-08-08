@@ -139,6 +139,8 @@ defines the keys to be generated when the axis is moved in negative direction (i
 .B keyhigh
 defines the keys to be generated when the axis is moved in positive direction (ie. right or down).
 
+The keys will be autorepeated according to current keyboard settings.
+
 See special section about key events below.
 .TP 7
 .BI "\*qdeadzone="<number> \*q
@@ -205,11 +207,11 @@ total range of 200 pixels, 100 to the top and 100 to the bottom:
 
 .SH "GENERATING KEY EVENTS"
 Proving a \*qkey=<keycode>[,<keycode>[...]]\*q option will generate X Events with the specified keycodes in order,
-when the joystick button is pressed. When the button is released, the keys are released in the reverse order.
+when the joystick button is pressed or the axis changed it's position. When the button/axis is released, the keys are released in the reverse order.
 To lookup keycodes for KeySyms, you can use 
 .BR "xmodmap -pk" .
-You can use unused keycodes and map them to a KeySym of your choice using xmodmap(1). You can specify up to 4
-keycodes per joystick button. 
+You can use unused keycodes and map them to a KeySym of your choice using xmodmap(1).
+You can specify up to 4 keycodes per joystick button/axis. 
 
 Examples:
 .nf
@@ -230,6 +232,16 @@ will generate a lowercase
 .fi
 is for the  
 .IR "space " key.
+
+.nf
+.BI "  Option  \*qMapAxis1\*q      \*q" "mode=accelerated keylow=100 keyhigh=102" \*q
+.BI "  Option  \*qMapAxis2\*q      \*q" "mode=accelerated keylow=98  keyhigh=104" \*q
+.fi
+will map the first axis to the arrow keys
+.IR left " and " right
+and the second axis to the arrow keys
+.IR up " and " down .
+The keys are generated once when the axis moves out of the deadzone and when it moves back into the deadzone. X.Org will autorepeat those keys according to current keyboard settings.
 
 .SH "VALUATORS"
 The driver reports relative cursor movement as valuators 0 and 1.
