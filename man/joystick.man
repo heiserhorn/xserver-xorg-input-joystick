@@ -228,6 +228,20 @@ will be ignored. The mode has no effect on the reported value. The axis does not
 .SH "NOTES"
 The driver does not do hotplugging. The joystick needs to be plugged in when the driver is loaded.
 If the joystick is unplugged, the driver deactivates itself.
+.P
+Make sure you add the 
+.I \*qSendCoreEvents\*q
+keyword to the device entry of your
+.B ServerLayout
+section of the 
+.I xorg.conf
+file, otherwise the device won't report core pointer and core key events.
+
+Example: 
+.nf
+.BI "    InputDevice     " "\*qJoystick1\*q     \*qSendCoreEvents\*q"
+.fi
+
 
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__), xmodmap(1)
