@@ -177,11 +177,13 @@ jstkReadData(JoystickDevPtr joystick,
         if (abs(js.value) < joystick->axis[js.number].deadzone) {
           /* We only want one event when in deadzone */
           if (joystick->axis[js.number].value != 0) {
+            joystick->axis[js.number].oldvalue = joystick->axis[js.number].value;
             joystick->axis[js.number].value = 0;
             if (event != NULL) *event = EVENT_AXIS;
             if (number != NULL) *number = js.number;
           }
         }else{
+          joystick->axis[js.number].oldvalue = joystick->axis[js.number].value;
           joystick->axis[js.number].value = js.value;
           if (event != NULL) *event = EVENT_AXIS;
           if (number != NULL) *number = js.number;
