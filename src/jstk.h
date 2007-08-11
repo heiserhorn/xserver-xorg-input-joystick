@@ -86,17 +86,19 @@ typedef struct _AXIS {
     float           currentspeed; /* TYPE_ACCELERATED */
     float           previousposition; /* TYPE_ABSOLUTE */
     float           amplify;
+    float           subpixel; /* Pending subpixel movement */
     KEYSCANCODES    keys_low, keys_high;  /* MAPPING_KEY */
 } AXIS;
 
 typedef struct _BUTTON {
     JOYSTICKMAPPING mapping;
-    char pressed;
-    int buttonnumber;    /* MAPPING_BUTTON */
-    float amplify;       /* MAPPING_X/Y/ZX/ZY, 
-                            MAPPING_SPEED_MULTIPLY */
-    float currentspeed;  /* MAPPING_X/Y/ZX/ZY */
-    KEYSCANCODES keys;   /* MAPPING_KEY */
+    char            pressed;
+    int             buttonnumber;    /* MAPPING_BUTTON */
+    float           amplify;       /* MAPPING_X/Y/ZX/ZY, 
+                                      MAPPING_SPEED_MULTIPLY */
+    float           currentspeed;  /* MAPPING_X/Y/ZX/ZY */
+    float           subpixel; /* Pending subpixel movement */
+    KEYSCANCODES    keys;   /* MAPPING_KEY */
 } BUTTON;
 
 typedef struct _JoystickDevRec {
@@ -106,7 +108,6 @@ typedef struct _JoystickDevRec {
 
     OsTimerPtr   timer;       /* Timer for axis movement */
     Bool         timerrunning;
-    float        x,y,zx,zy;   /* Pending subpixel movements */
 
     Bool         mouse_enabled, keys_enabled;
     float        amplify;     /* Global amplifier of axis movement */

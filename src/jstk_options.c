@@ -215,10 +215,10 @@ jstkParseAxisOption(const char* org, AXIS *axis, const char *name)
             axis->mapping = jstkGetAxisMapping(&fvalue, p, name);
             if ((axis->type == TYPE_ABSOLUTE) &&
                 ((fvalue <= 1.1)&&(fvalue >= -1.1))) {
-              if (axis->mapping == MAPPING_X)
-                  fvalue *= (int)screenInfo.screens[0]->width;
-              if (axis->mapping == MAPPING_Y)
-                  fvalue *= (int)screenInfo.screens[0]->height;
+                if (axis->mapping == MAPPING_X)
+                    fvalue *= (int)screenInfo.screens[0]->width;
+                if (axis->mapping == MAPPING_Y)
+                    fvalue *= (int)screenInfo.screens[0]->height;
             }
             axis->amplify = fvalue;
             if (axis->mapping == MAPPING_NONE)

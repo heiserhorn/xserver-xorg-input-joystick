@@ -451,10 +451,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->fd = -1;
     priv->device = NULL;
     priv->devicedata = NULL;
-    priv->x  = 0.0f;
-    priv->y  = 0.0f;
-    priv->zx = 0.0f;
-    priv->zy = 0.0f;
     priv->timer = NULL;
     priv->timerrunning = FALSE;
     priv->mouse_enabled = TRUE;
@@ -473,6 +469,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         priv->axis[i].currentspeed = 0.0f;
         priv->axis[i].amplify      = 1.0f;
         priv->axis[i].valuator     = -1;
+        priv->axis[i].subpixel     = 0.0f;
         for (j=0; j<MAXKEYSPERBUTTON; j++)
             priv->axis[i].keys_low[j] = priv->axis[i].keys_high[j] = 0;
     }
@@ -481,6 +478,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         priv->button[i].buttonnumber = 0;
         priv->button[i].mapping      = MAPPING_NONE;
         priv->button[i].currentspeed = 1.0f;
+        priv->button[i].subpixel     = 0.0f;
         for (j=0; j<MAXKEYSPERBUTTON; j++)
             priv->button[i].keys[j] = 0;
     }

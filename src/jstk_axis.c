@@ -58,7 +58,10 @@ jstkAxisTimer(OsTimerPtr        timer,
 
     int sigstate, i;
     int nexttimer;
+    int movex,movey,movezx,movezy;
+
     nexttimer = 0;
+    movex = movey = movezx = movezy = 0;
 
     sigstate = xf86BlockSIGIO();
 
@@ -101,19 +104,34 @@ jstkAxisTimer(OsTimerPtr        timer,
         /* Apply movement to global amount of pixels to move */
         switch (axis->mapping) {
         case MAPPING_X:
-            priv->x += p1;
-            break;
         case MAPPING_Y:
-            priv->y += p1;
-           break;
-        case MAPPING_ZX:
-            priv->zx += p2;
+            axis->subpixel += p1;
             break;
+        case MAPPING_ZX:
         case MAPPING_ZY:
-            priv->zy += p2;
+            axis->subpixel += p2;
             break;
         default:
             break;
+        }
+        if ((int)axis->subpixel != 0) {
+            switch (axis->mapping) {
+            case MAPPING_X:
+                movex += (int)axis->subpixel;
+                break;
+            case MAPPING_Y:
+                movey += (int)axis->subpixel;
+                break;
+            case MAPPING_ZX:
+                movezx += (int)axis->subpixel;
+                break;
+            case MAPPING_ZY:
+                movezy += (int)axis->subpixel;
+                break;
+            default:
+                break;
+            }
+            axis->subpixel = axis->subpixel - (int)axis->subpixel;
         }
     }
 
@@ -129,74 +147,88 @@ jstkAxisTimer(OsTimerPtr        timer,
         p1 *= priv->amplify;
         p2 = p1 / 8.0f;
 
-        /* Apply movement to global amount of pixels to move */
+        /* Apply movement to amount of pixels to move */
         switch (priv->button[i].mapping) {
         case MAPPING_X:
-            priv->x += p1;
-            nexttimer = NEXTTIMER;
-            break;
         case MAPPING_Y:
-            priv->y += p1;
+            priv->button[i].subpixel += p1;
             nexttimer = NEXTTIMER;
             break;
         case MAPPING_ZX:
-            priv->zx += p2;
-            nexttimer = NEXTTIMER;
-            break;
         case MAPPING_ZY:
-            priv->zy += p2;
+            priv->button[i].subpixel += p2;
             nexttimer = NEXTTIMER;
             break;
         default:
             break;
         }
+        if ((int)priv->button[i].subpixel != 0) {
+            switch (priv->button[i].mapping) {
+            case MAPPING_X:
+                movex += (int)priv->button[i].subpixel;
+                break;
+            case MAPPING_Y:
+                movey += (int)priv->button[i].subpixel;
+                break;
+            case MAPPING_ZX:
+                movezx += (int)priv->button[i].subpixel;
+                break;
+            case MAPPING_ZY:
+                movezy += (int)priv->button[i].subpixel;
+                break;
+            default:
+                break;
+            }
+            priv->button[i].subpixel -= (int)priv->button[i].subpixel;
+        }
     }
 
     /* Actually move the cursor, if there is enough movement in the buffer */
-    if (((int)priv->x != 0)||((int)priv->y != 0)) {
-        xf86PostMotionEvent(device, 0, 0, 2, (int)priv->x, (int)priv->y);
-        priv->x = priv->x - (int)priv->x;
-        priv->y = priv->y - (int)priv->y;
+    if ((movex != 0)||(movey != 0)) {
+        xf86PostMotionEvent(device, 0, 0, 2, movex, movey);
     }
 
     /* Generate scrolling events */
-    while (priv->zy >= 1.0f) {  /* down */
+    while (movezy >= 1) {  /* down */
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 
                             1, 0, 0);
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 
                             0, 0, 0);
-        priv->zy-=1.0f;
+        movezy -= 1;
     }
-    while (priv->zy <= -1.0f) { /* up */
+    while (movezy <= -1) { /* up */
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 
                             1, 0, 0);
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 
                             0, 0, 0);
-        priv->zy+=1.0f;
+        movezy += 1;
     }
 
-    while (priv->zx >= 1.0f) {  /* right */
+    while (movezx >= 1) {  /* right */
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 
                             1, 0, 0);
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 
                             0, 0, 0);
-        priv->zx-=1.0f;
+        movezx -= 1;
     }
-    while (priv->zx <= -1.0f) { /* left */
+    while (movezx <= -1) { /* left */
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 
                             1, 0, 0);
         xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 
                             0, 0, 0);
-        priv->zx+=1.0f;
+        movezx += 1;
     }
 
-    if (priv->mouse_enabled == FALSE) nexttimer = 0;
-    if (nexttimer == 0) { /* No next timer (no subpixel added), so stop */
+    if ((priv->mouse_enabled == FALSE) &&
+        (priv->keys_enabled == FALSE))
+        nexttimer = 0;
+
+    if (nexttimer == 0) { /* No next timer (no subpixel added), stop */
         priv->timerrunning = FALSE;
-        priv->x  = 0.0f;
-        priv->y  = 0.0f;
-        priv->zx = 0.0f;
-        priv->zy = 0.0f;
+
+        for (i=0; i<MAXBUTTONS; i++) priv->button[i].subpixel = 0.0f;
+        for (i=0; i<MAXAXES; i++) priv->axis[i].subpixel = 0.0f;
+
         DBG(2, ErrorF("Stopping Axis Timer\n"));
     }
     xf86UnblockSIGIO (sigstate);
@@ -224,22 +256,7 @@ jstkStartAxisTimer(LocalDevicePtr device, int number)
 
     pixel = 1;
     if (priv->axis[number].value < 0) pixel = -1;
-    switch (priv->axis[number].mapping) {
-    case MAPPING_X:
-        priv->x += pixel;
-        break;
-    case MAPPING_Y:
-        priv->y += pixel;
-        break;
-    case MAPPING_ZX:
-        priv->zx += pixel;
-        break;
-    case MAPPING_ZY:
-        priv->zy += pixel;
-        break;
-    default:
-        break;
-    }
+    priv->axis[number].subpixel += pixel;
 
     DBG(2, ErrorF("Starting Axis Timer (triggered by axis %d)\n", number));
     priv->timer = TimerSet(
@@ -273,16 +290,10 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number)
     if (priv->button[number].amplify < 0) pixel = -1;
     switch (priv->button[number].mapping) {
     case MAPPING_X:
-        priv->x += pixel;
-        break;
     case MAPPING_Y:
-        priv->y += pixel;
-        break;
     case MAPPING_ZX:
-        priv->zx += pixel;
-        break;
     case MAPPING_ZY:
-        priv->zy += pixel;
+        priv->button[number].subpixel += pixel;
         break;
     default:
         break;
