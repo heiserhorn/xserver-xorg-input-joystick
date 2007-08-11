@@ -128,6 +128,7 @@ jstkParseButtonOption(const char* org,
         button->buttonnumber = jstkGetButtonNumberInMap(priv, value);
     } else if (sscanf(param, "axis=%15s", p) == 1) {
         p[15]='\0';
+        fvalue = 1.0f;
         button->mapping = jstkGetAxisMapping(&fvalue, p, name);
         button->amplify = fvalue;
         button->currentspeed = 1.0f;
