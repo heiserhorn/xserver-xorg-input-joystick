@@ -116,7 +116,7 @@ will be reported as an additional valuator.
 Where
 .I <axis>
 is one of:
-.B X, Y, ZX, ZY
+.B X, Y, ZX, ZY, KEY (see keylow/keyhigh)
 
 and 
 .I <factor>
@@ -128,18 +128,26 @@ Negative values will invert the movement. Default: 1.0
 .TP 7
 .BI "\*qkeyhigh="<keycode>[,<keycode>[,<keycode>[,<keycode>]]]
 When the axis is moved out of the deadzone, a series of keydown events according 
-to the direction of the movement is generated. When the axis is released, keyup events will be generated. You can specify up to 4 keycodes for each direction. The behaviour is not changed by the specified
-.BR mode ,
-the value in
-.B axis
-is ignored.
+to the direction of the movement is generated. When the axis is released, keyup events will be generated. You can specify up to 4 keycodes for each direction. 
 
 .B keylow
 defines the keys to be generated when the axis is moved in negative direction (ie. left or up),
 .B keyhigh
 defines the keys to be generated when the axis is moved in positive direction (ie. right or down).
 
-The keys will be autorepeated according to current keyboard settings.
+If 
+.B mode
+is set to 
+.IR relative :
+The driver will emulate autorepeat according to the current value of the axis. A keydown and subsequent keyup event will be generated in short time intervals. To modify that interval and the autorepeat speed, supply the
+.BI "\*qaxis="[<factor>]KEY \*q
+parameter.
+
+If 
+.B mode
+is set to 
+.IR accelerated :
+One keydown event is generated, when the axis is moved out of the deadzone, the keyup event is generated, when the axis moves back to the deadzone. The keys will be autorepeated according to the keyboard settings.
 
 See special section about key events below.
 .TP 7
@@ -234,14 +242,17 @@ is for the
 .IR "space " key.
 
 .nf
-.BI "  Option  \*qMapAxis1\*q      \*q" "mode=accelerated keylow=100 keyhigh=102" \*q
-.BI "  Option  \*qMapAxis2\*q      \*q" "mode=accelerated keylow=98  keyhigh=104" \*q
+.BI "  Option  \*qMapAxis1\*q      \*q" "mode=relative    keylow=100 keyhigh=102 axis=0.5key" \*q
+.BI "  Option  \*qMapAxis2\*q      \*q" "mode=relative    keylow=98  keyhigh=104" \*q
+.BI "  Option  \*qMapAxis3\*q      \*q" "mode=accelerated keylow=100 keyhigh=102" \*q
+.BI "  Option  \*qMapAxis4\*q      \*q" "mode=accelerated keylow=98  keyhigh=104" \*q
 .fi
-will map the first axis to the arrow keys
+will map the first and third axis to the arrow keys
 .IR left " and " right
-and the second axis to the arrow keys
+and the second and fourth axis to the arrow keys
 .IR up " and " down .
-The keys are generated once when the axis moves out of the deadzone and when it moves back into the deadzone. X.Org will autorepeat those keys according to current keyboard settings.
+The keys for the first two axes will be generated in an interval according to the value of the axis. The autorepeat speed of the first axis will be half the speed of that of the second axis.
+The keys for the third and fourth axis are generated once when the axis moves out of the deadzone and when it moves back into the deadzone. X.Org will autorepeat those keys according to current keyboard settings.
 
 .SH "VALUATORS"
 The driver reports relative cursor movement as valuators 0 and 1.
