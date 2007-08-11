@@ -109,6 +109,7 @@ jstkAxisTimer(OsTimerPtr        timer,
             break;
         case MAPPING_ZX:
         case MAPPING_ZY:
+        case MAPPING_KEY:
             axis->subpixel += p2;
             break;
         default:
@@ -128,6 +129,24 @@ jstkAxisTimer(OsTimerPtr        timer,
             case MAPPING_ZY:
                 movezy += (int)axis->subpixel;
                 break;
+
+            case MAPPING_KEY: if ((priv->keys_enabled == TRUE) && 
+                                  (priv->axis[i].type == TYPE_BYVALUE)) {
+                int num;
+                num = abs((int)axis->subpixel);
+                if ((int)axis->subpixel < 0) {
+                    for (i=0; i<num; i++) {
+                        jstkGenerateKeys(device, axis->keys_low, 1);
+                        jstkGenerateKeys(device, axis->keys_low, 0);
+                    }
+                } else {
+                    for (i=0; i<num; i++) {
+                        jstkGenerateKeys(device, axis->keys_high, 1);
+                        jstkGenerateKeys(device, axis->keys_high, 0);
+                    }
+                }
+                break;
+            }
             default:
                 break;
             }
@@ -363,3 +382,34 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number)
     }
 }
 
+
+
+
+/*
+ ***************************************************************************
+ *
+ * jstkGenerateKeys
+ *
+ * Generates a series of keydown or keyup events of the specified 
+ * KEYSCANCODES
+ *
+ ***************************************************************************
+ */
+void
+jstkGenerateKeys(DeviceIntPtr device, KEYSCANCODES keys, char pressed)
+{
+    int i;
+    unsigned int k;
+
+    for (i=0;i<MAXKEYSPERBUTTON;i++) {
+        if (pressed != 0) 
+            k = keys[i];
+        else k = keys[MAXKEYSPERBUTTON - i - 1];
+
+        if (k != 0) {
+            DBG(2, ErrorF("Generating key %s event with keycode %d\n", 
+                (pressed)?"press":"release", k));
+            xf86PostKeyboardEvent(device, k, pressed);
+        }
+    }
+}

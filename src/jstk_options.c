@@ -79,7 +79,9 @@ jstkGetAxisMapping(float *value, const char* param, const char* name)
         if (param[0] == '-')
             *value *= -1.0;
     }
-    if (strstr(param, "zx") != NULL)
+    if (strstr(param, "key") != NULL)
+        return MAPPING_KEY;
+    else if (strstr(param, "zx") != NULL)
         return MAPPING_ZX;
     else if (strstr(param, "zy") != NULL)
         return MAPPING_ZY;

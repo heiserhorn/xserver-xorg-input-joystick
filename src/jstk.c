@@ -85,39 +85,6 @@ jstkConvertProc(LocalDevicePtr	local,
 /*
  ***************************************************************************
  *
- * jstkGenerateKeys
- *
- * Generates a series of keydown or keyup events of the specified 
- * KEYSCANCODES
- *
- ***************************************************************************
- */
-static void
-jstkGenerateKeys(LocalDevicePtr local, KEYSCANCODES keys, char pressed)
-{
-    int i;
-    unsigned int k;
-    JoystickDevPtr priv = local->private;
-    if (priv->keys_enabled == FALSE) return;
-
-    for (i=0;i<MAXKEYSPERBUTTON;i++) {
-        if (pressed != 0) 
-            k = keys[i];
-        else k = keys[MAXKEYSPERBUTTON - i - 1];
-
-        if (k != 0) {
-            DBG(2, ErrorF("Generating key %s event with keycode %d\n", 
-                (pressed)?"press":"release", k));
-            xf86PostKeyboardEvent(local->dev, k, pressed);
-        }
-    }
-}
-
-
-
-/*
- ***************************************************************************
- *
  * jstkReadProc --
  *
  * Called when data is available to read from the device
@@ -170,9 +137,10 @@ jstkReadProc(LocalDevicePtr local)
                 break;
 
             case MAPPING_KEY:
-                jstkGenerateKeys(local, 
-                                 priv->button[number].keys, 
-                                 priv->button[number].pressed);
+                if (priv->keys_enabled == TRUE)
+                    jstkGenerateKeys(local->dev, 
+                                     priv->button[number].keys, 
+                                     priv->button[number].pressed);
                 break;
 
             case MAPPING_SPEED_MULTIPLY:
@@ -262,19 +230,25 @@ jstkReadProc(LocalDevicePtr local)
                 } /* switch (priv->axis[number].type) */
                 break; /* case MAPPING_ZY */
 
-            case MAPPING_KEY:
-                if ((priv->axis[number].value > 0) != 
-                    (priv->axis[number].oldvalue > 0))
-                    jstkGenerateKeys(local, 
-                                     priv->axis[number].keys_high,
-                                     (priv->axis[number].value > 0) ? 1 : 0);
+            case MAPPING_KEY: if (priv->keys_enabled == TRUE) {
+                if (priv->axis[number].type == TYPE_ACCELERATED) {
+                    if ((priv->axis[number].value > 0) != 
+                        (priv->axis[number].oldvalue > 0))
+                        jstkGenerateKeys(local->dev, 
+                                         priv->axis[number].keys_high,
+                                         (priv->axis[number].value > 0) ? 1:0);
 
-                if ((priv->axis[number].value < 0) != 
-                    (priv->axis[number].oldvalue < 0))
-                    jstkGenerateKeys(local,
-                                     priv->axis[number].keys_low,
-                                     (priv->axis[number].value < 0) ? 1:0);
+                    if ((priv->axis[number].value < 0) != 
+                        (priv->axis[number].oldvalue < 0))
+                        jstkGenerateKeys(local->dev,
+                                         priv->axis[number].keys_low,
+                                         (priv->axis[number].value < 0) ? 1:0);
+                } else if (priv->axis[number].type == TYPE_BYVALUE) {
+                    if (priv->keys_enabled == TRUE)
+                        jstkStartAxisTimer(local, number);
+                }
                 break;
+            }
 
             case MAPPING_NONE:
             default:
