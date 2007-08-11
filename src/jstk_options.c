@@ -37,7 +37,6 @@
 
 
 
-
 /***********************************************************************
  *
  * jstkGetAxisMapping --
@@ -76,20 +75,20 @@ jstkGetButtonNumberInMap(JoystickDevPtr priv,
 static JOYSTICKMAPPING
 jstkGetAxisMapping(float *value, const char* param, const char* name) 
 {
-  if (sscanf(param, "%f", value)==0) {
-    if (param[0] == '-')
-      *value *= -1.0;
-  }
-  if (strstr(param, "zx") != NULL)
-    return MAPPING_ZX;
-  else if (strstr(param, "zy") != NULL)
-    return MAPPING_ZY;
-  else if (strstr(param, "x") != NULL)
-    return MAPPING_X;
-  else if (strstr(param, "y") != NULL)
-    return MAPPING_Y;
+    if (sscanf(param, "%f", value)==0) {
+        if (param[0] == '-')
+            *value *= -1.0;
+    }
+    if (strstr(param, "zx") != NULL)
+        return MAPPING_ZX;
+    else if (strstr(param, "zy") != NULL)
+        return MAPPING_ZY;
+    else if (strstr(param, "x") != NULL)
+        return MAPPING_X;
+    else if (strstr(param, "y") != NULL)
+        return MAPPING_Y;
 
-  return MAPPING_NONE;
+    return MAPPING_NONE;
 }
 
 
@@ -110,59 +109,59 @@ jstkParseButtonOption(const char* org,
                       int number,
                       const char* name)
 {
-  char *param;
-  char *tmp;
-  int value;
-  float fvalue;
-  char p[64];
-  BUTTON* button;
+    char *param;
+    char *tmp;
+    int value;
+    float fvalue;
+    char p[64];
+    BUTTON* button;
 
-  button = &priv->button[number];
+    button = &priv->button[number];
 
-  param = xstrdup(org);
-  for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
+    param = xstrdup(org);
+    for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
 
-  if (strcmp(param, "none") == 0) {
-    button->mapping = MAPPING_NONE;
-  } else if (sscanf(param, "button=%d", &value) == 1) {
-    button->mapping      = MAPPING_BUTTON;
-    button->buttonnumber = jstkGetButtonNumberInMap(priv, value);
-  } else if (sscanf(param, "axis=%15s", p) == 1) {
-    p[15]='\0';
-    button->mapping = jstkGetAxisMapping(&fvalue, p, name);
-    button->amplify = fvalue;
-    button->currentspeed = 1.0f;
-    if (button->mapping == MAPPING_NONE)
-      xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
-              name, p);
-  } else if (sscanf(param, "amplify=%f", &fvalue) == 1) {
-    button->mapping = MAPPING_SPEED_MULTIPLY;
-    button->amplify = fvalue;
-  } else if (sscanf(param, "key=%30s", p) == 1) {
-    char *current, *next;
-    p[30]='\0';
-    current = p;
-    button->mapping = MAPPING_KEY;
-    for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
-      next = strchr(current, ',');
-      if (next) *(next++) = '\0';
-      button->keys[value] = atoi(current); 
-      if (button->keys[value] == 0)
-        xf86Msg(X_WARNING, "%s: error parsing key value: %s.\n", 
-                name, current);
-      current = next;
-    } else button->keys[value] = 0;
-  } else if (strcmp(param, "disable-all") == 0) {
-    button->mapping = MAPPING_DISABLE;
-  } else if (strcmp(param, "disable-mouse") == 0) {
-    button->mapping = MAPPING_DISABLE_MOUSE;
-  } else if (strcmp(param, "disable-keys") == 0) {
-    button->mapping = MAPPING_DISABLE_KEYS;
-  } else {
-    xf86Msg(X_WARNING, "%s: error parsing button parameter.\n", 
-            name);
-  }
-  xfree(param);
+    if (strcmp(param, "none") == 0) {
+        button->mapping = MAPPING_NONE;
+    } else if (sscanf(param, "button=%d", &value) == 1) {
+        button->mapping      = MAPPING_BUTTON;
+        button->buttonnumber = jstkGetButtonNumberInMap(priv, value);
+    } else if (sscanf(param, "axis=%15s", p) == 1) {
+        p[15]='\0';
+        button->mapping = jstkGetAxisMapping(&fvalue, p, name);
+        button->amplify = fvalue;
+        button->currentspeed = 1.0f;
+        if (button->mapping == MAPPING_NONE)
+            xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n", 
+                    name, p);
+    } else if (sscanf(param, "amplify=%f", &fvalue) == 1) {
+        button->mapping = MAPPING_SPEED_MULTIPLY;
+        button->amplify = fvalue;
+    } else if (sscanf(param, "key=%30s", p) == 1) {
+        char *current, *next;
+        p[30]='\0';
+        current = p;
+        button->mapping = MAPPING_KEY;
+        for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
+            next = strchr(current, ',');
+            if (next) *(next++) = '\0';
+            button->keys[value] = atoi(current); 
+            if (button->keys[value] == 0)
+                xf86Msg(X_WARNING, "%s: error parsing key value: %s.\n", 
+                        name, current);
+            current = next;
+        } else button->keys[value] = 0;
+    } else if (strcmp(param, "disable-all") == 0) {
+        button->mapping = MAPPING_DISABLE;
+    } else if (strcmp(param, "disable-mouse") == 0) {
+        button->mapping = MAPPING_DISABLE_MOUSE;
+    } else if (strcmp(param, "disable-keys") == 0) {
+        button->mapping = MAPPING_DISABLE_KEYS;
+    } else {
+        xf86Msg(X_WARNING, "%s: error parsing button parameter.\n", 
+                name);
+    }
+    xfree(param);
 }
 
 
@@ -180,101 +179,105 @@ jstkParseButtonOption(const char* org,
 void
 jstkParseAxisOption(const char* org, AXIS *axis, const char *name)
 {
-  char *param;
-  char *tmp;
-  int value;
-  float fvalue;
-  char p[64];
-  param = xstrdup(org);
-  for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
+    char *param;
+    char *tmp;
+    int value;
+    float fvalue;
+    char p[64];
+    param = xstrdup(org);
+    for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
 
-  if ((tmp=strstr(param, "mode=")) != NULL) {
-    if (sscanf(tmp, "mode=%15s", p) == 1) {
-      p[15] = '\0';
-      if (strcmp(p, "relative") == 0)
-        axis->type = TYPE_BYVALUE;
-      else if (strcmp(p, "accelerated") == 0) {
-        axis->type = TYPE_ACCELERATED;
-        axis->currentspeed = 1.0f;
-      } else if (strcmp(p, "absolute") == 0)
-        axis->type = TYPE_ABSOLUTE;
-      else if (strcmp(p, "none") == 0)
-        axis->type = TYPE_NONE;
-      else {
-        axis->type = TYPE_NONE;
-        xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
-                name, param);
-      }
-    }else xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
-                  name, param);
-  }
-
-  if ((tmp = strstr(param, "axis=")) != NULL) {
-    if (sscanf(tmp, "axis=%15s", p) == 1) {
-      p[15] = '\0';
-      fvalue = 1.0f;
-      axis->mapping = jstkGetAxisMapping(&fvalue, p, name);
-      if ((axis->type == TYPE_ABSOLUTE) &&
-          ((fvalue <= 1.1)&&(fvalue >= -1.1))) {
-        if (axis->mapping == MAPPING_X)
-          fvalue *= (int)screenInfo.screens[0]->width;
-        if (axis->mapping == MAPPING_Y)
-          fvalue *= (int)screenInfo.screens[0]->height;
-      }
-      axis->amplify = fvalue;
-      if (axis->mapping == MAPPING_NONE)
-        xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n",
-                name, p);
-    }else xf86Msg(X_WARNING, "%s: error parsing axis.\n",
-                  name);
-  }
-
-  if ((tmp = strstr(param, "keylow=")) != NULL) {
-    if (sscanf(tmp, "keylow=%30s", p) == 1) {
-      char *current, *next;
-      p[30]='\0';
-      current = p;
-      axis->mapping = MAPPING_KEY;
-      for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
-        next = strchr(current, ',');
-        if (next) *(next++) = '\0';
-        axis->keys_low[value] = atoi(current); 
-        if (axis->keys_low[value] == 0)
-          xf86Msg(X_WARNING, "%s: error parsing keylow value: %s.\n", 
-                  name, current);
-        current = next;
-      } else axis->keys_low[value] = 0;
+    if ((tmp=strstr(param, "mode=")) != NULL) {
+        if (sscanf(tmp, "mode=%15s", p) == 1) {
+            p[15] = '\0';
+            if (strcmp(p, "relative") == 0) {
+                axis->type = TYPE_BYVALUE;
+            } else if (strcmp(p, "accelerated") == 0) {
+                axis->type = TYPE_ACCELERATED;
+                axis->currentspeed = 1.0f;
+            } else if (strcmp(p, "absolute") == 0) {
+                axis->type = TYPE_ABSOLUTE;
+            } else if (strcmp(p, "none") == 0) {
+                axis->type = TYPE_NONE;
+            } else {
+                axis->type = TYPE_NONE;
+                xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
+                        name, param);
+            }
+        } else xf86Msg(X_WARNING, "%s: \"%s\": error parsing mode.\n", 
+                       name, param);
     }
-  }
 
-  if ((tmp = strstr(param, "keyhigh=")) != NULL) {
-    if (sscanf(tmp, "keyhigh=%30s", p) == 1) {
-      char *current, *next;
-      p[30]='\0';
-      current = p;
-      axis->mapping = MAPPING_KEY;
-      for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
-        next = strchr(current, ',');
-        if (next) *(next++) = '\0';
-        axis->keys_high[value] = atoi(current); 
-        if (axis->keys_high[value] == 0)
-          xf86Msg(X_WARNING, "%s: error parsing keyhigh value: %s.\n", 
-                  name, current);
-        current = next;
-      } else axis->keys_high[value] = 0;
+    if ((tmp = strstr(param, "axis=")) != NULL) {
+        if (sscanf(tmp, "axis=%15s", p) == 1) {
+            p[15] = '\0';
+            fvalue = 1.0f;
+            axis->mapping = jstkGetAxisMapping(&fvalue, p, name);
+            if ((axis->type == TYPE_ABSOLUTE) &&
+                ((fvalue <= 1.1)&&(fvalue >= -1.1))) {
+              if (axis->mapping == MAPPING_X)
+                  fvalue *= (int)screenInfo.screens[0]->width;
+              if (axis->mapping == MAPPING_Y)
+                  fvalue *= (int)screenInfo.screens[0]->height;
+            }
+            axis->amplify = fvalue;
+            if (axis->mapping == MAPPING_NONE)
+                xf86Msg(X_WARNING, "%s: error parsing axis: %s.\n",
+                        name, p);
+        }else xf86Msg(X_WARNING, "%s: error parsing axis.\n",
+                      name);
     }
-  }
 
-  if ((tmp = strstr(param, "deadzone=")) != NULL ) {
-    if (sscanf(tmp, "deadzone=%d", &value) == 1) {
-      value = (value < 0) ? (-value) : (value);
-      if (value > 30000)
-        xf86Msg(X_WARNING, 
-          "%s: deadzone of %d seems unreasonable. Ignored.\n", 
-          name, value);
-      else axis->deadzone = value;
-    }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
-                  name);
-  }
-  xfree(param);
+    if ((tmp = strstr(param, "keylow=")) != NULL) {
+        if (sscanf(tmp, "keylow=%30s", p) == 1) {
+            char *current, *next;
+            p[30]='\0';
+            current = p;
+            axis->mapping = MAPPING_KEY;
+            for (value = 0; value < MAXKEYSPERBUTTON; value++) 
+                if (current != NULL) {
+                    next = strchr(current, ',');
+                    if (next) *(next++) = '\0';
+                    axis->keys_low[value] = atoi(current); 
+                    if (axis->keys_low[value] == 0)
+                        xf86Msg(X_WARNING, 
+                                "%s: error parsing keylow value: %s.\n", 
+                                name, current);
+                    current = next;
+                } else axis->keys_low[value] = 0;
+        }
+    }
+
+    if ((tmp = strstr(param, "keyhigh=")) != NULL) {
+        if (sscanf(tmp, "keyhigh=%30s", p) == 1) {
+            char *current, *next;
+            p[30]='\0';
+            current = p;
+            axis->mapping = MAPPING_KEY;
+            for (value = 0; value < MAXKEYSPERBUTTON; value++) 
+                if (current != NULL) {
+                    next = strchr(current, ',');
+                    if (next) *(next++) = '\0';
+                    axis->keys_high[value] = atoi(current); 
+                    if (axis->keys_high[value] == 0)
+                        xf86Msg(X_WARNING, 
+                                "%s: error parsing keyhigh value: %s.\n", 
+                                name, current);
+                    current = next;
+                } else axis->keys_high[value] = 0;
+        }
+    }
+
+    if ((tmp = strstr(param, "deadzone=")) != NULL ) {
+        if (sscanf(tmp, "deadzone=%d", &value) == 1) {
+            value = (value < 0) ? (-value) : (value);
+            if (value > 30000)
+                xf86Msg(X_WARNING, 
+                        "%s: deadzone of %d seems unreasonable. Ignored.\n", 
+                        name, value);
+            else axis->deadzone = value;
+        }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
+                      name);
+    }
+    xfree(param);
 }

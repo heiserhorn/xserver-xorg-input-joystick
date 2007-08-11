@@ -25,18 +25,21 @@
 #define __JSTK_H_INCLUDED__
 
 
+#define MAXBUTTONS 32
+#define MAXAXES 32
+#define MAXKEYSPERBUTTON 4
 
 
 /******************************************************************************
  * debugging macro
  *****************************************************************************/
 #ifdef DBG
-#undef DBG
-#endif
-#ifdef DEBUG
-#undef DEBUG
+    #undef DBG
 #endif
 
+#ifdef DEBUG
+    #undef DEBUG
+#endif
 #define DEBUG 1
 
 /**
@@ -72,8 +75,6 @@ typedef enum _JOYSTICKMAPPING{
     MAPPING_DISABLE_KEYS    /* Disable only key events */
 } JOYSTICKMAPPING;
 
-#define MAXKEYSPERBUTTON 4
-
 typedef unsigned int KEYSCANCODES [MAXKEYSPERBUTTON];
 
 typedef struct _AXIS {
@@ -82,25 +83,21 @@ typedef struct _AXIS {
     int             value, oldvalue;
     int             valuator;
     int             deadzone;
-    float           currentspeed;
-    float           previousposition;
+    float           currentspeed; /* TYPE_ACCELERATED */
+    float           previousposition; /* TYPE_ABSOLUTE */
     float           amplify;
-    KEYSCANCODES    keys_low;  /* MAPPING_KEY */
-    KEYSCANCODES    keys_high; /* MAPPING_KEY */
+    KEYSCANCODES    keys_low, keys_high;  /* MAPPING_KEY */
 } AXIS;
 
 typedef struct _BUTTON {
-   JOYSTICKMAPPING mapping;
-   char pressed;
-   int buttonnumber;    /* MAPPING_BUTTON */
-   float amplify;       /* MAPPING_X/Y/ZX/ZY, 
-                           MAPPING_SPEED_MULTIPLY */
-   float currentspeed;  /* MAPPING_X/Y/ZX/ZY */
-   KEYSCANCODES keys;   /* MAPPING_KEY */
+    JOYSTICKMAPPING mapping;
+    char pressed;
+    int buttonnumber;    /* MAPPING_BUTTON */
+    float amplify;       /* MAPPING_X/Y/ZX/ZY, 
+                            MAPPING_SPEED_MULTIPLY */
+    float currentspeed;  /* MAPPING_X/Y/ZX/ZY */
+    KEYSCANCODES keys;   /* MAPPING_KEY */
 } BUTTON;
-
-#define MAXBUTTONS 32
-#define MAXAXES 32
 
 typedef struct _JoystickDevRec {
     int          fd;          /* Actual file descriptor */
