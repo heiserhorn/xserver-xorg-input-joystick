@@ -499,7 +499,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 #else
     if (xf86SetIntOption(dev->commonOptions, "DebugLevel", 0) != 0) {
-        xf86Msg(X_WARNING, "%s: DebugLevel: Compiled without Debug support!\n", 
+        xf86Msg(X_WARNING, "%s: DebugLevel: Compiled without debugging support!\n", 
                 local->name);
     }
 #endif

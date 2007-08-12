@@ -37,17 +37,8 @@
     #undef DBG
 #endif
 
-#ifdef DEBUG
-    #undef DEBUG
-#endif
-#define DEBUG 1
-
-/**
- * DEBUG Makros
- **/
-
 #if DEBUG
-    extern int      debug_level;
+    extern int debug_level;
     #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
     #define DBG(lvl, f)
