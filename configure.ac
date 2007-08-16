@@ -22,7 +22,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT([xf86-input-joystick],
-        1.2.1,
+        1.2.3,
         [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],
         xf86-input-joystick)
 
@@ -68,6 +68,18 @@ AC_ARG_WITH(xorg-module-dir,
                            [[default=$libdir/xorg/modules]]]),
             [moduledir="$withval"],
             [moduledir="$libdir/xorg/modules"])
+
+AC_ARG_ENABLE(debug,
+            AS_HELP_STRING([--enable-debug],
+                           [Enable debugging (default: enabled)]),
+			   [DEBUGGING=$enableval], [DEBUGGING=yes])
+if test "x$DEBUGGING" = xyes; then
+    AC_DEFINE(DEBUG, 1, [Enable debugging code])
+else
+    AC_DEFINE(NDEBUG, 1, [Disable some debugging code])
+fi
+AM_CONDITIONAL(DEBUG, [test "x$DEBUGGING" = xyes])	   
+
 inputdir=${moduledir}/input
 AC_SUBST(inputdir)
 

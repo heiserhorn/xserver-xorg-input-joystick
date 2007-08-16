@@ -24,10 +24,13 @@
 #ifndef __JSTK_OPTIONS_H_INCLUDED__
 #define __JSTK_OPTIONS_H_INCLUDED__
 
+int jstkGetButtonNumberInMap(JoystickDevPtr priv,
+                             int buttonnumber);
+
 void jstkParseButtonOption(const char* org, 
-                      JoystickDevPtr priv,
-                      int number,
-                      const char* name);
+                           JoystickDevPtr priv,
+                           int number,
+                           const char* name);
 void jstkParseAxisOption(const char* org, 
                          AXIS *axis,
                          const char* name);

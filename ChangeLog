@@ -1,3 +1,170 @@
+commit 13c850fe77b0a9a8a719bedfa1439e96972a730b
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Aug 12 13:01:16 2007 +0200
+
+    configure.ac: prepared for 1.2.3 release
+
+commit 3651cc8ee6257a5c8f098c603b892aff45ee1e68
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Aug 12 12:49:59 2007 +0200
+
+    Added --enable-debug option to configure script
+    
+    The options --enable-debug and --disable-debug control if additional debugging messages shall be included in the binary, that can made
+    visible with the "DebugLevel" option in the xorg.conf. Default: Enabled.
+
+commit ca6968c1800ed30aec78b1e474c2b0ede77cd301
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Aug 12 00:04:35 2007 +0200
+
+    Explained new key generation features for axes in man page.
+    
+    Explained the behaviour of accelerated vs relative axes that are mapped to keys. Added example to man page.
+
+commit e24622b48e4304a7b8f9de5bdec0e0633821fa7b
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Aug 11 23:27:57 2007 +0200
+
+    Key autorepeat added for axes with mode=relative
+    
+    If axis is set to relative and keylow and keyhigh are assigned, autorepeat for these keys is emulated with a speed relative to the
+    value of the axis (keydown and keyup are generated frequently). A factor for this autorepeat speed can be assigned by
+    "axis=<factor>key".
+    If mode is "accelerated", the axis behaves like a button: only one keydown and one keyup, X does autorepeat for the key.
+
+commit 38297b06226f115ca4a25557bcb7f8c936424abc
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Aug 11 22:32:54 2007 +0200
+
+    Fixed button mapping to an axis needing amplify value.
+    
+    Button mapping without amplify value like "axis=x" used uninitialized value for amplify,
+    making an amplify value mandatory. With no amplify value, 1.0 is assumed.
+
+commit dd396931b76c682f03323566f28b248afb1cb79d
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Aug 11 22:22:49 2007 +0200
+
+    Move subpixel movement from global to per axis/button.
+    
+    Instead of using one global subpixel variable for all axes and buttons, the axis/button
+    struct for each axis/button holds it's own subpixel variable. This is neccessary to
+    implement mapping of relative axes to keys, which needs to save own "subpixel" values.
+
+commit b685505f1411ffa5f326aa3ba9e5cd5e172e5c5e
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Aug 11 20:47:13 2007 +0200
+
+    Reformatted whole source to 4-space-indents
+    
+    Large parts of the code were written with 2-space-indents only.
+    Upgraded to 4-space indents to improve readability. Sorry for touching almost
+    every line. :-S
+
+commit 32c6ba4c292957e40ec349a4bb993b6ad92f290b
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Aug 8 15:00:15 2007 +0200
+
+    Added example about mapping axes to keys to manpage.
+
+commit fd83fbc114fe1755a1c85b5e1dd98b1b84ff668d
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Aug 8 14:52:27 2007 +0200
+
+    Added "keylow" and "keyhigh" option to axes, which generates key events when the axis is moved.
+    
+    One can specify scancodes for negative and positive axis movement. When the axis is moved out of the deadzone,
+    keydown events are once generated, and keyrelease events are generated when the axis returns to 0.
+    One can map a pad to the four arrow keys to play games that do not support a joystick.
+
+commit 20bcf86f2abdeb0fd6cf2f9cc4fb96befc0c5cbc
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Aug 8 14:49:29 2007 +0200
+
+    Added "oldvalue" to axis struct, containing the exact last "value" of the axis
+
+commit f4c1519bffdb12f4337261a8a9a9b63a4fa19cad
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Aug 8 12:58:30 2007 +0200
+
+    Added note about SendCoreEvents keyword to ServerLayout in manpage.
+
+commit 382c116887b10e453a76ed540d4d42f44d4e0f6a
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Jul 11 03:18:07 2007 +0200
+
+    Added missing section about valuators to manpage
+    
+    The manpage was missing detailed information about the reported valuators per axis.
+    Made minor changes of style and grammar.
+
+commit 68df98082ca13d586891d67d03f7c426e6b4467c
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Jul 7 23:43:13 2007 +0200
+
+    Prepared for release 1.2.2
+
+commit 321e4395486b66b2b7be0510494f48b2a03a4cc8
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Jul 7 23:33:32 2007 +0200
+
+    Reverted commit a24a5eeb30b224abf2bb512619fe5ab7284fa252 (prepare for keymap)
+    
+    The files and methods will be added back when it is time. So far there is no need for jstk_key.* files and dummy methods.
+
+commit 1e72e8111b637a0dd784077b09c220d53a133520
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Jul 7 23:08:45 2007 +0200
+
+    Mark float constants with proper f suffix
+
+commit dc4c0a5e0d585647f649e41f80a859a2fdac4a26
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Jul 7 22:57:29 2007 +0200
+
+    Removed abundant debugging messages
+    
+    Debugging messages about loading and unloading the module were printed
+    every time, before debug_level could be set. Removed the messages
+    completely, because they use nobody except me.
+
+commit 2b54ee1b023bbce422429a0efe8a5958c0d08847
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sat Jul 7 22:52:24 2007 +0200
+
+    Added notes to the manpage
+
+commit a24a5eeb30b224abf2bb512619fe5ab7284fa252
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Mon Apr 30 00:37:27 2007 -0400
+
+    Prepared for proper usage of keymap for device
+
+commit f0ab39f9d200cdf1387bf3ffa1583bfdddd1d427
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Apr 29 23:24:40 2007 -0400
+
+    Fixed dynamic button mapping properly.
+    linux_jstk: Button events only reported, when actually changed
+    
+    Button number and button map reported to X are now calculated correctly.
+
+commit 2bbc03ef668bc450fd50ecbbaa6f19398e994f74
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Apr 29 21:59:54 2007 -0400
+
+    Removed unnamed unions to compile with gcc 2.95
+    Only report correct amount of buttons to xorg-server-1.3
+    
+    Call InitButtonClassDeviceStruct with right number of buttons and right mapping. Works correctly
+    since xorg-server-1.3.
+
+commit 461b57cdb14e6bc2fe27f5351c2c3bd66aa1786a
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Tue Apr 24 22:23:43 2007 -0400
+
+    Makefile.am: Rule to autogenerate ChangeLog from git on make dist
+
 commit 25b5234948b6231577d44c5ad97a85d3a82b514a
 Author: Sascha Hlusiak <saschahlusiak@arcor.de>
 Date:   Fri Apr 20 21:09:10 2007 -0400

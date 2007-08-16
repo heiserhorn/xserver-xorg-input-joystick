@@ -13,13 +13,14 @@ joystick \- Joystick input driver
 .fi
 .SH DESCRIPTION
 .B joystick
-is an __xservername__ input driver for Joysticks, using either Linux\'s
-joystick devices or *BSD\'s uhid devices.
+is an __xservername__ input driver for Joysticks, using either Linux's
+joystick devices or *BSD's uhid devices. The driver reports cursor movement
+as well as raw axis values through valuators. 
 
 .SH SUPPORTED HARDWARE
 In general, every by the kernel supported joystick should be supported through the
 .B joystick
-driver. The driver assumes that the joystick is calibrated and will report axis values
+driver. The driver assumes that the joystick is calibrated and reports axis values
 between 
 .IR "-32768 " and " 32768" .
 See the Linux kernel documentation for a complete list of supported devices. 
@@ -95,7 +96,7 @@ events again.
 .PP
 .TP 7
 .BI "Option \*qMapAxis<number>\*q \*q" string \*q
-Sets the mapping of the axis to the desired action. Counting of axis starts with
+Sets the mapping of the axis to the desired action. Counting of axes starts with
 .IR 1 ,
 the parameter may contain:
 .RS 7
@@ -103,21 +104,52 @@ the parameter may contain:
 .BI "\*qmode="<string> \*q
 Where
 .I <string>
-may be one of:
+can be one of:
 
 .B none, relative, accelerated, absolute
+
+Every axis which's mode is not
+.B none
+will be reported as an additional valuator.
 .TP 7
 .BI "\*qaxis="[<factor>]<axis> \*q
 Where
 .I <axis>
 is one of:
-.B X, Y, ZX, ZY
+.B X, Y, ZX, ZY, KEY (see keylow/keyhigh)
 
 and 
 .I <factor>
 is an optional amplifier of the axis, like
 .B -, +, -5, 0.4, 1.3, ...
 Negative values will invert the movement. Default: 1.0
+.TP 7
+.BI "\*qkeylow= "<keycode>[,<keycode>[,<keycode>[,<keycode>]]]
+.TP 7
+.BI "\*qkeyhigh="<keycode>[,<keycode>[,<keycode>[,<keycode>]]]
+When the axis is moved out of the deadzone, a series of keydown events according 
+to the direction of the movement is generated. When the axis is released, keyup events will be generated. You can specify up to 4 keycodes for each direction. 
+
+.B keylow
+defines the keys to be generated when the axis is moved in negative direction (ie. left or up),
+.B keyhigh
+defines the keys to be generated when the axis is moved in positive direction (ie. right or down).
+
+If 
+.B mode
+is set to 
+.IR relative :
+The driver will emulate autorepeat according to the current value of the axis. A keydown and subsequent keyup event will be generated in short time intervals. To modify that interval and the autorepeat speed, supply the
+.BI "\*qaxis="[<factor>]KEY \*q
+parameter.
+
+If 
+.B mode
+is set to 
+.IR accelerated :
+One keydown event is generated, when the axis is moved out of the deadzone, the keyup event is generated, when the axis moves back to the deadzone. The keys will be autorepeated according to the keyboard settings.
+
+See special section about key events below.
 .TP 7
 .BI "\*qdeadzone="<number> \*q
 Sets the unresponsive range of the axis to
@@ -154,7 +186,7 @@ This example will set up the axis as scrolling vertically inverted, which half o
 .BI "  Option \*qMapAxis1\*q     \*q" "mode=accelerated axis=-0.5zy" \*q
 .fi
 
-THis example maps four buttons to the four half axes, so you can use them like a pad. The movement will get half
+This example maps four buttons to the four half axes, so you can use them like a pad. The movement will get half
 the normal speed:
 .nf
 .BI "  Option \*qMapButton1\*q     \*q" "axis=+0.5x" \*q
@@ -183,11 +215,11 @@ total range of 200 pixels, 100 to the top and 100 to the bottom:
 
 .SH "GENERATING KEY EVENTS"
 Proving a \*qkey=<keycode>[,<keycode>[...]]\*q option will generate X Events with the specified keycodes in order,
-when the joystick button is pressed. When the button is released, the keys are released in the reverse order.
+when the joystick button is pressed or the axis changed it's position. When the button/axis is released, the keys are released in the reverse order.
 To lookup keycodes for KeySyms, you can use 
 .BR "xmodmap -pk" .
-You can use unused keycodes and map them to a KeySym of your choice using xmodmap(1). You can specify up to 4
-keycodes per joystick button. 
+You can use unused keycodes and map them to a KeySym of your choice using xmodmap(1).
+You can specify up to 4 keycodes per joystick button/axis. 
 
 Examples:
 .nf
@@ -209,9 +241,51 @@ will generate a lowercase
 is for the  
 .IR "space " key.
 
+.nf
+.BI "  Option  \*qMapAxis1\*q      \*q" "mode=relative    keylow=100 keyhigh=102 axis=0.5key" \*q
+.BI "  Option  \*qMapAxis2\*q      \*q" "mode=relative    keylow=98  keyhigh=104" \*q
+.BI "  Option  \*qMapAxis3\*q      \*q" "mode=accelerated keylow=100 keyhigh=102" \*q
+.BI "  Option  \*qMapAxis4\*q      \*q" "mode=accelerated keylow=98  keyhigh=104" \*q
+.fi
+will map the first and third axis to the arrow keys
+.IR left " and " right
+and the second and fourth axis to the arrow keys
+.IR up " and " down .
+The keys for the first two axes will be generated in an interval according to the value of the axis. The autorepeat speed of the first axis will be half the speed of that of the second axis.
+The keys for the third and fourth axis are generated once when the axis moves out of the deadzone and when it moves back into the deadzone. X.Org will autorepeat those keys according to current keyboard settings.
+
+.SH "VALUATORS"
+The driver reports relative cursor movement as valuators 0 and 1.
+
+Every axis will be associated with an additional valuator,
+reporting the absolute raw values of the axis in the range of
+.IR "-32768 " to " 32768" .
+
+Axes in the mode 
+.B "\*qnone\*q"
+will be ignored. The mode has no effect on the reported value. The axis does not need to be assigned to a direction.
+
+.SH "NOTES"
+The driver does not do hotplugging. The joystick needs to be plugged in when the driver is loaded.
+If the joystick is unplugged, the driver deactivates itself.
+.P
+Make sure you add the 
+.I \*qSendCoreEvents\*q
+keyword to the device entry of your
+.B ServerLayout
+section of the 
+.I xorg.conf
+file, otherwise the device won't report core pointer and core key events.
+
+Example: 
+.nf
+.BI "    InputDevice     " "\*qJoystick1\*q     \*qSendCoreEvents\*q"
+.fi
+
+
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__), xmodmap(1)
 .SH AUTHORS
-Sascha Hlusiak 
+Sascha Hlusiak (2007),
 .fi
 Frederic Lepied (1995-1999)
