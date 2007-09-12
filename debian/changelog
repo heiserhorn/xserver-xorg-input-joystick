@@ -1,3 +1,11 @@
+xserver-xorg-input-joystick (1:1.2.3-2) experimental; urgency=low
+
+  * Build against xserver 1.4.
+  * Remove Branden from uploaders with his permission. He's always welcome back.
+  * Add upstream URL to debian/copyright.
+
+ -- Brice Goglin <bgoglin@debian.org>  Wed, 12 Sep 2007 19:19:05 +0200
+
 xserver-xorg-input-joystick (1:1.2.3-1) unstable; urgency=low
 
   * New upstream release.
