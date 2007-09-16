@@ -1,3 +1,9 @@
+xserver-xorg-input-joystick (1:1.2.3-3) unstable; urgency=low
+
+  * Upload to unstable
+
+ -- David Nusinow <dnusinow@debian.org>  Sun, 16 Sep 2007 15:13:37 -0400
+
 xserver-xorg-input-joystick (1:1.2.3-2) experimental; urgency=low
 
   * Build against xserver 1.4.
