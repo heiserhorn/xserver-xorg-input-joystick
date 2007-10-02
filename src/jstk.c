@@ -353,6 +353,8 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
 
     case DEVICE_OFF:
     case DEVICE_CLOSE:
+        if (!pJstk->public.on)
+            break;
         DBG(1, ErrorF("jstkDeviceControlProc  what=%s\n", 
             (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 
@@ -612,7 +614,6 @@ jstkDriverPlug(pointer  module,
  * jstkDriverUnplug --
  *
  * Called when the driver is unloaded
- * NOTICE: When does this actually happen? What needs to be cleaned up?
  *
  ***************************************************************************
  */
