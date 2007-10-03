@@ -28,6 +28,7 @@
 #define MAXBUTTONS 32
 #define MAXAXES 32
 #define MAXKEYSPERBUTTON 4
+#define MIN_KEYCODE 8
 
 
 /******************************************************************************
@@ -110,7 +111,7 @@ typedef struct _JoystickDevRec {
     } buttonmap;
     struct _KEYMAP {
         int size;
-        KeySym map[MAXBUTTONS+1];
+        KeySym map[MAP_LENGTH];
     } keymap;
 
     AXIS axis[MAXAXES];           /* Configuration per axis */

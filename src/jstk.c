@@ -41,6 +41,7 @@
 #include "jstk.h"
 #include "jstk_hw.h"
 #include "jstk_axis.h"
+#include "jstk_key.h"
 #include "jstk_options.h"
 
 
@@ -294,6 +295,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                 return !Success;
             }
         }
+        jstkInitKeys(pJstk, priv);
 
         m = 2;
         for (i=0; i<MAXAXES; i++) 
@@ -322,7 +324,6 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                                    1, /* resolution */
                                    0, /* min_res */
                                    1); /* max_res */
-
             for (i=0; i<MAXAXES; i++) 
                 if (priv->axis[i].type != TYPE_NONE)
             {
@@ -419,7 +420,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->fd = -1;
     local->dev = NULL;
     local->private = priv;
-    local->type_name = "JOYSTICK";
+    local->type_name = XI_MOUSE;
     local->history_size = 0;
     local->always_core_feedback = 0;
     local->conf_idev = dev;
@@ -433,7 +434,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
     priv->buttonmap.size = 0;
-    priv->keymap.size = 0;
+    priv->keymap.size = 1;
+    priv->keymap.map[0] = NoSymbol;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
@@ -472,6 +474,17 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->axis[0].mapping   = MAPPING_X;
     priv->axis[1].type      = TYPE_BYVALUE;
     priv->axis[1].mapping   = MAPPING_Y;
+
+    priv->axis[2].type      = TYPE_BYVALUE;
+    priv->axis[2].mapping   = MAPPING_ZX;
+    priv->axis[3].type      = TYPE_BYVALUE;
+    priv->axis[3].mapping   = MAPPING_ZY;
+
+    /* Two axes by default */
+    priv->axis[4].type      = TYPE_ACCELERATED;
+    priv->axis[4].mapping   = MAPPING_X;
+    priv->axis[5].type      = TYPE_ACCELERATED;
+    priv->axis[5].mapping   = MAPPING_Y;
 
     priv->buttonmap.scrollbutton[0] = jstkGetButtonNumberInMap(priv, 4);
     priv->buttonmap.scrollbutton[1] = jstkGetButtonNumberInMap(priv, 5);
@@ -525,7 +538,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         sprintf(p,"MapAxis%d",i+1);
         s = xf86SetStrOption(dev->commonOptions, p, NULL);
         if (s != NULL) {
-            jstkParseAxisOption(s, &priv->axis[i], local->name);
+            jstkParseAxisOption(s, priv, &priv->axis[i], local->name);
         }
         DBG(1, xf86Msg(X_CONFIG, 
                        "Axis %d type is %d, mapped to %d, amplify=%.3f\n", i+1, 
@@ -535,7 +548,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 
     /* return the LocalDevice */
-    local->flags |= XI86_CONFIGURED ;
+    local->flags |= XI86_CONFIGURED;
 
     return (local);
 

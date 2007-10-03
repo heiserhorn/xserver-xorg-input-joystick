@@ -381,35 +381,3 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number)
         xf86PostMotionEvent(device->dev, 0, 0, 2, x, y);
     }
 }
-
-
-
-
-/*
- ***************************************************************************
- *
- * jstkGenerateKeys
- *
- * Generates a series of keydown or keyup events of the specified 
- * KEYSCANCODES
- *
- ***************************************************************************
- */
-void
-jstkGenerateKeys(DeviceIntPtr device, KEYSCANCODES keys, char pressed)
-{
-    int i;
-    unsigned int k;
-
-    for (i=0;i<MAXKEYSPERBUTTON;i++) {
-        if (pressed != 0) 
-            k = keys[i];
-        else k = keys[MAXKEYSPERBUTTON - i - 1];
-
-        if (k != 0) {
-            DBG(2, ErrorF("Generating key %s event with keycode %d\n", 
-                (pressed)?"press":"release", k));
-            xf86PostKeyboardEvent(device, k, pressed);
-        }
-    }
-}
