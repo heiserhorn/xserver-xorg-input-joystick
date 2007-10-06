@@ -469,18 +469,19 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->button[2].mapping      = MAPPING_BUTTON;
     priv->button[2].buttonnumber = 3;
 
-    /* Two axes by default */
+    /* First two axes are a stick for moving */
     priv->axis[0].type      = TYPE_BYVALUE;
     priv->axis[0].mapping   = MAPPING_X;
     priv->axis[1].type      = TYPE_BYVALUE;
     priv->axis[1].mapping   = MAPPING_Y;
 
+    /* Next two axes are a stick for scrolling */
     priv->axis[2].type      = TYPE_BYVALUE;
     priv->axis[2].mapping   = MAPPING_ZX;
     priv->axis[3].type      = TYPE_BYVALUE;
     priv->axis[3].mapping   = MAPPING_ZY;
 
-    /* Two axes by default */
+    /* Next two axes are a pad for moving */
     priv->axis[4].type      = TYPE_ACCELERATED;
     priv->axis[4].mapping   = MAPPING_X;
     priv->axis[5].type      = TYPE_ACCELERATED;

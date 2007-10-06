@@ -64,7 +64,7 @@ The joystick button will generate a click with the specified button (starting wi
 Where
 .I <axis>
 is one of:
-.B X, Y, ZX, ZY
+.B x, y, zx, zy
 
 and 
 .I <factor>
@@ -116,7 +116,7 @@ will be reported as an additional valuator.
 Where
 .I <axis>
 is one of:
-.B X, Y, ZX, ZY, KEY (see keylow/keyhigh)
+.B x, y, zx, zy, key (see keylow/keyhigh)
 
 and 
 .I <factor>
@@ -161,7 +161,7 @@ Default: 1000
 .RE
 
 .PP
-The default configuration looks as follows:
+The default configuration looks like follows:
 
 .nf
 .BI "  Option \*qMapButton1\*q   \*q" button=1 \*q
@@ -169,8 +169,12 @@ The default configuration looks as follows:
 .BI "  Option \*qMapButton3\*q   \*q" button=3 \*q
 .BI "  Option \*qMapButton4\*q   \*q" none \*q
 \ \ ...
-.BI "  Option \*qMapAxis1\*q     \*q" "mode=relative axis=+1x deadzone=1000" \*q
-.BI "  Option \*qMapAxis2\*q     \*q" "mode=relative axis=+1y deadzone=1000" \*q
+.BI "  Option \*qMapAxis1\*q     \*q" "mode=relative    axis=+1x  deadzone=1000" \*q
+.BI "  Option \*qMapAxis2\*q     \*q" "mode=relative    axis=+1y  deadzone=1000" \*q
+.BI "  Option \*qMapAxis3\*q     \*q" "mode=relative    axis=+1zx deadzone=1000" \*q
+.BI "  Option \*qMapAxis4\*q     \*q" "mode=relative    axis=+1zy deadzone=1000" \*q
+.BI "  Option \*qMapAxis5\*q     \*q" "mode=accelerated axis=+1x  deadzone=1000" \*q
+.BI "  Option \*qMapAxis6\*q     \*q" "mode=accelerated axis=+1y  deadzone=1000" \*q
 .BI "  Option \*qMapAxis3\*q     \*q" "mode=none" \*q
 \ \ ...
 .fi
@@ -218,8 +222,9 @@ total range of 200 pixels, 100 to the top and 100 to the bottom:
 Providing a \*qkey=<keysym>[,<keysym>[...]]\*q option will generate X Events with the specified keysyms
 when the joystick button is pressed or the axis changed it's position. When the button/axis is released, the keys are released in the reverse order.
 
-The keysym parameter is defined as a numerical value, which can be looked up in the file
-.IR /usr/include/X11/keysymdef.h .
+The keysym parameter can be defined as a numerical value, which can be looked up in the file
+.IR /usr/include/X11/keysymdef.h ,
+or as the symbolic identifier (case sensitive, without the leading XK_).
 
 You can specify up to 4 keysyms per joystick button/axis, which is useful to use modificators. Make sure you use the modificators
 that are necessary to get a certain keysym.
@@ -227,6 +232,7 @@ that are necessary to get a certain keysym.
 Examples:
 .nf
 .BI "  Option \*qMapButton1\*q     \*q" "key=0xffe9,0xff09" \*q
+.BI "  Option \*qMapButton1\*q     \*q" "key=Alt_L,Tab" \*q
 .fi
 will generate
 .I "Alt_L+Tab"
@@ -234,22 +240,24 @@ when the button is pressed.
 
 .nf
 .BI "  Option \*qMapButton1\*q     \*q" "key=0xffe1,0x0064" \*q
+.BI "  Option \*qMapButton1\*q     \*q" "key=Shift_L,d" \*q
 .fi
-will generate a lowercase 
+will generate an uppercase 
 .IR d .
 
 .nf
 .BI "  Option \*qMapButton1\*q     \*q" "key=0x0020" \*q
 .BI "  Option \*qMapButton1\*q     \*q" "key=32" \*q
+.BI "  Option \*qMapButton1\*q     \*q" "key=space" \*q
 .fi
 is for the  
 .IR "space " key.
 
 .nf
-.BI "  Option  \*qMapAxis1\*q      \*q" "mode=relative    keylow=0xff51 keyhigh=0xff53 axis=0.5key" \*q
-.BI "  Option  \*qMapAxis2\*q      \*q" "mode=relative    keylow=0xff52 keyhigh=0xff54" \*q
-.BI "  Option  \*qMapAxis3\*q      \*q" "mode=accelerated keylow=0xff51 keyhigh=0xff53" \*q
-.BI "  Option  \*qMapAxis4\*q      \*q" "mode=accelerated keylow=0xff52 keyhigh=0xff54" \*q
+.BI "  Option  \*qMapAxis1\*q      \*q" "mode=relative    keylow=Left keyhigh=Right axis=0.5key" \*q
+.BI "  Option  \*qMapAxis2\*q      \*q" "mode=relative    keylow=Up   keyhigh=Down" \*q
+.BI "  Option  \*qMapAxis3\*q      \*q" "mode=accelerated keylow=Left keyhigh=Right" \*q
+.BI "  Option  \*qMapAxis4\*q      \*q" "mode=accelerated keylow=Up   keyhigh=Down" \*q
 .fi
 will map the first and third axis to the arrow keys
 .IR left " and " right

@@ -35,6 +35,8 @@
 #include <X11/XF86keysym.h>
 #include "jstk.h"
 #include "jstk_options.h"
+#include "StrKeysym.h"
+
 
 
 
@@ -149,7 +151,7 @@ jstkParseButtonOption(const char* org,
     button = &priv->button[number];
 
     param = xstrdup(org);
-    for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
+/*    for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp); */
 
     if (strcmp(param, "none") == 0) {
         button->mapping = MAPPING_NONE;
@@ -178,7 +180,11 @@ jstkParseButtonOption(const char* org,
             unsigned key;
             next = strchr(current, ',');
             if (next) *(next++) = '\0';
-            key = strtol(current, NULL, 0);
+#ifdef _STRKEYSYM_H_INCLUDED_
+            key = XStringToKeysym(current);
+            if (key == NoSymbol)
+#endif
+                key = strtol(current, NULL, 0);
             DBG(3, ErrorF("Parsed %s to %d\n", current, key));
             if (key == 0)
                 xf86Msg(X_WARNING, "%s: error parsing key value: %s.\n", 
@@ -225,7 +231,8 @@ jstkParseAxisOption(const char* org,
     float fvalue;
     char p[64];
     param = xstrdup(org);
-    for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
+/*    for (tmp     for (tmp = param; *tmp; tmp++) *tmp = tolower(*tmp);
+= param; *tmp; tmp++) *tmp = tolower(*tmp); */
 
     if ((tmp=strstr(param, "mode=")) != NULL) {
         if (sscanf(tmp, "mode=%15s", p) == 1) {
@@ -280,7 +287,11 @@ jstkParseAxisOption(const char* org,
                     next = strchr(current, ',');
                     if (next) *(next++) = '\0';
 
-                    key = strtol(current, NULL, 0);
+#ifdef _STRKEYSYM_H_INCLUDED_
+                    key = XStringToKeysym(current);
+                    if (key == NoSymbol)
+#endif
+                        key = strtol(current, NULL, 0);
                     DBG(3, ErrorF("Parsed %s to %d\n", current, key));
                     if (key == 0)
                         xf86Msg(X_WARNING, "%s: error parsing keylow value: %s.\n", 
@@ -305,6 +316,11 @@ jstkParseAxisOption(const char* org,
                     next = strchr(current, ',');
                     if (next) *(next++) = '\0';
                     key = strtol(current, NULL, 0);
+#ifdef _STRKEYSYM_H_INCLUDED_
+                    key = XStringToKeysym(current);
+                    if (key == NoSymbol)
+#endif
+                        key = strtol(current, NULL, 0);
                     DBG(3, ErrorF("Parsed %s to %d\n", current, key));
                     if (key == 0)
                         xf86Msg(X_WARNING, "%s: error parsing keyhigh value: %s.\n", 
