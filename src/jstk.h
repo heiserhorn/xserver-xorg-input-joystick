@@ -104,6 +104,8 @@ typedef struct _JoystickDevRec {
     Bool         mouse_enabled, keys_enabled;
     float        amplify;     /* Global amplifier of axis movement */
 
+    int          repeat_delay, repeat_interval; /* Key autorepeat */
+
     struct _BUTTONMAP {
         int size;
         CARD8 scrollbutton[4];     /* Logical button numbers for scrollwheel */

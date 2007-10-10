@@ -48,6 +48,13 @@ If compiled with debugging information, controls the verbosity of the driver.
 The higher the DebugLevel, the more output is produced.
 Default: 0
 .TP 7
+.BI "Option \*qAutoRepeat\*q \*q" "delay rate" \*q
+Sets the auto repeat behaviour for key events.
+.I delay
+is the time in milliseconds before a key starts repeating.
+.I rate
+is the number of times a key repeats per second.  Default: Xorg default
+.TP 7
 .BI "Option \*qMapButton<number>\*q \*q" string \*q
 Sets the mapping of the joystick button to the desired action. Counting of buttons starts with 
 .IR 1 ,

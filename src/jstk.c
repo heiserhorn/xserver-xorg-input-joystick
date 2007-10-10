@@ -436,6 +436,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->buttonmap.size = 0;
     priv->keymap.size = 1;
     priv->keymap.map[0] = NoSymbol;
+    priv->repeat_delay = 0;
+    priv->repeat_interval = 0;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {
@@ -520,6 +522,20 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 #endif
 
+    /* Parse option for autorepeat */
+    if ((s = xf86SetStrOption(dev->commonOptions, "AutoRepeat", NULL))) {
+        int delay, rate;
+        if (sscanf(s, "%d %d", &delay, &rate) != 2) {
+            xf86Msg(X_ERROR, "%s: \"%s\" is not a valid AutoRepeat value", 
+                    local->name, s);
+        } else {
+            priv->repeat_delay = delay;
+            if (rate != 0)
+                priv->repeat_interval = 1000/rate;
+            else priv->repeat_interval = 0;
+        }
+        xfree(s);
+    }
 
     /* Process button mapping options */
     for (i=0; i<MAXBUTTONS; i++) {

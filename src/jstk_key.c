@@ -34,7 +34,6 @@
 #include <X11/extensions/XKBsrv.h>
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>
-// #include <xf86Xinput.h>
 #include "jstk.h"
 #include "jstk_key.h"
 
@@ -52,6 +51,8 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
     KeySym sym;
     int i, j;
     static XkbComponentNamesRec xkbnames;
+    XkbSrvInfoPtr xkbi;
+    XkbControlsPtr ctrls;
 
     static struct { KeySym keysym; CARD8 mask; } modifiers[] = {
         { XK_Shift_L,           ShiftMask },
@@ -95,6 +96,21 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
     XkbSetRulesDflts(__XKBDEFRULES__, "evdev", "us", "nodeadkeys", NULL);
     XkbInitKeyboardDeviceStruct (pJstk, &xkbnames, &keySyms, modMap,
             NULL, NULL);
+
+    /* Set Autorepeat and Delay */
+
+    if ((priv->repeat_delay || priv->repeat_interval) && 
+        pJstk->key && 
+        pJstk->key->xkbInfo)
+    {
+        xkbi = pJstk->key->xkbInfo;
+        if (xkbi && xkbi->desc)
+        {
+            ctrls = xkbi->desc->ctrls;
+            ctrls->repeat_delay = priv->repeat_delay;
+            ctrls->repeat_interval = priv->repeat_interval;
+        }
+    }
 
     return Success;
 }
