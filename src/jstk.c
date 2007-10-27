@@ -533,6 +533,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
             if (rate != 0)
                 priv->repeat_interval = 1000/rate;
             else priv->repeat_interval = 0;
+            DBG(1, xf86Msg(X_CONFIG, "Autorepeat set to delay=%d, interval=%d\n",
+                           priv->repeat_delay,priv->repeat_interval));
         }
         xfree(s);
     }
