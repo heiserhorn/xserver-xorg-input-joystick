@@ -32,7 +32,7 @@
 				jstk_axis.c jstk_axis.h \
 				jstk_key.c jstk_key.h \
 				jstk_options.c jstk_options.h \
-				StrKeysym.c
+				StrKeysym.c StrKeysym.h ks_tables.h
 
 BSD_SRCS   = bsd_jstk.c
 LINUX_SRCS = linux_jstk.c
