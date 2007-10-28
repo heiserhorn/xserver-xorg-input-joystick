@@ -28,6 +28,7 @@
 #define MAXBUTTONS 32
 #define MAXAXES 32
 #define MAXKEYSPERBUTTON 4
+#define MIN_KEYCODE 8
 
 
 /******************************************************************************
@@ -103,6 +104,8 @@ typedef struct _JoystickDevRec {
     Bool         mouse_enabled, keys_enabled;
     float        amplify;     /* Global amplifier of axis movement */
 
+    int          repeat_delay, repeat_interval; /* Key autorepeat */
+
     struct _BUTTONMAP {
         int size;
         CARD8 scrollbutton[4];     /* Logical button numbers for scrollwheel */
@@ -110,7 +113,7 @@ typedef struct _JoystickDevRec {
     } buttonmap;
     struct _KEYMAP {
         int size;
-        KeySym map[MAXBUTTONS+1];
+        KeySym map[MAP_LENGTH];
     } keymap;
 
     AXIS axis[MAXAXES];           /* Configuration per axis */
