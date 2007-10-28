@@ -79,14 +79,15 @@ am__installdirs = "$(DESTDIR)$(@DRIVER_NAME@_drv_ladir)"
 LTLIBRARIES = $(@DRIVER_NAME@_drv_la_LTLIBRARIES)
 @DRIVER_NAME@_drv_la_LIBADD =
 am__@DRIVER_NAME@_drv_la_SOURCES_DIST = jstk.c jstk.h jstk_hw.h \
-	jstk_axis.c jstk_axis.h jstk_options.c jstk_options.h \
-	bsd_jstk.c linux_jstk.c
+	jstk_axis.c jstk_axis.h jstk_key.c jstk_key.h jstk_options.c \
+	jstk_options.h StrKeysym.c StrKeysym.h ks_tables.h bsd_jstk.c \
+	linux_jstk.c
 am__objects_1 = bsd_jstk.lo
 @BSD_TRUE@am__objects_2 = $(am__objects_1)
 am__objects_3 = linux_jstk.lo
 @LINUX_TRUE@am__objects_4 = $(am__objects_3)
-am_@DRIVER_NAME@_drv_la_OBJECTS = jstk.lo jstk_axis.lo jstk_options.lo \
-	$(am__objects_2) $(am__objects_4)
+am_@DRIVER_NAME@_drv_la_OBJECTS = jstk.lo jstk_axis.lo jstk_key.lo \
+	jstk_options.lo StrKeysym.lo $(am__objects_2) $(am__objects_4)
 @DRIVER_NAME@_drv_la_OBJECTS = $(am_@DRIVER_NAME@_drv_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -177,6 +178,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -241,8 +243,9 @@ target_alias = @target_alias@
 @DRIVER_NAME@_drv_la_LDFLAGS = -module -avoid-version $(am__append_2)
 @DRIVER_NAME@_drv_ladir = @inputdir@
 @DRIVER_NAME@_drv_la_SOURCES = jstk.c jstk.h jstk_hw.h jstk_axis.c \
-	jstk_axis.h jstk_options.c jstk_options.h $(am__append_1) \
-	$(am__append_3)
+	jstk_axis.h jstk_key.c jstk_key.h jstk_options.c \
+	jstk_options.h StrKeysym.c StrKeysym.h ks_tables.h \
+	$(am__append_1) $(am__append_3)
 BSD_SRCS = bsd_jstk.c
 LINUX_SRCS = linux_jstk.c
 EXTRA_DIST = $(BSD_SRCS) $(LINUX_SRCS)
@@ -315,9 +318,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/StrKeysym.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bsd_jstk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jstk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jstk_axis.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jstk_key.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jstk_options.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linux_jstk.Plo@am__quote@
 
