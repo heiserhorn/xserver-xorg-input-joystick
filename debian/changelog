@@ -1,3 +1,10 @@
+xserver-xorg-input-joystick (1:1.3.0-3) UNRELEASED; urgency=low
+
+  * Build-depend on x11proto-kb-dev, thanks Aaron M. Ucko,
+    closes: #448770.
+
+ -- Brice Goglin <bgoglin@debian.org>  Thu, 01 Nov 2007 10:24:56 +0100
+
 xserver-xorg-input-joystick (1:1.3.0-2) unstable; urgency=low
 
   * Update upstream ChangeLog.
