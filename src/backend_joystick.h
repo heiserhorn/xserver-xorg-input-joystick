@@ -21,14 +21,14 @@
  *
  */
 
-#ifndef _BSD_JSTK_H_INCLUDED_
-#define _BSD_JSTK_H_INCLUDED_
+#ifndef _BACKEND_JOYSTICK_H_INCLUDED_
+#define _BACKEND_JOYSTICK_H_INCLUDED_
 
 #include "jstk.h"
 
-int jstkOpenDevice_bsd(JoystickDevPtr joystick);
-void jstkCloseDevice_bsd(JoystickDevPtr joystick);
-int jstkReadData_bsd(JoystickDevPtr joystick,
+int jstkOpenDevice_joystick(JoystickDevPtr joystick);
+void jstkCloseDevice_joystick(JoystickDevPtr joystick);
+int jstkReadData_joystick(JoystickDevPtr joystick,
                           JOYSTICKEVENT *event,
                           int *number);
 

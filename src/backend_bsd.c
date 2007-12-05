@@ -45,6 +45,7 @@
 #include <dev/usb/usbhid.h>
 
 #include "jstk.h"
+#include "backend_bsd.h"
 
 
 struct jstk_bsd_hid_data {

@@ -34,9 +34,9 @@
 				jstk_options.c jstk_options.h \
 				StrKeysym.c StrKeysym.h ks_tables.h
 
-BSD_SRCS   = bsd_jstk.c bsd_jstk.h
-LINUX_SRCS = linux_jstk.c linux_jstk.h
-EVDEV_SRCS = evdev_jstk.c evdev_jstk.h
+BSD_SRCS   = backend_bsd.c backend_bsd.h
+LINUX_SRCS = backend_joystick.c backend_joystick.h
+EVDEV_SRCS = backend_evdev.c backend_evdev.h
 
 if BSD_BACKEND
 @DRIVER_NAME@_drv_la_SOURCES += $(BSD_SRCS)

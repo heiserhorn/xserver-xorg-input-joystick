@@ -21,15 +21,15 @@
  *
  */
 
-#ifndef _LINUX_JSTK_H_INCLUDED_
-#define _LINUX_JSTK_H_INCLUDED_
+#ifndef _BACKEND_EVDEV_H_INCLUDED_
+#define _BACKEND_EVDEV_H_INCLUDED_
 
 #include "jstk.h"
 
-int jstkOpenDevice_joystick(JoystickDevPtr joystick);
-void jstkCloseDevice_joystick(JoystickDevPtr joystick);
-int jstkReadData_joystick(JoystickDevPtr joystick,
-                          JOYSTICKEVENT *event,
-                          int *number);
+int jstkOpenDevice_evdev(JoystickDevPtr joystick);
+void jstkCloseDevice_evdev(JoystickDevPtr joystick);
+int jstkReadData_evdev(JoystickDevPtr joystick,
+                       JOYSTICKEVENT *event,
+                       int *number);
 
 #endif

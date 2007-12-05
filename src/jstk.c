@@ -44,13 +44,13 @@
 #include "jstk_options.h"
 
 #ifdef LINUX_BACKEND
-    #include "linux_jstk.h"
+    #include "backend_joystick.h"
 #endif
 #ifdef BSD_BACKEND
-    #include "bsd_jstk.h"
+    #include "backend_bsd.h"
 #endif
 #ifdef EVDEV_BACKEND
-    #include "evdev_jstk.h"
+    #include "backend_evdev.h"
 #endif
 
 

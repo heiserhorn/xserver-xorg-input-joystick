@@ -45,7 +45,7 @@
 #include <xf86_OSproc.h>
 
 #include "jstk.h"
-#include "linux_jstk.h"
+#include "backend_joystick.h"
 
 
 /***********************************************************************

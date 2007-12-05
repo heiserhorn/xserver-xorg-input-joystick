@@ -42,7 +42,7 @@
 #include <xf86_OSproc.h>
 
 #include "jstk.h"
-#include "evdev_jstk.h"
+#include "backend_evdev.h"
 
 
 /***********************************************************************
