@@ -111,9 +111,9 @@ XORG_RELEASE_VERSION
 AC_OUTPUT([Makefile src/Makefile man/Makefile])
 
 echo 
-echo Building linux joystick backend: $linux_backend
-echo Building evdev backend: $evdev_backend
-echo Building BSD backend: $bsd_backend
+echo Building Linux joystick backend: $linux_backend
+echo Building Linux evdev backend: $evdev_backend
+echo Building BSD usbhid backend: $bsd_backend
 
 if test "x$linux_backend" != "xyes" -a \
 	"x$bsd_backend" != "xyes" -a \

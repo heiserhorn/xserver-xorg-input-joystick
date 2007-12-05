@@ -39,10 +39,19 @@
 
 
 #include "jstk.h"
-#include "jstk_hw.h"
 #include "jstk_axis.h"
 #include "jstk_key.h"
 #include "jstk_options.h"
+
+#ifdef LINUX_BACKEND
+    #include "linux_jstk.h"
+#endif
+#ifdef BSD_BACKEND
+    #include "bsd_jstk.h"
+#endif
+#ifdef EVDEV_BACKEND
+    #include "evdev_jstk.h"
+#endif
 
 
 #if DEBUG
@@ -86,6 +95,41 @@ jstkConvertProc(LocalDevicePtr	local,
 /*
  ***************************************************************************
  *
+ * jstkOpenDevice --
+ *
+ * Called to open the device specified in priv
+ * The compiled backends are tried one by one and return the first matching
+ *
+ * Returns the filedescriptor or -1 in case of error
+ *
+ ***************************************************************************
+ */
+static int
+jstkOpenDevice(JoystickDevPtr priv)
+{
+    int fd;
+    fd = -1;
+
+#ifdef EVDEV_BACKEND
+    if (fd == -1)
+        fd = jstkOpenDevice_evdev(priv);
+#endif
+#ifdef LINUX_BACKEND
+    if (fd == -1)
+        fd = jstkOpenDevice_joystick(priv);
+#endif
+#ifdef BSD_BACKEND
+    if (fd == -1)
+        fd = jstkOpenDevice_bsd(priv);
+#endif
+
+    return fd;
+}
+
+
+/*
+ ***************************************************************************
+ *
  * jstkReadProc --
  *
  * Called when data is available to read from the device
@@ -104,7 +148,8 @@ jstkReadProc(LocalDevicePtr local)
     JoystickDevPtr priv = local->private;
 
     do {
-        if ((r=jstkReadData(priv, &event, &number))==0) {
+        if ((priv->read_proc == NULL) || 
+            ((r=priv->read_proc(priv, &event, &number))==0)) {
             xf86Msg(X_WARNING, "JOYSTICK: Read failed. Deactivating device.\n");
 
             if (local->fd >= 0)
@@ -367,7 +412,8 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
         if (local->fd >= 0)
             RemoveEnabledDevice(local->fd);
         local->fd = -1;
-        jstkCloseDevice(priv);
+        if (priv->close_proc)
+            priv->close_proc(priv);
         pJstk->public.on = FALSE;
         break;
 

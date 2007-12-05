@@ -45,7 +45,6 @@
 #include <dev/usb/usbhid.h>
 
 #include "jstk.h"
-#include "jstk_hw.h"
 
 
 struct jstk_bsd_hid_data {
@@ -63,8 +62,6 @@ struct jstk_bsd_hid_data {
 
 
 
-
-
 /***********************************************************************
  *
  * jstkOpenDevice --
@@ -76,7 +73,7 @@ struct jstk_bsd_hid_data {
  */
 
 int
-jstkOpenDevice(JoystickDevPtr joystick)
+jstkOpenDevice_bsd(JoystickDevPtr joystick)
 {
     int cur_axis;
     int is_joystick, report_id = 0;
@@ -187,6 +184,9 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_INFO, "Joystick: %d buttons, %d axes\n", 
             bsddata->buttons, bsddata->axes);
 
+    joystick->read_proc = jstkReadData_bsd;
+    joystick->close_proc = jstkCloseDevice_bsd;
+
     return joystick->fd;
 }
 
@@ -201,7 +201,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
  */
 
 void
-jstkCloseDevice(JoystickDevPtr joystick)
+jstkCloseDevice_bsd(JoystickDevPtr joystick)
 {
     if ((joystick->fd >= 0)) {
       xf86CloseSerial(joystick->fd);
@@ -228,7 +228,7 @@ jstkCloseDevice(JoystickDevPtr joystick)
  */
 
 int
-jstkReadData(JoystickDevPtr joystick,
+jstkReadData_bsd(JoystickDevPtr joystick,
              JOYSTICKEVENT *event,
              int *number)
 {
