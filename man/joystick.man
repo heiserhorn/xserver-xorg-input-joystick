@@ -13,8 +13,15 @@ joystick \- Joystick input driver
 .fi
 .SH DESCRIPTION
 .B joystick
-is an __xservername__ input driver for Joysticks, using either Linux's
-joystick devices or *BSD's uhid devices. The driver reports cursor movement
+is an __xservername__ input driver for Joysticks. There are 3 backends available that are used in the following order, if support was found:
+
+.nf
+.B - Linux's evdev interface
+.B - Linux's joystick interface
+.B - BSD's usbhid interface
+.fi
+
+The driver reports cursor movement
 as well as raw axis values through valuators. 
 
 .SH SUPPORTED HARDWARE
@@ -38,7 +45,7 @@ are supported:
 Specifies the device through which the joystick can be accessed. This option is mandatory and there is no default setting.
 
 For Linux, joysticks are mostly accessible as
-.IR /dev/input/jsX .
+.IR /dev/input/jsX " or " /dev/input/eventX .
 
 For *BSD, joysticks are recognized as 
 .IR /dev/uhidX .
