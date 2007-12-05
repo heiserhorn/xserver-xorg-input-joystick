@@ -36,14 +36,19 @@
 
 BSD_SRCS   = bsd_jstk.c
 LINUX_SRCS = linux_jstk.c
+EVDEV_SRCS = evdev_jstk.c
 
-if BSD
+if BSD_BACKEND
 @DRIVER_NAME@_drv_la_SOURCES += $(BSD_SRCS)
 @DRIVER_NAME@_drv_la_LDFLAGS += -lusbhid
 endif
 
-if LINUX
+if LINUX_BACKEND
 @DRIVER_NAME@_drv_la_SOURCES += $(LINUX_SRCS)
+endif
+
+if EVDEV_BACKEND
+@DRIVER_NAME@_drv_la_SOURCES += $(EVDEV_SRCS)
 endif
 
 EXTRA_DIST = $(BSD_SRCS) $(LINUX_SRCS)
