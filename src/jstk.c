@@ -622,7 +622,8 @@ SetupProc_fail:
         xfree(priv);
     if (local)
         local->private = NULL;
-    return (local);
+    return NULL;
+/*    return (local); */ /* Makes X segfault on error */
 }
 
 
