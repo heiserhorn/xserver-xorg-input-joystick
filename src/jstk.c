@@ -509,13 +509,15 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
             priv->button[i].keys[j] = 0;
     }
 
+    priv->buttonmap.map[0] = 0;
+
     /* First three joystick buttons generate mouse clicks */
     priv->button[0].mapping      = MAPPING_BUTTON;
-    priv->button[0].buttonnumber = 1;
+    priv->button[0].buttonnumber = jstkGetButtonNumberInMap(priv, 1);
     priv->button[1].mapping      = MAPPING_BUTTON;
-    priv->button[1].buttonnumber = 2;
+    priv->button[1].buttonnumber = jstkGetButtonNumberInMap(priv, 2);
     priv->button[2].mapping      = MAPPING_BUTTON;
-    priv->button[2].buttonnumber = 3;
+    priv->button[2].buttonnumber = jstkGetButtonNumberInMap(priv, 3);
 
     /* First two axes are a stick for moving */
     priv->axis[0].type      = TYPE_BYVALUE;
@@ -539,7 +541,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->buttonmap.scrollbutton[1] = jstkGetButtonNumberInMap(priv, 5);
     priv->buttonmap.scrollbutton[2] = jstkGetButtonNumberInMap(priv, 6);
     priv->buttonmap.scrollbutton[3] = jstkGetButtonNumberInMap(priv, 7);
-    priv->buttonmap.map[0] = 0;
 
 
     xf86CollectInputOptions(local, NULL, NULL);
