@@ -548,6 +548,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     /* Joystick device is mandatory */
     priv->device = xf86SetStrOption(dev->commonOptions, "Device", NULL);
+    if (!priv->device)
+        priv->device = xf86SetStrOption(dev->commonOptions, "Path", NULL);
 
     if (!priv->device) {
         xf86Msg (X_ERROR, "%s: No Device specified.\n", local->name);
