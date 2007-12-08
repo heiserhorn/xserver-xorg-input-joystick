@@ -1,3 +1,98 @@
+commit 01637abd2b059923f5c41ab80c80ab93579cbe9b
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Fri Dec 7 00:17:56 2007 +0100
+
+    Mentioned hotplugging and hal policy in man page
+
+commit 47cd8141f9bf3e69d5418f3b5f448366f500cf0d
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Dec 6 23:55:20 2007 +0100
+
+    Bumped to version 1.3.1
+
+commit c463776b8b35e6e721128a7348e088d306c4ee02
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Dec 6 23:48:49 2007 +0100
+
+    Added example hal policy file for input hotplugging of joysticks
+    
+    Hal policy config/50-x11-input-joystick.fdi is not installed by default and you probably
+    don't want to.
+
+commit 833454bd7bea04924b85105bf38ed57dd2b5e5c2
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Dec 6 23:22:43 2007 +0100
+
+    Looking for Path parameter besides Device (used by HAL+input hotplug)
+
+commit dca42ff25dde490073a798dc873b048c4bfeb0f4
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Dec 6 23:22:06 2007 +0100
+
+    Fixed default button mappings
+    
+    Default button mappings were set to buttons 4, 5 and 6 instead of 1, 2 and 3.
+
+commit fba24465bc4867568cbefc3d554bae756abc1204
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Dec 6 22:56:26 2007 +0100
+
+    Return NULL on device configure fail instead of unconfigured device, which made X segfault.
+
+commit 2fba11efcafdbc2002bc7083a2b74cb7d908b3a9
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Dec 6 22:28:12 2007 +0100
+
+    New: evdev backend
+
+commit 78616fb8174e93a2c3c523bd425acc33a4b8773c
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Dec 5 22:17:36 2007 +0100
+
+    Mentioned multiple backends in man page
+
+commit 9e5f4e6fccb8c9e1b6c4dfccb39f1f0c89f79b60
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Dec 5 21:33:27 2007 +0100
+
+    Fixed implicit declaration warnings because of missed header files
+
+commit 43790502b5d1077fc74e81b7eedd9c880673463c
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Dec 5 21:30:12 2007 +0100
+
+    Renamed backend files from *_jstk.{c,h} to backend_*.{c,h}
+
+commit 032138d7712f6d1e6a50bf83a2dde911b7f3d752
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Dec 5 21:22:50 2007 +0100
+
+    Added backend selection code.
+    
+    From all available backends they are tried in the order: evdev, linux joystick, bsd
+    usbhid. This needed to separate the backends which were usually used to replace each
+    other.
+
+commit 37aae4731320d4e1301f17a065bc5f1d5a3d1596
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Dec 5 18:00:12 2007 +0100
+
+    configure.ac: Checking for available kernel backends instead of OS
+    
+    The configure script now checks for availability of several backends like Linux's
+    joystick, Linux's evdev, BSD's usbhid. This way several backends can be compiled in and
+    used with the same binary module.
+    Backend selection code still missing!
+
+commit f581e2b0daf6c79c74728ab2e21a0836ff252a65
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Nov 11 18:02:42 2007 +0100
+
+    Add check for kbproto in configure script
+    
+    On systems without kbproto installed, the XKB headers might be missing and the build fails. Fixes Debian bug
+    http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=448770
+
 commit c9e359fda611778da578f3699b8f2f4c9122852c
 Author: Sascha Hlusiak <saschahlusiak@arcor.de>
 Date:   Sat Oct 27 18:50:08 2007 +0200
