@@ -142,7 +142,6 @@ jstkParseButtonOption(const char* org,
                       const char* name)
 {
     char *param;
-    char *tmp;
     int value;
     float fvalue;
     char p[64];

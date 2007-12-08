@@ -45,6 +45,18 @@
     #define DBG(lvl, f)
 #endif
 
+typedef enum _JOYSTICKEVENT {
+    EVENT_NONE=0,
+    EVENT_BUTTON,
+    EVENT_AXIS
+} JOYSTICKEVENT;
+
+typedef struct _JoystickDevRec *JoystickDevPtr;
+
+typedef void(*jstkCloseDeviceProc)(JoystickDevPtr joystick);
+typedef int(*jstkReadDataProc)(JoystickDevPtr joystick,
+                               JOYSTICKEVENT *event, int *number);
+
 
 typedef enum _JOYSTICKTYPE{
     TYPE_NONE=0,      /* Axis value is not relevant */
@@ -95,6 +107,8 @@ typedef struct _BUTTON {
 
 typedef struct _JoystickDevRec {
     int          fd;          /* Actual file descriptor */
+    jstkCloseDeviceProc close_proc; /* Callback for closing the backend */
+    jstkReadDataProc read_proc; /* Callback for reading data from the backend */
     void         *devicedata; /* Extra platform device dependend data */
     char         *device;     /* Name of the device */
 
@@ -118,6 +132,6 @@ typedef struct _JoystickDevRec {
 
     AXIS axis[MAXAXES];           /* Configuration per axis */
     BUTTON button[MAXBUTTONS];    /* Configuration per button */
-} JoystickDevRec, *JoystickDevPtr;
+} JoystickDevRec;
 
 #endif

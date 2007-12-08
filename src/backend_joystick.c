@@ -45,7 +45,7 @@
 #include <xf86_OSproc.h>
 
 #include "jstk.h"
-#include "jstk_hw.h"
+#include "backend_joystick.h"
 
 
 /***********************************************************************
@@ -60,7 +60,7 @@
  */
 
 int
-jstkOpenDevice(JoystickDevPtr joystick)
+jstkOpenDevice_joystick(JoystickDevPtr joystick)
 {
     char joy_name[128];
     unsigned char axes, buttons;
@@ -73,7 +73,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     }
 
     if (ioctl(joystick->fd, JSIOCGVERSION, &driver_version) == -1) {
-        xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
+        xf86Msg(X_ERROR, "Joystick: ioctl JSIOCGVERSION on '%s' failed: %s\n", 
                 joystick->device, strerror(errno));
         close(joystick->fd);
         joystick->fd = -1;
@@ -87,7 +87,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     }
 
     if (ioctl(joystick->fd, JSIOCGAXES, &axes) == -1) {
-        xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
+        xf86Msg(X_ERROR, "Joystick: ioctl JSIOCGAXES on '%s' failed: %s\n", 
                 joystick->device, strerror(errno));
         close(joystick->fd);
         joystick->fd = -1;
@@ -95,7 +95,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     }
 
     if (ioctl(joystick->fd, JSIOCGBUTTONS, &buttons) == -1) {
-        xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
+        xf86Msg(X_ERROR, "Joystick: ioctl JSIOCGBUTTONS on '%s' failed: %s\n", 
                 joystick->device, strerror(errno));
         close(joystick->fd);
         joystick->fd = -1;
@@ -103,7 +103,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
     }
 
     if (ioctl(joystick->fd, JSIOCGNAME(128), joy_name) == -1) {
-        xf86Msg(X_ERROR, "Joystick: ioctl on '%s' failed: %s\n", 
+        xf86Msg(X_ERROR, "Joystick: ioctl JSIOCGNAME on '%s' failed: %s\n", 
                   joystick->device, strerror(errno));
         close(joystick->fd);
         joystick->fd = -1;
@@ -113,6 +113,8 @@ jstkOpenDevice(JoystickDevPtr joystick)
     xf86Msg(X_INFO, "Joystick: %s. %d axes, %d buttons\n", 
             joy_name, axes, buttons);
 
+    joystick->read_proc = jstkReadData_joystick;
+    joystick->close_proc = jstkCloseDevice_joystick;
     return joystick->fd;
 }
 
@@ -127,7 +129,7 @@ jstkOpenDevice(JoystickDevPtr joystick)
  */
 
 void
-jstkCloseDevice(JoystickDevPtr joystick)
+jstkCloseDevice_joystick(JoystickDevPtr joystick)
 {
     if ((joystick->fd >= 0)) {
         xf86CloseSerial(joystick->fd);
@@ -149,9 +151,9 @@ jstkCloseDevice(JoystickDevPtr joystick)
  */
 
 int
-jstkReadData(JoystickDevPtr joystick,
-             JOYSTICKEVENT *event,
-             int *number)
+jstkReadData_joystick(JoystickDevPtr joystick,
+                      JOYSTICKEVENT *event,
+                      int *number)
 {
     struct js_event js;
     if (event != NULL) *event = EVENT_NONE;

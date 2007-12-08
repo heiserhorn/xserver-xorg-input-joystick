@@ -21,18 +21,15 @@
  *
  */
 
-#ifndef _LINUX_JSTK_H_INCLUDED_
-#define _LINUX_JSTK_H_INCLUDED_
+#ifndef _BACKEND_BSD_H_INCLUDED_
+#define _BACKEND_BSD_H_INCLUDED_
 
-typedef enum _JOYSTICKEVENT {
-    EVENT_NONE=0,
-    EVENT_BUTTON,
-    EVENT_AXIS
-} JOYSTICKEVENT;
+#include "jstk.h"
 
-int  jstkOpenDevice(JoystickDevPtr joystick);
-void jstkCloseDevice(JoystickDevPtr joystick);
-int  jstkReadData(JoystickDevPtr joystick,
-                  JOYSTICKEVENT *event, int *number);
+int jstkOpenDevice_bsd(JoystickDevPtr joystick);
+void jstkCloseDevice_bsd(JoystickDevPtr joystick);
+int jstkReadData_bsd(JoystickDevPtr joystick,
+                          JOYSTICKEVENT *event,
+                          int *number);
 
 #endif

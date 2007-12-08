@@ -13,8 +13,15 @@ joystick \- Joystick input driver
 .fi
 .SH DESCRIPTION
 .B joystick
-is an __xservername__ input driver for Joysticks, using either Linux's
-joystick devices or *BSD's uhid devices. The driver reports cursor movement
+is an __xservername__ input driver for Joysticks. There are 3 backends available that are used in the following order, if support was found:
+
+.nf
+.B - Linux's evdev interface
+.B - Linux's joystick interface
+.B - BSD's usbhid interface
+.fi
+
+The driver reports cursor movement
 as well as raw axis values through valuators. 
 
 .SH SUPPORTED HARDWARE
@@ -35,12 +42,14 @@ The following Driver
 are supported:
 .TP 7
 .BI "Option \*qDevice\*q \*q" string \*q
+.TP 7
+.BI "Option \*qPath\*q \*q" string \*q
 Specifies the device through which the joystick can be accessed. This option is mandatory and there is no default setting.
 
 For Linux, joysticks are mostly accessible as
-.IR /dev/input/jsX .
+.IR /dev/input/jsX " or " /dev/input/eventX .
 
-For *BSD, joysticks are recognized as 
+In *BSD, joysticks are usually recognized as 
 .IR /dev/uhidX .
 .TP 7
 .BI "Option \*qDebugLevel\*q \*q" integer \*q
@@ -285,8 +294,14 @@ Axes in the mode
 will be ignored. The mode has no effect on the reported value. The axis does not need to be assigned to a direction.
 
 .SH "NOTES"
-The driver does not do hotplugging. The joystick needs to be plugged in when the driver is loaded.
+The driver does not do hotplugging on it's own. The joystick needs to be plugged in when the driver is loaded.
 If the joystick is unplugged, the device will be deactivated.
+.P
+There is an example hal policy in
+.I ${sourcecode}/config/50-x11-input-joystick.fdi
+which will take care of hotplugging. Place it in
+.I /etc/hal/fdi/policy 
+and customize it to your needs. This is highly experimental and for now you can't pass options to the driver.
 .P
 Make sure you add the 
 .I \*qSendCoreEvents\*q
