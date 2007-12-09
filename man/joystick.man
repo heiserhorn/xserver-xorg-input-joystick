@@ -191,7 +191,7 @@ The default configuration looks like follows:
 .BI "  Option \*qMapAxis4\*q     \*q" "mode=relative    axis=+1zy deadzone=1000" \*q
 .BI "  Option \*qMapAxis5\*q     \*q" "mode=accelerated axis=+1x  deadzone=1000" \*q
 .BI "  Option \*qMapAxis6\*q     \*q" "mode=accelerated axis=+1y  deadzone=1000" \*q
-.BI "  Option \*qMapAxis3\*q     \*q" "mode=none" \*q
+.BI "  Option \*qMapAxis7\*q     \*q" "mode=none" \*q
 \ \ ...
 .fi
 
