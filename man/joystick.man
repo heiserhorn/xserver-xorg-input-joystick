@@ -173,7 +173,7 @@ Sets the unresponsive range of the axis to
 .IR <number> .
 This can be between
 .IR "0" " and " "30000" .
-Default: 1000
+Default: 5000
 .RE
 
 .PP
@@ -185,12 +185,12 @@ The default configuration looks like follows:
 .BI "  Option \*qMapButton3\*q   \*q" button=3 \*q
 .BI "  Option \*qMapButton4\*q   \*q" none \*q
 \ \ ...
-.BI "  Option \*qMapAxis1\*q     \*q" "mode=relative    axis=+1x  deadzone=1000" \*q
-.BI "  Option \*qMapAxis2\*q     \*q" "mode=relative    axis=+1y  deadzone=1000" \*q
-.BI "  Option \*qMapAxis3\*q     \*q" "mode=relative    axis=+1zx deadzone=1000" \*q
-.BI "  Option \*qMapAxis4\*q     \*q" "mode=relative    axis=+1zy deadzone=1000" \*q
-.BI "  Option \*qMapAxis5\*q     \*q" "mode=accelerated axis=+1x  deadzone=1000" \*q
-.BI "  Option \*qMapAxis6\*q     \*q" "mode=accelerated axis=+1y  deadzone=1000" \*q
+.BI "  Option \*qMapAxis1\*q     \*q" "mode=relative    axis=+1x  deadzone=5000" \*q
+.BI "  Option \*qMapAxis2\*q     \*q" "mode=relative    axis=+1y  deadzone=5000" \*q
+.BI "  Option \*qMapAxis3\*q     \*q" "mode=relative    axis=+1zx deadzone=5000" \*q
+.BI "  Option \*qMapAxis4\*q     \*q" "mode=relative    axis=+1zy deadzone=5000" \*q
+.BI "  Option \*qMapAxis5\*q     \*q" "mode=accelerated axis=+1x  deadzone=5000" \*q
+.BI "  Option \*qMapAxis6\*q     \*q" "mode=accelerated axis=+1y  deadzone=5000" \*q
 .BI "  Option \*qMapAxis7\*q     \*q" "mode=none" \*q
 \ \ ...
 .fi
