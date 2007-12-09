@@ -489,7 +489,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     for (i=0; i<MAXAXES; i++) {
         priv->axis[i].value        = 0;
         priv->axis[i].oldvalue     = 0;
-        priv->axis[i].deadzone     = 1000;
+        priv->axis[i].deadzone     = 5000;
         priv->axis[i].type         = TYPE_NONE;
         priv->axis[i].mapping      = MAPPING_NONE;
         priv->axis[i].currentspeed = 0.0f;
