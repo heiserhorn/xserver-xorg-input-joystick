@@ -1,5 +1,5 @@
 /*
- * Copyright 2007      by Sascha Hlusiak. <saschahlusiak@freedesktop.org>
+ * Copyright 2007-2008 by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>       
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -299,7 +299,7 @@ jstkReadProc(LocalDevicePtr local)
             case MAPPING_NONE:
             default:
                 break;
-            } /* switch (priv->axis{number].mapping) */
+            } /* switch (priv->axis[number].mapping) */
         } /* if (event == EVENT_AXIS) */
     } while (r == 2);
 }
