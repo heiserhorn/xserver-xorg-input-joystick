@@ -588,6 +588,9 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         xfree(s);
     }
 
+    priv->mouse_enabled = xf86SetBoolOption(dev->commonOptions, "StartMouseEnabled", TRUE);
+    priv->keys_enabled = xf86SetBoolOption(dev->commonOptions, "StartKeysEnabled", TRUE);
+
     /* Process button mapping options */
     for (i=0; i<MAXBUTTONS; i++) {
         char p[64];

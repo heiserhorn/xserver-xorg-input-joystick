@@ -52,17 +52,17 @@ For Linux, joysticks are mostly accessible as
 In *BSD, joysticks are usually recognized as 
 .IR /dev/uhidX .
 .TP 7
-.BI "Option \*qDebugLevel\*q \*q" integer \*q
-If compiled with debugging information, controls the verbosity of the driver.
-The higher the DebugLevel, the more output is produced.
-Default: 0
-.TP 7
 .BI "Option \*qAutoRepeat\*q \*q" "delay rate" \*q
 Sets the auto repeat behaviour for key events.
 .I delay
 is the time in milliseconds before a key starts repeating.
 .I rate
 is the number of times a key repeats per second.  Default: Xorg default
+.TP 7
+.BI "Option \*qDebugLevel\*q \*q" integer \*q
+If compiled with debugging information, controls the verbosity of the driver.
+The higher the DebugLevel, the more output is produced.
+Default: 0
 .TP 7
 .BI "Option \*qMapButton<number>\*q \*q" string \*q
 Sets the mapping of the joystick button to the desired action. Counting of buttons starts with 
@@ -107,7 +107,6 @@ See special section about key events below.
 Disables either the generation of mouse events, key events or the generation of
 all X events by the driver. Press button again to allow the driver to generate 
 events again.
-
 .RE
 .PP
 .TP 7
@@ -175,23 +174,44 @@ This can be between
 .IR "0" " and " "30000" .
 Default: 5000
 .RE
-
 .PP
-The default configuration looks like follows:
+.TP 7
+.BI "Option \*qStartKeysEnabled\*q \*q" "boolean" \*q
+Set to
+.I False
+to disable key event generation after startup. You can toggle key event generation with the 
+.I disable-keys
+button mapping. Default: enabled
+.TP 7
+.BI "Option \*qStartMouseEnabled\*q \*q" "boolean" \*q
+Set to
+.I False
+to disable mouse event generation after startup. You can toggle mouse event generation with the 
+.I disable-mouse
+button mapping. Default: enabled
+.RE
+.PP
+
+
+.SH "DEFAULT CONFIGURATION"
+The default configuration is as follows:
 
 .nf
-.BI "  Option \*qMapButton1\*q   \*q" button=1 \*q
-.BI "  Option \*qMapButton2\*q   \*q" button=2 \*q
-.BI "  Option \*qMapButton3\*q   \*q" button=3 \*q
-.BI "  Option \*qMapButton4\*q   \*q" none \*q
+.BI "  Option \*qDebugLevel\*q        \*q" 0 \*q
+.BI "  Option \*qStartKeysEnabled\*q  \*q" True \*q
+.BI "  Option \*qStartMouseEnabled\*q \*q" True \*q
+.BI "  Option \*qMapButton1\*q        \*q" button=1 \*q
+.BI "  Option \*qMapButton2\*q        \*q" button=2 \*q
+.BI "  Option \*qMapButton3\*q        \*q" button=3 \*q
+.BI "  Option \*qMapButton4\*q        \*q" none \*q
 \ \ ...
-.BI "  Option \*qMapAxis1\*q     \*q" "mode=relative    axis=+1x  deadzone=5000" \*q
-.BI "  Option \*qMapAxis2\*q     \*q" "mode=relative    axis=+1y  deadzone=5000" \*q
-.BI "  Option \*qMapAxis3\*q     \*q" "mode=relative    axis=+1zx deadzone=5000" \*q
-.BI "  Option \*qMapAxis4\*q     \*q" "mode=relative    axis=+1zy deadzone=5000" \*q
-.BI "  Option \*qMapAxis5\*q     \*q" "mode=accelerated axis=+1x  deadzone=5000" \*q
-.BI "  Option \*qMapAxis6\*q     \*q" "mode=accelerated axis=+1y  deadzone=5000" \*q
-.BI "  Option \*qMapAxis7\*q     \*q" "mode=none" \*q
+.BI "  Option \*qMapAxis1\*q          \*q" "mode=relative    axis=+1x  deadzone=5000" \*q
+.BI "  Option \*qMapAxis2\*q          \*q" "mode=relative    axis=+1y  deadzone=5000" \*q
+.BI "  Option \*qMapAxis3\*q          \*q" "mode=relative    axis=+1zx deadzone=5000" \*q
+.BI "  Option \*qMapAxis4\*q          \*q" "mode=relative    axis=+1zy deadzone=5000" \*q
+.BI "  Option \*qMapAxis5\*q          \*q" "mode=accelerated axis=+1x  deadzone=5000" \*q
+.BI "  Option \*qMapAxis6\*q          \*q" "mode=accelerated axis=+1y  deadzone=5000" \*q
+.BI "  Option \*qMapAxis7\*q          \*q" "mode=none" \*q
 \ \ ...
 .fi
 
@@ -295,13 +315,13 @@ will be ignored. The mode has no effect on the reported value. The axis does not
 
 .SH "NOTES"
 The driver does not do hotplugging on it's own. The joystick needs to be plugged in when the driver is loaded.
-If the joystick is unplugged, the device will be deactivated.
+If the joystick is unplugged, the device will be automatically deactivated.
 .P
 There is an example hal policy in
 .I ${sourcecode}/config/50-x11-input-joystick.fdi
 which will take care of hotplugging. Place it in
 .I /etc/hal/fdi/policy 
-and customize it to your needs. This is highly experimental and for now you can't pass options to the driver.
+and customize it to your needs. This is HIGHLY experimental and you can't pass any options to the driver, yet.
 .P
 Make sure you add the 
 .I \*qSendCoreEvents\*q
@@ -320,6 +340,6 @@ Example:
 .SH "SEE ALSO"
 __xservername__(__appmansuffix__), __xconfigfile__(__filemansuffix__), xorgconfig(__appmansuffix__), Xserver(__appmansuffix__), X(__miscmansuffix__), xmodmap(1)
 .SH AUTHORS
-Sascha Hlusiak (2007),
+Sascha Hlusiak (2007-2008),
 .fi
 Frederic Lepied (1995-1999)
