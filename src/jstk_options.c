@@ -178,6 +178,7 @@ jstkParseButtonOption(const char* org,
         for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
             unsigned key;
             next = strchr(current, ',');
+	    if (!next) next = strchr(current, '+');
             if (next) *(next++) = '\0';
 #ifdef _STRKEYSYM_H_INCLUDED_
             key = XStringToKeysym(current);
@@ -284,6 +285,7 @@ jstkParseAxisOption(const char* org,
             for (value = 0; value < MAXKEYSPERBUTTON; value++) 
                 if (current != NULL) {
                     next = strchr(current, ',');
+		    if (!next) next = strchr(current, '+');
                     if (next) *(next++) = '\0';
 
 #ifdef _STRKEYSYM_H_INCLUDED_
@@ -313,6 +315,7 @@ jstkParseAxisOption(const char* org,
             for (value = 0; value < MAXKEYSPERBUTTON; value++) 
                 if (current != NULL) {
                     next = strchr(current, ',');
+		    if (!next) next = strchr(current, '+');
                     if (next) *(next++) = '\0';
                     key = strtol(current, NULL, 0);
 #ifdef _STRKEYSYM_H_INCLUDED_
