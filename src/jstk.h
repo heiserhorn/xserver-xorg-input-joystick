@@ -127,7 +127,7 @@ typedef struct _JoystickDevRec {
     } buttonmap;
     struct _KEYMAP {
         int size;
-        KeySym map[MAP_LENGTH];
+        KeySym map[256-MIN_KEYCODE];
     } keymap;
 
     AXIS axis[MAXAXES];           /* Configuration per axis */
