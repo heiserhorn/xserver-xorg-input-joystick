@@ -80,7 +80,7 @@ jstkGetKeyNumberInMap(JoystickDevPtr priv,
                       KeySym keysym)
 {
     int j;
-    for (j=0; j<=priv->keymap.size; j++)
+    for (j=0; j<priv->keymap.size; j++)
         if (priv->keymap.map[j] == keysym)
             break;
     if (j > MAP_LENGTH+1) return 0;
