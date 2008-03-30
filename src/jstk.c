@@ -481,7 +481,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->amplify = 1.0f;
     priv->buttonmap.size = 0;
     priv->keymap.size = 1;
-    priv->keymap.map[0] = NoSymbol;
+    memset(priv->keymap.map, NoSymbol, sizeof(priv->keymap.map));
     priv->repeat_delay = 0;
     priv->repeat_interval = 0;
 
