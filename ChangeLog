@@ -1,3 +1,83 @@
+commit 0961ffa84825f3f32d9c973f054400ab9d2b7c08
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Apr 27 19:16:29 2008 +0200
+
+    Bumped to version 1.3.2
+
+commit c3e3fb8795c19a292ca37ab4d67b308fbb20911b
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Apr 9 15:09:46 2008 +0200
+
+    Display evdev bus/vendor/product/version in separate line
+
+commit edcc8c26dfa3f89672a66c47665d89c7c9200b13
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Mar 30 13:21:22 2008 +0200
+
+    Fixed keymap size to 8-256 to prevent crash
+    
+    Newer xservers don't like keymaps that are smaller than 248 keys.
+
+commit fac2c42a01cf030a05d2305a01700f3677f6a8dc
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Mar 30 13:05:35 2008 +0200
+
+    Clear complete keymap instead of only the first element
+
+commit a44e15ad7576b77b48ecb13aae1faeb2ec25d922
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Mar 30 13:03:57 2008 +0200
+
+    Fixed off-by-one in keymap generation code
+
+commit 2aeaf7b7f3a5117db5cde9f704a2c612fbab75c8
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Mar 30 12:44:39 2008 +0200
+
+    Allow '+' as separator for key mapping as in "key=Alt_L+Tab"
+
+commit ce01777488a0f1f9ba2d22d7315aebd431e9cb65
+Author: Matthieu Herrb <matthieu@bluenote.herrb.net>
+Date:   Sat Mar 8 23:02:08 2008 +0100
+
+    Makefile.am: nuke RCS Id
+
+commit 94cc174cd80952418614dc9b2fbc95ad21b8598c
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Jan 6 18:58:47 2008 +0100
+
+    Added "StartMouseEnabled" and "StartKeysEnabled" options
+    
+    With the disable-mouse and disable-keys button mapping the event generation can be toggled.
+    These two options will start X with the event generation already disabled, so it can be
+    enabled later with the appropriate button mapping. Default: Event generation is enabled.
+
+commit c968077dcb3e7dec4886e9bc60faa63e750695e2
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Mon Dec 31 20:21:30 2007 +0100
+
+    Changed copyrights to include year 2008
+
+commit 4bf88166207c79662fba45773c300f05ae5e00d7
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Dec 9 19:22:59 2007 +0100
+
+    Changed default deadzone in manpage from 1000 to 5000
+
+commit 1f61022d4d08c1dc07717576bcb31ace03d93060
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Dec 9 18:18:45 2007 +0100
+
+    Increased default deadzone from 1000 to 5000
+
+commit 847c36e1134e7fe5f9af69f49b8ed12d2aa0cb85
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Dec 9 11:54:38 2007 +0100
+
+    Typo in man page
+    
+    Last axis of default axis configurations was #3 instead of #7
+
 commit 01637abd2b059923f5c41ab80c80ab93579cbe9b
 Author: Sascha Hlusiak <saschahlusiak@arcor.de>
 Date:   Fri Dec 7 00:17:56 2007 +0100
