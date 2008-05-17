@@ -1,5 +1,5 @@
 /*
- * Copyright 2007      by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
+ * Copyright 2007-2008 by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -127,7 +127,7 @@ typedef struct _JoystickDevRec {
     } buttonmap;
     struct _KEYMAP {
         int size;
-        KeySym map[MAP_LENGTH];
+        KeySym map[256-MIN_KEYCODE];
     } keymap;
 
     AXIS axis[MAXAXES];           /* Configuration per axis */

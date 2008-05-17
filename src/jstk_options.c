@@ -1,5 +1,5 @@
 /*
- * Copyright 2007      by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
+ * Copyright 2007 - 2008    by Sascha Hlusiak. <saschahlusiak@freedesktop.org>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -80,10 +80,10 @@ jstkGetKeyNumberInMap(JoystickDevPtr priv,
                       KeySym keysym)
 {
     int j;
-    for (j=0; j<=priv->keymap.size; j++)
+    for (j=0; j<priv->keymap.size; j++)
         if (priv->keymap.map[j] == keysym)
             break;
-    if (j > MAP_LENGTH+1) return 0;
+    if (j >= sizeof(priv->keymap.map)/sizeof(priv->keymap.map[0])) return 0;
     priv->keymap.map[j] = keysym;
     if (j + 1 > priv->keymap.size) priv->keymap.size = j + 1;
     return j;
@@ -178,6 +178,7 @@ jstkParseButtonOption(const char* org,
         for (value = 0; value < MAXKEYSPERBUTTON; value++) if (current != NULL) {
             unsigned key;
             next = strchr(current, ',');
+	    if (!next) next = strchr(current, '+');
             if (next) *(next++) = '\0';
 #ifdef _STRKEYSYM_H_INCLUDED_
             key = XStringToKeysym(current);
@@ -284,6 +285,7 @@ jstkParseAxisOption(const char* org,
             for (value = 0; value < MAXKEYSPERBUTTON; value++) 
                 if (current != NULL) {
                     next = strchr(current, ',');
+		    if (!next) next = strchr(current, '+');
                     if (next) *(next++) = '\0';
 
 #ifdef _STRKEYSYM_H_INCLUDED_
@@ -313,6 +315,7 @@ jstkParseAxisOption(const char* org,
             for (value = 0; value < MAXKEYSPERBUTTON; value++) 
                 if (current != NULL) {
                     next = strchr(current, ',');
+		    if (!next) next = strchr(current, '+');
                     if (next) *(next++) = '\0';
                     key = strtol(current, NULL, 0);
 #ifdef _STRKEYSYM_H_INCLUDED_

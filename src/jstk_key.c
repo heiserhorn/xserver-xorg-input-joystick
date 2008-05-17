@@ -1,5 +1,5 @@
 /*
- * Copyright 2007      by Sascha Hlusiak. <saschahlusiak@freedesktop.org>
+ * Copyright 2007-2008 by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>       
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -70,8 +70,12 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
 
     DBG(1, xf86Msg(X_CONFIG, "Initializing Keyboard with %d keys\n",
                    priv->keymap.size));
+    for (i = 0; i < priv->keymap.size; i++)
+    {
+	DBG(6, xf86Msg(X_CONFIG, "Keymap [%d]: 0x%08X\n", MIN_KEYCODE+i,priv->keymap.map[i]));
+    }
 
-    memset(modMap, 0, sizeof modMap);
+    memset(modMap, 0, sizeof(modMap));
 
     for (i = 0; i < priv->keymap.size; i++) {
         sym = priv->keymap.map[i];
@@ -84,7 +88,8 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
     keySyms.map        = priv->keymap.map;
     keySyms.mapWidth   = 1;
     keySyms.minKeyCode = MIN_KEYCODE;
-    keySyms.maxKeyCode = MIN_KEYCODE + priv->keymap.size - 1;
+/*    keySyms.maxKeyCode = MIN_KEYCODE + priv->keymap.size - 1; */
+    keySyms.maxKeyCode = MIN_KEYCODE + sizeof(priv->keymap.map)/sizeof(priv->keymap.map[0]) - 1;
 
     for (i = 0; i < priv->keymap.size; i++) {
         sym = priv->keymap.map[i];

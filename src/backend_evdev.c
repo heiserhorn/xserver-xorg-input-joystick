@@ -1,5 +1,5 @@
 /*
- * Copyright 2007      by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
+ * Copyright 2007-2008 by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -176,9 +176,9 @@ jstkOpenDevice_evdev(JoystickDevPtr joystick)
     if (ioctl(joystick->fd, EVIOCGUNIQ(sizeof(uniq)), uniq) == -1)
         strcpy(uniq, "No name");
 
-    xf86Msg(X_INFO, "Joystick: %s. %d axes, %d buttons.\n", name, axes, buttons);
-    xf86Msg(X_INFO, "Joystick: bus 0x%x vendor 0x%x product 0x%x version 0x%x\n",
-            id.bustype, id.vendor, id.product, id.version);
+    xf86Msg(X_INFO, "Joystick: %s. bus 0x%x vendor 0x%x product 0x%x version 0x%x\n",
+	name, id.bustype, id.vendor, id.product, id.version);
+    xf86Msg(X_INFO, "Joystick: found %d axes, %d buttons\n", axes, buttons);
 
     joystick->read_proc = jstkReadData_evdev;
     joystick->close_proc = jstkCloseDevice_evdev;

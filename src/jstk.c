@@ -1,5 +1,5 @@
 /*
- * Copyright 2007      by Sascha Hlusiak. <saschahlusiak@freedesktop.org>
+ * Copyright 2007-2008 by Sascha Hlusiak. <saschahlusiak@freedesktop.org>     
  * Copyright 1995-1999 by Frederic Lepied, France. <Lepied@XFree86.org>       
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -299,7 +299,7 @@ jstkReadProc(LocalDevicePtr local)
             case MAPPING_NONE:
             default:
                 break;
-            } /* switch (priv->axis{number].mapping) */
+            } /* switch (priv->axis[number].mapping) */
         } /* if (event == EVENT_AXIS) */
     } while (r == 2);
 }
@@ -481,7 +481,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->amplify = 1.0f;
     priv->buttonmap.size = 0;
     priv->keymap.size = 1;
-    priv->keymap.map[0] = NoSymbol;
+    memset(priv->keymap.map, NoSymbol, sizeof(priv->keymap.map));
     priv->repeat_delay = 0;
     priv->repeat_interval = 0;
 
@@ -489,7 +489,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     for (i=0; i<MAXAXES; i++) {
         priv->axis[i].value        = 0;
         priv->axis[i].oldvalue     = 0;
-        priv->axis[i].deadzone     = 1000;
+        priv->axis[i].deadzone     = 5000;
         priv->axis[i].type         = TYPE_NONE;
         priv->axis[i].mapping      = MAPPING_NONE;
         priv->axis[i].currentspeed = 0.0f;
@@ -587,6 +587,9 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         }
         xfree(s);
     }
+
+    priv->mouse_enabled = xf86SetBoolOption(dev->commonOptions, "StartMouseEnabled", TRUE);
+    priv->keys_enabled = xf86SetBoolOption(dev->commonOptions, "StartKeysEnabled", TRUE);
 
     /* Process button mapping options */
     for (i=0; i<MAXBUTTONS; i++) {
