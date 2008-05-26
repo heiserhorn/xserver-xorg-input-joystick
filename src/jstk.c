@@ -349,7 +349,9 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
 
         if (InitValuatorClassDeviceStruct(pJstk, 
                                           m,
+#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) < 3
                                           xf86GetMotionEvents, 
+#endif
                                           local->history_size,
                                           Relative) == FALSE) {
             ErrorF("unable to allocate Valuator class device\n"); 
