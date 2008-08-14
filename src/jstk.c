@@ -27,7 +27,7 @@
 #endif
 
 #include <stdio.h>
-#include <xf86Version.h>
+#include <xorgVersion.h>
 
 #include <misc.h>
 #include <xf86.h>
