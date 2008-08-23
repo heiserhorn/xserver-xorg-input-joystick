@@ -328,7 +328,6 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
     case DEVICE_INIT: {
         int m;
         DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
-        /* We want the first 7 button numbers fixed */
         if (priv->buttonmap.size != 0) {
             if (InitButtonClassDeviceStruct(pJstk, priv->buttonmap.size, 
                 priv->buttonmap.map) == FALSE) {
