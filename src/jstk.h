@@ -39,7 +39,7 @@
 #endif
 
 #if DEBUG
-    extern int debug_level;
+    extern char debug_level;
     #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
     #define DBG(lvl, f)

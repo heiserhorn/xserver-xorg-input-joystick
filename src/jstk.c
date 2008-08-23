@@ -42,6 +42,7 @@
 #include "jstk_axis.h"
 #include "jstk_key.h"
 #include "jstk_options.h"
+#include "jstk_properties.h"
 
 #ifdef LINUX_BACKEND
     #include "backend_joystick.h"
@@ -55,7 +56,7 @@
 
 
 #if DEBUG
-    int debug_level = 0;
+    char debug_level = 0;
 #endif
 
 
@@ -384,6 +385,10 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
             /* allocate the motion history buffer if needed */
             xf86MotionHistoryAllocate(local);
         }
+#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 3
+	jstkInitProperties(pJstk, priv);
+#endif
+
         break;
     }
 
