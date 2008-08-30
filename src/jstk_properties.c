@@ -272,6 +272,11 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
                                 PropModeReplace, MAXAXES,
                                 axes_values8,
                                 FALSE, FALSE, FALSE);
+    values[0] = TYPE_NONE;
+    values[1] = TYPE_BYVALUE;
+    values[2] = TYPE_ACCELERATED;
+    values[3] = TYPE_ABSOLUTE;
+    XIConfigureDeviceProperty(pJstk, prop_axis_type, FALSE, FALSE, FALSE, 4, values);
 
     /* priv->axis[].mapping */
     for (i=0;i<MAXAXES;i++)
@@ -281,6 +286,14 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
                                 PropModeReplace, MAXBUTTONS,
                                 axes_values8,
                                 FALSE, FALSE, FALSE);
+    values[0] = MAPPING_NONE;
+    values[1] = MAPPING_X;
+    values[2] = MAPPING_Y;
+    values[3] = MAPPING_ZX;
+    values[4] = MAPPING_ZY;
+    values[5] = MAPPING_KEY;
+    XIConfigureDeviceProperty(pJstk, prop_axis_mapping, FALSE, FALSE, FALSE, 6, values);
+
 
     /* priv->axis[].amplify */
     /* FIXME: prop_axis_amplify as float[] */
@@ -302,6 +315,18 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
                                 PropModeReplace, MAXBUTTONS,
                                 button_values8,
                                 FALSE, FALSE, FALSE);
+    values[0] = MAPPING_NONE;
+    values[1] = MAPPING_X;
+    values[2] = MAPPING_Y;
+    values[3] = MAPPING_ZX;
+    values[4] = MAPPING_ZY;
+    values[5] = MAPPING_BUTTON;
+    values[6] = MAPPING_KEY;
+    values[7] = MAPPING_SPEED_MULTIPLY;
+    values[8] = MAPPING_DISABLE;
+    values[9] = MAPPING_DISABLE_MOUSE;
+    values[10] = MAPPING_DISABLE_KEYS;
+    XIConfigureDeviceProperty(pJstk, prop_button_mapping, FALSE, FALSE, FALSE, 11, values);
 
 
     /* priv->button[].buttonnumber */
