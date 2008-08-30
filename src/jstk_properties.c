@@ -252,7 +252,7 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
                                 FALSE, FALSE, FALSE);
     values[0] = 0;
     values[1] = 1;
-    XIConfigureDeviceProperty(pJstk, prop_mouse_enabled, FALSE, FALSE, FALSE, 2, values);
+    XIConfigureDeviceProperty(pJstk, prop_keys_enabled, FALSE, FALSE, FALSE, 2, values);
 
 
     /* priv->axis[].deadzone */
