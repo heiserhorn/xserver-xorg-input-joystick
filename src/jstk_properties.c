@@ -40,19 +40,57 @@
 #include "jstk_properties.h"
 
 
-
+/* 8 bit, 0..20 */
 #define JSTK_PROP_DEBUGLEVEL "Debug Level"
-static Atom prop_debuglevel     = 0;	/* 8 bit, 0..20 */
+static Atom prop_debuglevel  = 0;
 
+/* 8 bit, 0 or 1 */
 #define JSTK_PROP_MOUSE_ENABLED "Generate Mouse Events"
-static Atom prop_mouse_enabled  = 0;	/* 8 bit, 0 or 1 */
+static Atom prop_mouse_enabled  = 0;
 
+/* 8 bit, 0 or 1 */
 #define JSTK_PROP_KEYS_ENABLED "Generate Key Events"
-static Atom prop_keys_enabled   = 0;	/* 8 bit, 0 or 1 */
+static Atom prop_keys_enabled  = 0;
 
-#define JSTK_PROP_DEADZONES   "Axes Deadzones"
-static Atom prop_deadzones      = 0;	/* 32 bit, 0..30000 for each axis*/
+/* 32 bit, 0..30000 for each axis*/
+#define JSTK_PROP_AXIS_DEADZONE   "Axis Deadzone"
+static Atom prop_axis_deadzone    = 0;
 
+/* 8 bit, one of enum _JOYSTICKTYPE @ jstk.h per axis*/
+#define JSTK_PROP_AXIS_TYPE   "Axis Type"
+static Atom prop_axis_type    = 0;
+
+/* 8 bit, one of enum _JOYSTICKMAPPING @ jstk.h per axis */
+#define JSTK_PROP_AXIS_MAPPING   "Axis Mapping"
+static Atom prop_axis_mapping = 0;
+
+/* float, movement amplify value per axis */
+#define JSTK_PROP_AXIS_AMPLIFY "Axis amplify"
+static Atom prop_axis_amplify = 0;
+
+/* 16 bit, set keysyms for low axis. Format: (axis keysym1 keysym2 keysym3 keysym4) */
+#define JSTK_PROP_AXIS_KEYS_LOW "Axis keys (low) (set only)"
+static Atom prop_axis_keys_low = 0;
+
+/* 16 bit, set keysyms for high axis. Format: (axis keysym1 keysym2 keysym3 keysym4) */
+#define JSTK_PROP_AXIS_KEYS_HIGH "Axis keys (high) (set only)"
+static Atom prop_axis_keys_high = 0;
+
+/* 8 bit, one of enum _JOYSTICKMAPPING @ jstk.h per button */
+#define JSTK_PROP_BUTTON_MAPPING   "Button Mapping"
+static Atom prop_button_mapping = 0;
+
+/* 8 bit, logical button number per button */
+#define JSTK_PROP_BUTTON_BUTTONNUMBER "Button number"
+static Atom prop_button_buttonnumber = 0;
+
+/* float, button amplify value per button */
+#define JSTK_PROP_BUTTON_AMPLIFY "Button amplify"
+static Atom prop_button_amplify = 0;
+
+/* 16 bit, set keysyms for button. Format: (button keysym1 keysym2 keysym3 keysym4) */
+#define JSTK_PROP_BUTTON_KEYS "Button keys (set only)"
+static Atom prop_button_keys = 0;
 
 
 
@@ -83,7 +121,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
             return FALSE;
         priv->keys_enabled = (*((INT8*)val->data)) != 0;
         DBG(1, ErrorF("keys_enabled set to %d\n", priv->keys_enabled));
-    }else if (atom == prop_deadzones)
+    }else if (atom == prop_axis_deadzone)
     {
         if (val->size > MAXAXES || val->format != 32 || val->type != XA_INTEGER)
             return FALSE;
@@ -106,8 +144,61 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
                 DBG(1, ErrorF("Deadzone of axis %d set to %d\n",i, priv->axis[i].deadzone));
             }
         }
+    }else if (atom == prop_axis_type)
+    {
+        INT8 *values;
+        if (val->size > MAXAXES || val->format != 8 || val->type != XA_INTEGER)
+            return FALSE;
+        values = (INT8*)val->data;
+        for (i =0; i<val->size; i++) {
+            priv->axis[i].type = values[i];
+            DBG(1, ErrorF("Type of axis %d set to %d\n",i, priv->axis[i].type));
+        }
+    }else if (atom == prop_axis_mapping)
+    {
+        INT8 *values;
+        if (val->size > MAXAXES || val->format != 8 || val->type != XA_INTEGER)
+            return FALSE;
+        values = (INT8*)val->data;
+        for (i =0; i<val->size; i++) {
+            priv->axis[i].mapping = values[i];
+            DBG(1, ErrorF("Mapping of axis %d set to %d\n",i, priv->axis[i].mapping));
+        }
+    }else if (atom == prop_axis_amplify)
+    {
+        /* FIXME */
+        return FALSE;
+    }else if (atom == prop_axis_keys_low)
+    {
+        /* FIXME */
+        return FALSE;
+    }else if (atom == prop_axis_keys_high)
+    {
+        /* FIXME */
+        return FALSE;
+    }else if (atom == prop_button_mapping)
+    {
+        INT8 *values;
+        if (val->size > MAXBUTTONS || val->format != 8 || val->type != XA_INTEGER)
+            return FALSE;
+        values = (INT8*)val->data;
+        for (i =0; i<val->size; i++) {
+            priv->button[i].mapping = values[i];
+            DBG(1, ErrorF("Mapping of button %d set to %d\n",i, priv->button[i].mapping));
+        }
+    }else if (atom == prop_button_buttonnumber)
+    {
+        /* FIXME */
+        return FALSE;
+    }else if (atom == prop_button_amplify)
+    {
+        /* FIXME */
+        return FALSE;
+    }else if (atom == prop_button_keys)
+    {
+        /* FIXME */
+        return FALSE;
     }
-
 
     /* property not handled, report success */
     return TRUE;
@@ -123,7 +214,9 @@ jstkGetProperty(DeviceIntPtr pJstk, Atom property)
 Bool
 jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
 {
-    int axes_values[MAXAXES];
+    INT32 axes_values32[MAXAXES];
+    INT8  axes_values8[MAXAXES];
+    INT8  button_values8[MAXBUTTONS];
     INT32 values[32]; /* We won't tell about properties with
                          more than 32 possible values */
     int i;
@@ -164,14 +257,67 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
 
     /* priv->axis[].deadzone */
     for (i=0;i<MAXAXES;i++)
-        axes_values[i] = priv->axis[i].deadzone;
-    prop_deadzones = MakeAtom(JSTK_PROP_DEADZONES, strlen(JSTK_PROP_DEADZONES), TRUE);
-    XIChangeDeviceProperty(pJstk, prop_deadzones, XA_INTEGER, 32,
+        axes_values32[i] = priv->axis[i].deadzone;
+    prop_axis_deadzone = MakeAtom(JSTK_PROP_AXIS_DEADZONE, strlen(JSTK_PROP_AXIS_DEADZONE), TRUE);
+    XIChangeDeviceProperty(pJstk, prop_axis_deadzone, XA_INTEGER, 32,
                                 PropModeReplace, MAXAXES,
-                                axes_values,
+                                axes_values32,
+                                FALSE, FALSE, FALSE);
+
+    /* priv->axis[].type */
+    for (i=0;i<MAXAXES;i++)
+        axes_values8[i] = priv->axis[i].type;
+    prop_axis_type = MakeAtom(JSTK_PROP_AXIS_TYPE, strlen(JSTK_PROP_AXIS_TYPE), TRUE);
+    XIChangeDeviceProperty(pJstk, prop_axis_type, XA_INTEGER, 8,
+                                PropModeReplace, MAXAXES,
+                                axes_values8,
+                                FALSE, FALSE, FALSE);
+
+    /* priv->axis[].mapping */
+    for (i=0;i<MAXAXES;i++)
+        axes_values8[i] = (INT8)priv->axis[i].mapping;
+    prop_axis_mapping = MakeAtom(JSTK_PROP_AXIS_MAPPING, strlen(JSTK_PROP_AXIS_MAPPING), TRUE);
+    XIChangeDeviceProperty(pJstk, prop_axis_mapping, XA_INTEGER, 8,
+                                PropModeReplace, MAXBUTTONS,
+                                axes_values8,
+                                FALSE, FALSE, FALSE);
+
+    /* priv->axis[].amplify */
+    /* FIXME: prop_axis_amplify as float[] */
+
+    /* priv->axis[].keys_low */
+    /* FIXME: prop_axis_keys_low */
+
+    /* priv->axis[].keys_high */
+    /* FIXME: prop_axis_keys_high */
+
+
+
+
+    /* priv->button[].mapping */
+    for (i=0;i<MAXBUTTONS;i++)
+        button_values8[i] = (INT8)priv->button[i].mapping;
+    prop_button_mapping = MakeAtom(JSTK_PROP_BUTTON_MAPPING, strlen(JSTK_PROP_BUTTON_MAPPING), TRUE);
+    XIChangeDeviceProperty(pJstk, prop_button_mapping, XA_INTEGER, 8,
+                                PropModeReplace, MAXBUTTONS,
+                                button_values8,
                                 FALSE, FALSE, FALSE);
 
 
+    /* priv->button[].buttonnumber */
+    for (i=0;i<MAXAXES;i++)
+        button_values8[i] = (INT8)priv->button[i].buttonnumber;
+    prop_button_buttonnumber = MakeAtom(JSTK_PROP_BUTTON_BUTTONNUMBER, strlen(JSTK_PROP_BUTTON_BUTTONNUMBER), TRUE);
+    XIChangeDeviceProperty(pJstk, prop_button_buttonnumber, XA_INTEGER, 8,
+                                PropModeReplace, MAXBUTTONS,
+                                button_values8,
+                                FALSE, FALSE, FALSE);
+
+    /* priv->button[].amplify */
+    /* FIXME: prop_button_amplify as float[] */
+
+    /* priv->button[].keys */
+    /* FIXME: prop_button_keys */
 
     return TRUE;
 }
