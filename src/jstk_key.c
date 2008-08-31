@@ -77,13 +77,6 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
 
     memset(modMap, 0, sizeof(modMap));
 
-    for (i = 0; i < priv->keymap.size; i++) {
-        sym = priv->keymap.map[i];
-        for (j = 0; j < sizeof(modifiers)/sizeof(modifiers[0]); j++) {
-            if (modifiers[j].keysym == sym)
-                modMap[i + MIN_KEYCODE] = modifiers[j].mask; 
-        }
-    }
 
     keySyms.map        = priv->keymap.map;
     keySyms.mapWidth   = 1;
