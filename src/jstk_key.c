@@ -44,6 +44,16 @@
 #define KanaMask	Mod4Mask
 #define ScrollLockMask	Mod5Mask
 
+
+
+
+static void
+jstkKbdCtrl(DeviceIntPtr device, KeybdCtrl *ctrl)
+{
+}
+
+
+
 int
 jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
 {
@@ -94,7 +104,7 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
 
     XkbSetRulesDflts(__XKBDEFRULES__, "evdev", "us", "nodeadkeys", NULL);
     XkbInitKeyboardDeviceStruct (pJstk, &xkbnames, &keySyms, modMap,
-            NULL, NULL);
+            NULL, jstkKbdCtrl);
 
     /* Set Autorepeat and Delay */
 
