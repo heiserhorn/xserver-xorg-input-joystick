@@ -238,8 +238,8 @@ jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
     strcat(name, " (keys)");
     dev->identifier = xstrdup(name);
     dev->driver = xstrdup(_dev->driver);
-    dev->commonOptions = xf86optionListDup(_dev->commonOptions);
-    dev->extraOptions = xf86optionListDup(_dev->extraOptions);
+    dev->commonOptions = (pointer)xf86optionListDup(_dev->commonOptions);
+    dev->extraOptions = (pointer)xf86optionListDup(_dev->extraOptions);
 
     local->name   = dev->identifier;
     local->flags  = XI86_KEYBOARD_CAPABLE;
