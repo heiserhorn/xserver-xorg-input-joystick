@@ -308,6 +308,15 @@ jstkReadProc(LocalDevicePtr local)
 
 
 
+
+
+static void
+jstkPtrCtrlProc(DeviceIntPtr device, PtrCtrl *ctrl)
+{
+    /* Nothing to do, dix handles all settings */
+}
+
+
 /*
  ***************************************************************************
  *
@@ -337,6 +346,9 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                 return !Success;
             }
         }
+        if (!InitPtrFeedbackClassDeviceStruct(pJstk, jstkPtrCtrlProc))
+            return !Success;
+
         m = 2;
         for (i=0; i<MAXAXES; i++) 
             if (priv->axis[i].type != TYPE_NONE)
