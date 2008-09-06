@@ -321,7 +321,8 @@ There is an example hal policy in
 .I ${sourcecode}/config/50-x11-input-joystick.fdi
 which will take care of hotplugging. Place it in
 .I /etc/hal/fdi/policy 
-and customize it to your needs. This is HIGHLY experimental and you can't pass any options to the driver, yet.
+and customize it to your needs. Pass custom options to the driver using x11_options properties. This requires xorg-server-1.5 or 
+higher.
 .P
 Make sure you add the 
 .I \*qSendCoreEvents\*q
