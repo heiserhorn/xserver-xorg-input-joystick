@@ -34,6 +34,7 @@
 
 #include "jstk.h"
 #include "jstk_axis.h"
+#include "jstk_key.h"
 
 
 /***********************************************************************
@@ -136,13 +137,13 @@ jstkAxisTimer(OsTimerPtr        timer,
                 num = abs((int)axis->subpixel);
                 if ((int)axis->subpixel < 0) {
                     for (i=0; i<num; i++) {
-                        jstkGenerateKeys(device, axis->keys_low, 1);
-                        jstkGenerateKeys(device, axis->keys_low, 0);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_low, 1);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_low, 0);
                     }
                 } else {
                     for (i=0; i<num; i++) {
-                        jstkGenerateKeys(device, axis->keys_high, 1);
-                        jstkGenerateKeys(device, axis->keys_high, 0);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_high, 1);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_high, 0);
                     }
                 }
                 break;

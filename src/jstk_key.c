@@ -52,9 +52,16 @@ jstkKbdCtrl(DeviceIntPtr device, KeybdCtrl *ctrl)
 {
 }
 
-
-
-int
+/*
+ ***************************************************************************
+ *
+ * jstkInitKeys --
+ *
+ * Sets up the keymap, modmap and the keyboard device structs
+ *
+ ***************************************************************************
+ */
+static int
 jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
 {
     KeySymsRec keySyms;
@@ -82,7 +89,7 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
                    priv->keymap.size));
     for (i = 0; i < priv->keymap.size; i++)
     {
-	DBG(6, xf86Msg(X_CONFIG, "Keymap [%d]: 0x%08X\n", MIN_KEYCODE+i,priv->keymap.map[i]));
+	DBG(6, xf86Msg(X_CONFIG, "Keymap [%d]: 0x%08X\n", MIN_KEYCODE+i,(unsigned int)priv->keymap.map[i]));
     }
 
     memset(modMap, 0, sizeof(modMap));
@@ -137,11 +144,13 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
  ***************************************************************************
  */
 void
-jstkGenerateKeys(DeviceIntPtr device, KEYSCANCODES keys, char pressed)
+jstkGenerateKeys(LocalDevicePtr device, KEYSCANCODES keys, char pressed)
 {
     int i;
     unsigned int k;
 
+    if (device == NULL)
+        return;
     for (i=0;i<MAXKEYSPERBUTTON;i++) {
         if (pressed != 0) 
             k = keys[i];
@@ -151,9 +160,145 @@ jstkGenerateKeys(DeviceIntPtr device, KEYSCANCODES keys, char pressed)
             k = k + MIN_KEYCODE;
             DBG(2, ErrorF("Generating key %s event with keycode %d\n", 
                 (pressed)?"press":"release", k));
-            xf86PostKeyboardEvent(device, k, pressed);
+            xf86PostKeyboardEvent(device->dev, k, pressed);
         }
     }
 }
 
+
+/*
+ ***************************************************************************
+ *
+ * jstkKeyboardDeviceControlProc --
+ *
+ * Handles the initialization, etc. of the keyboard device
+ *
+ ***************************************************************************
+ */
+static Bool
+jstkKeyboardDeviceControlProc(DeviceIntPtr       dev,
+                              int                what)
+{
+    JoystickDevPtr priv  = (JoystickDevPtr)XI_PRIVATE(dev);
+    if (!priv) {
+        DBG(2, ErrorF("jstkKeyboardDeviceControlProc: priv == NULL\n"));
+        return !Success;
+    }
+    switch (what) {
+    case DEVICE_INIT:
+        DBG(2, ErrorF("jstkKeyboardDeviceControlProc what=DEVICE_INIT\n"));
+        if (InitFocusClassDeviceStruct(dev) == FALSE) {
+            ErrorF("unable to init Focus class device\n");
+            return !Success;
+        }
+        if (jstkInitKeys(dev, priv) != Success)
+            return !Success;
+        break;
+    case DEVICE_ON:
+        DBG(2, ErrorF("jstkKeyboardDeviceControlProc what=DEVICE_ON\n"));
+        dev->public.on = TRUE;
+        break;
+    case DEVICE_OFF:
+        DBG(2, ErrorF("jstkKeyboardDeviceControlProc what=DEVICE_OFF\n"));
+        dev->public.on = FALSE;
+        break;
+    case DEVICE_CLOSE:
+        DBG(2, ErrorF("jstkKeyboardDeviceControlProc what=DEVICE_CLOSE\n"));
+        dev->public.on = FALSE;
+        break;
+    }
+
+    return Success;
+}
+
+
+/*
+ ***************************************************************************
+ *
+ * jstkKeyboardPreInit --
+ *
+ * Called manually to create a keyboard device for the joystick
+ *
+ ***************************************************************************
+ */
+InputInfoPtr
+jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
+{
+    LocalDevicePtr local = NULL;
+    IDevPtr dev = NULL;
+    char name[512] = {0};
+
+    local = xf86AllocateInput(drv, 0);
+    if (!local) {
+        goto SetupProc_fail;
+    }
+
+    dev = xcalloc(sizeof(IDevRec), 1);
+    strcpy(name, _dev->identifier);
+    strcat(name, " (keys)");
+    dev->identifier = xstrdup(name);
+    dev->driver = xstrdup(_dev->driver);
+    dev->commonOptions = xf86optionListDup(_dev->commonOptions);
+    dev->extraOptions = xf86optionListDup(_dev->extraOptions);
+
+    local->name   = dev->identifier;
+    local->flags  = XI86_KEYBOARD_CAPABLE;
+    local->device_control = jstkKeyboardDeviceControlProc;
+    local->read_input = NULL;
+    local->close_proc = NULL;
+    local->control_proc = NULL;
+    local->switch_mode = NULL;
+    local->conversion_proc = NULL;
+    local->fd = -1;
+    local->dev = NULL;
+    local->private = NULL;
+    local->type_name = XI_KEYBOARD;
+    local->history_size = 0;
+    local->always_core_feedback = 0;
+    local->conf_idev = dev;
+
+    xf86CollectInputOptions(local, NULL, NULL);
+    xf86OptionListReport(local->options);
+    xf86ProcessCommonOptions(local, local->options);
+
+
+    /* return the LocalDevice */
+    local->flags |= XI86_CONFIGURED;
+
+    return (local);
+
+SetupProc_fail:
+    if (local)
+        local->private = NULL;
+    if (dev) {
+        if (dev->identifier) xfree(dev->identifier);
+        if (dev->driver) xfree(dev->driver);
+        xfree(dev);
+    }
+    return NULL;
+}
+
+
+/*
+ ***************************************************************************
+ *
+ * jstkKeyboardUnInit --
+ *
+ * Called when the keyboard slave device gets removed
+ *
+ ***************************************************************************
+ */
+void
+jstkKeyboardUnInit(InputDriverPtr    drv,
+                   LocalDevicePtr    local,
+                   int               flags)
+{
+    JoystickDevPtr device = (JoystickDevPtr) local->private;
+    DBG(2, ErrorF("jstkKeyboardUnInit.\n"));
+
+    device->keyboard_device = NULL;
+    local->private = NULL;
+
+    xf86DeleteInput(local, 0);
+}
 

@@ -24,6 +24,8 @@
 #ifndef __JSTK_H_INCLUDED__
 #define __JSTK_H_INCLUDED__
 
+#include <xf86Xinput.h>
+
 
 #define MAXBUTTONS 32
 #define MAXAXES 32
@@ -111,6 +113,7 @@ typedef struct _JoystickDevRec {
     jstkReadDataProc read_proc; /* Callback for reading data from the backend */
     void         *devicedata; /* Extra platform device dependend data */
     char         *device;     /* Name of the device */
+    LocalDevicePtr keyboard_device; /* Slave device for keyboard events */
 
     OsTimerPtr   timer;       /* Timer for axis movement */
     Bool         timerrunning;

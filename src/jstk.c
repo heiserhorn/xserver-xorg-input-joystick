@@ -33,6 +33,7 @@
 #include <xf86.h>
 #include <xf86Xinput.h>
 #include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
+#include <xf86Opt.h>
 
 #include <math.h>
 #include <xf86Module.h>
@@ -167,7 +168,7 @@ jstkReadProc(LocalDevicePtr local)
             switch (priv->button[number].mapping) {
             case MAPPING_BUTTON:
                 if (priv->mouse_enabled == TRUE) {
-                    xf86PostButtonEvent(local->dev, 0, 
+                    xf86PostButtonEvent(local->dev, 0,
                         priv->button[number].buttonnumber,
                         priv->button[number].pressed, 0, 0);
                 }
@@ -185,7 +186,7 @@ jstkReadProc(LocalDevicePtr local)
 
             case MAPPING_KEY:
                 if (priv->keys_enabled == TRUE)
-                    jstkGenerateKeys(local->dev, 
+                    jstkGenerateKeys(priv->keyboard_device, 
                                      priv->button[number].keys, 
                                      priv->button[number].pressed);
                 break;
@@ -281,13 +282,13 @@ jstkReadProc(LocalDevicePtr local)
                 if (priv->axis[number].type == TYPE_ACCELERATED) {
                     if ((priv->axis[number].value > 0) != 
                         (priv->axis[number].oldvalue > 0))
-                        jstkGenerateKeys(local->dev, 
+                        jstkGenerateKeys(priv->keyboard_device, 
                                          priv->axis[number].keys_high,
                                          (priv->axis[number].value > 0) ? 1:0);
 
                     if ((priv->axis[number].value < 0) != 
                         (priv->axis[number].oldvalue < 0))
-                        jstkGenerateKeys(local->dev,
+                        jstkGenerateKeys(priv->keyboard_device,
                                          priv->axis[number].keys_low,
                                          (priv->axis[number].value < 0) ? 1:0);
                 } else if (priv->axis[number].type == TYPE_BYVALUE) {
@@ -335,13 +336,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
                 ErrorF("unable to allocate Button class device\n");
                 return !Success;
             }
-            if (InitFocusClassDeviceStruct(pJstk) == FALSE) {
-                ErrorF("unable to init Focus class device\n");
-                return !Success;
-            }
         }
-        jstkInitKeys(pJstk, priv);
-
         m = 2;
         for (i=0; i<MAXAXES; i++) 
             if (priv->axis[i].type != TYPE_NONE)
@@ -385,6 +380,18 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
             /* allocate the motion history buffer if needed */
             xf86MotionHistoryAllocate(local);
         }
+
+
+        if (priv->keyboard_device != NULL)
+        {
+            DBG(2, ErrorF("Activating keyboard device\n"));
+            xf86ActivateDevice(priv->keyboard_device);
+            priv->keyboard_device->dev->inited = 
+                (priv->keyboard_device->device_control(priv->keyboard_device->dev, DEVICE_INIT) == Success);
+            xf86EnableDevice(priv->keyboard_device->dev);
+            DBG(2, ErrorF("Keyboard device activated\n"));
+        }
+
 #if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 3
 	jstkInitProperties(pJstk, priv);
 #endif
@@ -433,6 +440,17 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
 
 
 
+
+_X_EXPORT InputDriverRec JOYSTICK_KEYBOARD = {
+    1,
+    "joystick_keyboard",
+    NULL,
+    jstkKeyboardPreInit,
+    jstkKeyboardUnInit,
+    NULL,
+    0
+};
+
 /*
  ***************************************************************************
  *
@@ -461,7 +479,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     local->name   = dev->identifier;
     local->flags  = XI86_POINTER_CAPABLE;
-    local->flags |= XI86_KEYBOARD_CAPABLE;
     local->flags |= XI86_SEND_DRAG_EVENTS;
     local->device_control = jstkDeviceControlProc;
     local->read_input = jstkReadProc;
@@ -486,6 +503,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
     priv->buttonmap.size = 0;
+    priv->keyboard_device = NULL;
     priv->keymap.size = 1;
     memset(priv->keymap.map, NoSymbol, sizeof(priv->keymap.map));
     priv->repeat_delay = 0;
@@ -627,6 +645,11 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* return the LocalDevice */
     local->flags |= XI86_CONFIGURED;
 
+    priv->keyboard_device = jstkKeyboardPreInit(&JOYSTICK_KEYBOARD, dev, flags);
+    if (priv->keyboard_device) {
+        priv->keyboard_device->private = priv;
+    }
+
     return (local);
 
 SetupProc_fail:
@@ -657,7 +680,11 @@ jstkCoreUnInit(InputDriverPtr    drv,
 {
     JoystickDevPtr device = (JoystickDevPtr) local->private;
 
-    jstkDeviceControlProc(local->dev, DEVICE_OFF);
+    if (device->keyboard_device != NULL)
+    {
+        xf86DisableDevice(device->keyboard_device->dev, TRUE);
+        device->keyboard_device = NULL;
+    }
 
     xfree (device);
     local->private = NULL;
@@ -695,6 +722,7 @@ jstkDriverPlug(pointer  module,
                int      *errmin)
 {
     xf86AddInputDriver(&JOYSTICK, module, 0);
+    xf86AddInputDriver(&JOYSTICK_KEYBOARD, module, 0);
     return module;
 }
 
