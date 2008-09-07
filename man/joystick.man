@@ -1,3 +1,4 @@
+.\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH joystick __drivermansuffix__ __vendorversion__
 .SH NAME
