@@ -252,7 +252,7 @@ jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
     local->fd = -1;
     local->dev = NULL;
     local->private = NULL;
-    local->type_name = XI_KEYBOARD;
+    local->type_name = XI_JOYSTICK;
     local->history_size = 0;
     local->always_core_feedback = 0;
     local->conf_idev = dev;
