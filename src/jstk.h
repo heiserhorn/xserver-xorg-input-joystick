@@ -25,6 +25,7 @@
 #define __JSTK_H_INCLUDED__
 
 #include <xf86Xinput.h>
+#include <X11/extensions/XIproto.h>
 
 
 #define MAXBUTTONS 32
@@ -46,6 +47,12 @@
 #else
     #define DBG(lvl, f)
 #endif
+
+
+#ifndef XI_JOYSTICK
+#define XI_JOYSTICK "JOYSTICK"
+#endif
+
 
 typedef enum _JOYSTICKEVENT {
     EVENT_NONE=0,

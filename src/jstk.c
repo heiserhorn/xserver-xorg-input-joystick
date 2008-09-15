@@ -501,7 +501,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->fd = -1;
     local->dev = NULL;
     local->private = priv;
-    local->type_name = XI_MOUSE;
+    local->type_name = XI_JOYSTICK;
     local->history_size = 0;
     local->always_core_feedback = 0;
     local->conf_idev = dev;
