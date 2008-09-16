@@ -32,6 +32,7 @@
 				jstk_axis.c jstk_axis.h \
 				jstk_key.c jstk_key.h \
 				jstk_options.c jstk_options.h \
+				jstk_properties.c jstk_properties.h \
 				StrKeysym.c StrKeysym.h ks_tables.h
 
 BSD_SRCS   = backend_bsd.c backend_bsd.h

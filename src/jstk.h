@@ -24,6 +24,7 @@
 #ifndef __JSTK_H_INCLUDED__
 #define __JSTK_H_INCLUDED__
 
+#include <xf86Xinput.h>
 #include <X11/extensions/XIproto.h>
 
 
@@ -41,7 +42,7 @@
 #endif
 
 #if DEBUG
-    extern int debug_level;
+    extern char debug_level;
     #define DBG(lvl, f) {if ((lvl) <= debug_level) f;}
 #else
     #define DBG(lvl, f)
@@ -119,6 +120,7 @@ typedef struct _JoystickDevRec {
     jstkReadDataProc read_proc; /* Callback for reading data from the backend */
     void         *devicedata; /* Extra platform device dependend data */
     char         *device;     /* Name of the device */
+    LocalDevicePtr keyboard_device; /* Slave device for keyboard events */
 
     OsTimerPtr   timer;       /* Timer for axis movement */
     Bool         timerrunning;
