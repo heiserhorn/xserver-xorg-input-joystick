@@ -35,6 +35,7 @@
 #include <X11/extensions/XKBsrv.h>
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>
+#include <xf86Optrec.h>
 #include "jstk.h"
 #include "jstk_key.h"
 
