@@ -107,22 +107,25 @@ jstkConvertProc(LocalDevicePtr	local,
  ***************************************************************************
  */
 static int
-jstkOpenDevice(JoystickDevPtr priv)
+jstkOpenDevice(JoystickDevPtr priv, BOOL probe)
 {
     int fd;
     fd = -1;
 
+    if (probe == FALSE && priv->open_proc)
+        return priv->open_proc(priv, probe);
+
 #ifdef EVDEV_BACKEND
     if (fd == -1)
-        fd = jstkOpenDevice_evdev(priv);
+        fd = jstkOpenDevice_evdev(priv, probe);
 #endif
 #ifdef LINUX_BACKEND
     if (fd == -1)
-        fd = jstkOpenDevice_joystick(priv);
+        fd = jstkOpenDevice_joystick(priv, probe);
 #endif
 #ifdef BSD_BACKEND
     if (fd == -1)
-        fd = jstkOpenDevice_bsd(priv);
+        fd = jstkOpenDevice_bsd(priv, probe);
 #endif
 
     return fd;
@@ -339,6 +342,16 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
     case DEVICE_INIT: {
         int m;
         DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
+        /* Probe device and return if error */
+        if (jstkOpenDevice(priv, TRUE) == -1) {
+            return !Success;
+        } else {
+            /* Success. The OpenDevice call already did some initialization
+               like priv->num_buttons, priv->num_axes */
+            priv->close_proc(priv);
+        }
+
+
         if (priv->buttonmap.size != 0) {
             if (InitButtonClassDeviceStruct(pJstk, priv->buttonmap.size, 
                 priv->buttonmap.map) == FALSE) {
@@ -415,7 +428,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
         DBG(1, ErrorF("jstkDeviceControlProc  what=ON name=%s\n", 
                       priv->device));
 
-        if (jstkOpenDevice(priv) != -1) {
+        if (jstkOpenDevice(priv, FALSE) != -1) {
             pJstk->public.on = TRUE;
             local->fd = priv->fd;
             AddEnabledDevice(local->fd);
@@ -507,6 +520,9 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->conf_idev = dev;
 
     priv->fd = -1;
+    priv->open_proc = NULL;
+    priv->read_proc = NULL;
+    priv->close_proc = NULL;
     priv->device = NULL;
     priv->devicedata = NULL;
     priv->timer = NULL;

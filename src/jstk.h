@@ -62,6 +62,7 @@ typedef enum _JOYSTICKEVENT {
 
 typedef struct _JoystickDevRec *JoystickDevPtr;
 
+typedef int(*jstkOpenDeviceProc)(JoystickDevPtr joystick, Bool probe);
 typedef void(*jstkCloseDeviceProc)(JoystickDevPtr joystick);
 typedef int(*jstkReadDataProc)(JoystickDevPtr joystick,
                                JOYSTICKEVENT *event, int *number);
@@ -116,6 +117,7 @@ typedef struct _BUTTON {
 
 typedef struct _JoystickDevRec {
     int          fd;          /* Actual file descriptor */
+    jstkOpenDeviceProc open_proc; /* Call for re-open backend */
     jstkCloseDeviceProc close_proc; /* Callback for closing the backend */
     jstkReadDataProc read_proc; /* Callback for reading data from the backend */
     void         *devicedata; /* Extra platform device dependend data */
