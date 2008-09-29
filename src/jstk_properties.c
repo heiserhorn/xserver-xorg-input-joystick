@@ -145,31 +145,21 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
         DBG(1, ErrorF("keys_enabled set to %d\n", priv->keys_enabled));
     }else if (atom == prop_axis_deadzone)
     {
-        if (val->size > priv->num_axes || val->format != 32 || val->type != XA_INTEGER)
+        INT32 *values;
+        if (val->size != priv->num_axes || val->format != 32 || val->type != XA_INTEGER)
             return BadMatch;
-        if (val->size == 1) { /* Single value to be applied to all axes */
-            INT32 value;
-            value = *((INT32*)val->data);
-            if (value < 0) value = (-value);
-            if (value > 30000) return BadValue;
-            for (i =0; i<priv->num_axes; i++)
-                priv->axis[i].deadzone = value;
-            DBG(1, ErrorF("Deadzone of all axes set to %d\n",value));
-        } else { /* Apply supplied values to axes beginning with the first */
-            INT32 *values;
-            values = (INT32*)val->data;
-            for (i =0; i<val->size; i++) /* Fail, if one value is out of range */ 
-                if (values[i] > 30000 || values[i] < -30000)
-                    return BadValue;
-            for (i =0; i<val->size; i++) {
-                priv->axis[i].deadzone = (values[i]<0)?(-values[i]):(values[i]);
-                DBG(1, ErrorF("Deadzone of axis %d set to %d\n",i, priv->axis[i].deadzone));
-            }
+        values = (INT32*)val->data;
+        for (i =0; i<val->size; i++) /* Fail, if one value is out of range */ 
+            if (values[i] > 30000 || values[i] < -30000)
+                return BadValue;
+        for (i =0; i<val->size; i++) {
+            priv->axis[i].deadzone = (values[i]<0)?(-values[i]):(values[i]);
+            DBG(1, ErrorF("Deadzone of axis %d set to %d\n",i, priv->axis[i].deadzone));
         }
     }else if (atom == prop_axis_type)
     {
         INT8 *values;
-        if (val->size > priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
+        if (val->size != priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
         values = (INT8*)val->data;
         for (i =0; i<val->size; i++) {
@@ -179,7 +169,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
     }else if (atom == prop_axis_mapping)
     {
         INT8 *values;
-        if (val->size > priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
+        if (val->size != priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
         values = (INT8*)val->data;
         for (i =0; i<val->size; i++) {
@@ -201,7 +191,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
     }else if (atom == prop_button_mapping)
     {
         INT8 *values;
-        if (val->size > priv->num_buttons || val->format != 8 || val->type != XA_INTEGER)
+        if (val->size != priv->num_buttons || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
         values = (INT8*)val->data;
         for (i =0; i<val->size; i++) {
