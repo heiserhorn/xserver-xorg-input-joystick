@@ -145,14 +145,14 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
         DBG(1, ErrorF("keys_enabled set to %d\n", priv->keys_enabled));
     }else if (atom == prop_axis_deadzone)
     {
-        if (val->size > MAXAXES || val->format != 32 || val->type != XA_INTEGER)
+        if (val->size > priv->num_axes || val->format != 32 || val->type != XA_INTEGER)
             return BadMatch;
         if (val->size == 1) { /* Single value to be applied to all axes */
             INT32 value;
             value = *((INT32*)val->data);
             if (value < 0) value = (-value);
             if (value > 30000) return BadValue;
-            for (i =0; i<MAXAXES; i++)
+            for (i =0; i<priv->num_axes; i++)
                 priv->axis[i].deadzone = value;
             DBG(1, ErrorF("Deadzone of all axes set to %d\n",value));
         } else { /* Apply supplied values to axes beginning with the first */
@@ -169,7 +169,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
     }else if (atom == prop_axis_type)
     {
         INT8 *values;
-        if (val->size > MAXAXES || val->format != 8 || val->type != XA_INTEGER)
+        if (val->size > priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
         values = (INT8*)val->data;
         for (i =0; i<val->size; i++) {
@@ -179,7 +179,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
     }else if (atom == prop_axis_mapping)
     {
         INT8 *values;
-        if (val->size > MAXAXES || val->format != 8 || val->type != XA_INTEGER)
+        if (val->size > priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
         values = (INT8*)val->data;
         for (i =0; i<val->size; i++) {
@@ -201,7 +201,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
     }else if (atom == prop_button_mapping)
     {
         INT8 *values;
-        if (val->size > MAXBUTTONS || val->format != 8 || val->type != XA_INTEGER)
+        if (val->size > priv->num_buttons || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
         values = (INT8*)val->data;
         for (i =0; i<val->size; i++) {
@@ -253,7 +253,7 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
                                 &priv->num_buttons,
                                 FALSE);
     XISetDevicePropertyDeletable(pJstk, prop_numbuttons, FALSE);
-    ErrorF("Registered %s, %d\n", JSTK_PROP_NUMBUTTONS, prop_numbuttons);
+
 
     /* priv->num_axes */
     prop_numaxes = MakeAtom(JSTK_PROP_NUMAXES, strlen(JSTK_PROP_NUMAXES), TRUE);
@@ -281,31 +281,31 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
     XISetDevicePropertyDeletable(pJstk, prop_keys_enabled, FALSE);
 
     /* priv->axis[].deadzone */
-    for (i=0;i<MAXAXES;i++)
+    for (i=0;i<priv->num_axes;i++)
         axes_values32[i] = priv->axis[i].deadzone;
     prop_axis_deadzone = MakeAtom(JSTK_PROP_AXIS_DEADZONE, strlen(JSTK_PROP_AXIS_DEADZONE), TRUE);
     XIChangeDeviceProperty(pJstk, prop_axis_deadzone, XA_INTEGER, 32,
-                                PropModeReplace, MAXAXES,
+                                PropModeReplace, priv->num_axes,
                                 axes_values32,
                                 FALSE);
     XISetDevicePropertyDeletable(pJstk, prop_axis_deadzone, FALSE);
 
     /* priv->axis[].type */
-    for (i=0;i<MAXAXES;i++)
+    for (i=0;i<priv->num_axes;i++)
         axes_values8[i] = priv->axis[i].type;
     prop_axis_type = MakeAtom(JSTK_PROP_AXIS_TYPE, strlen(JSTK_PROP_AXIS_TYPE), TRUE);
     XIChangeDeviceProperty(pJstk, prop_axis_type, XA_INTEGER, 8,
-                                PropModeReplace, MAXAXES,
+                                PropModeReplace, priv->num_axes,
                                 axes_values8,
                                 FALSE);
     XISetDevicePropertyDeletable(pJstk, prop_axis_type, FALSE);
 
     /* priv->axis[].mapping */
-    for (i=0;i<MAXAXES;i++)
+    for (i=0;i<priv->num_axes;i++)
         axes_values8[i] = (INT8)priv->axis[i].mapping;
     prop_axis_mapping = MakeAtom(JSTK_PROP_AXIS_MAPPING, strlen(JSTK_PROP_AXIS_MAPPING), TRUE);
     XIChangeDeviceProperty(pJstk, prop_axis_mapping, XA_INTEGER, 8,
-                                PropModeReplace, MAXBUTTONS,
+                                PropModeReplace, priv->num_axes,
                                 axes_values8,
                                 FALSE);
     XISetDevicePropertyDeletable(pJstk, prop_axis_mapping, FALSE);
@@ -323,21 +323,21 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
 
 
     /* priv->button[].mapping */
-    for (i=0;i<MAXBUTTONS;i++)
+    for (i=0;i<priv->num_buttons;i++)
         button_values8[i] = (INT8)priv->button[i].mapping;
     prop_button_mapping = MakeAtom(JSTK_PROP_BUTTON_MAPPING, strlen(JSTK_PROP_BUTTON_MAPPING), TRUE);
     XIChangeDeviceProperty(pJstk, prop_button_mapping, XA_INTEGER, 8,
-                                PropModeReplace, MAXBUTTONS,
+                                PropModeReplace, priv->num_buttons,
                                 button_values8,
                                 FALSE);
     XISetDevicePropertyDeletable(pJstk, prop_button_mapping, FALSE);
 
     /* priv->button[].buttonnumber */
-    for (i=0;i<MAXAXES;i++)
+    for (i=0;i<priv->num_buttons;i++)
         button_values8[i] = (INT8)priv->button[i].buttonnumber;
     prop_button_buttonnumber = MakeAtom(JSTK_PROP_BUTTON_BUTTONNUMBER, strlen(JSTK_PROP_BUTTON_BUTTONNUMBER), TRUE);
     XIChangeDeviceProperty(pJstk, prop_button_buttonnumber, XA_INTEGER, 8,
-                                PropModeReplace, MAXBUTTONS,
+                                PropModeReplace, priv->num_buttons,
                                 button_values8,
                                 FALSE);
     XISetDevicePropertyDeletable(pJstk, prop_button_buttonnumber, FALSE);
