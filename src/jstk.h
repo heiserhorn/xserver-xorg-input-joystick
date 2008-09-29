@@ -130,6 +130,8 @@ typedef struct _JoystickDevRec {
 
     int          repeat_delay, repeat_interval; /* Key autorepeat */
 
+    CARD8        num_buttons, num_axes; /* Detected number of buttons/axes */
+
     struct _BUTTONMAP {
         int size;
         CARD8 scrollbutton[4];     /* Logical button numbers for scrollwheel */

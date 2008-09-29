@@ -520,6 +520,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     memset(priv->keymap.map, NoSymbol, sizeof(priv->keymap.map));
     priv->repeat_delay = 0;
     priv->repeat_interval = 0;
+    priv->num_axes    = MAXAXES;
+    priv->num_buttons = MAXBUTTONS;
 
     /* Initialize default mappings */
     for (i=0; i<MAXAXES; i++) {

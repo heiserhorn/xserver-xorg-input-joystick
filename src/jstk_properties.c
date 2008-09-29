@@ -44,6 +44,14 @@
 #define JSTK_PROP_DEBUGLEVEL "Debug Level"
 static Atom prop_debuglevel  = 0;
 
+/* 8 bit, 0..MAXBUTTONS */
+#define JSTK_PROP_NUMBUTTONS "Buttons"
+static Atom prop_numbuttons  = 0;
+
+/* 8 bit, 0..MAXAXES */
+#define JSTK_PROP_NUMAXES "Axes"
+static Atom prop_numaxes  = 0;
+
 /* 8 bit, 0 or 1 */
 #define JSTK_PROP_MOUSE_ENABLED "Generate Mouse Events"
 static Atom prop_mouse_enabled  = 0;
@@ -109,6 +117,20 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
         debug_level = *((INT8*)val->data);
 	ErrorF("JOYSTICK: DebugLevel set to %d\n", debug_level);
 #endif
+    }else if (atom == prop_numbuttons)
+    {
+        if (val->size != 1 || val->format != 8 || val->type != XA_INTEGER)
+            return BadMatch;
+        if ((*((INT8*)val->data)) != priv->num_buttons)
+            return BadMatch;
+        return Success;
+    }else if (atom == prop_numaxes)
+    {
+        if (val->size != 1 || val->format != 8 || val->type != XA_INTEGER)
+            return BadMatch;
+        if ((*((INT8*)val->data)) != priv->num_axes)
+            return BadMatch;
+        return Success;
     }else if (atom == prop_mouse_enabled)
     {
         if (val->size != 1 || val->format != 8 || val->type != XA_INTEGER)
@@ -223,6 +245,23 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
                                 FALSE);
     XISetDevicePropertyDeletable(pJstk, prop_debuglevel, FALSE);
 #endif
+
+    /* priv->num_buttons */
+    prop_numbuttons = MakeAtom(JSTK_PROP_NUMBUTTONS, strlen(JSTK_PROP_NUMBUTTONS), TRUE);
+    XIChangeDeviceProperty(pJstk, prop_numbuttons, XA_INTEGER, 8,
+                                PropModeReplace, 1,
+                                &priv->num_buttons,
+                                FALSE);
+    XISetDevicePropertyDeletable(pJstk, prop_numbuttons, FALSE);
+    ErrorF("Registered %s, %d\n", JSTK_PROP_NUMBUTTONS, prop_numbuttons);
+
+    /* priv->num_axes */
+    prop_numaxes = MakeAtom(JSTK_PROP_NUMAXES, strlen(JSTK_PROP_NUMAXES), TRUE);
+    XIChangeDeviceProperty(pJstk, prop_numaxes, XA_INTEGER, 8,
+                                PropModeReplace, 1,
+                                &priv->num_axes,
+                                FALSE);
+    XISetDevicePropertyDeletable(pJstk, prop_numaxes, FALSE);
 
 
     /* priv->mouse_enabled */
