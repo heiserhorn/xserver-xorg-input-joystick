@@ -73,15 +73,15 @@ static Atom prop_axis_type    = 0;
 static Atom prop_axis_mapping = 0;
 
 /* float, movement amplify value per axis */
-#define JSTK_PROP_AXIS_AMPLIFY "Axis amplify"
+#define JSTK_PROP_AXIS_AMPLIFY "Axis Amplify"
 static Atom prop_axis_amplify = 0;
 
 /* 16 bit, set keysyms for low axis. Format: (axis keysym1 keysym2 keysym3 keysym4) */
-#define JSTK_PROP_AXIS_KEYS_LOW "Axis keys (low) (set only)"
+#define JSTK_PROP_AXIS_KEYS_LOW "Axis Keys (low)"
 static Atom prop_axis_keys_low = 0;
 
 /* 16 bit, set keysyms for high axis. Format: (axis keysym1 keysym2 keysym3 keysym4) */
-#define JSTK_PROP_AXIS_KEYS_HIGH "Axis keys (high) (set only)"
+#define JSTK_PROP_AXIS_KEYS_HIGH "Axis keys (high)"
 static Atom prop_axis_keys_high = 0;
 
 /* 8 bit, one of enum _JOYSTICKMAPPING @ jstk.h per button */
@@ -89,15 +89,15 @@ static Atom prop_axis_keys_high = 0;
 static Atom prop_button_mapping = 0;
 
 /* 8 bit, logical button number per button */
-#define JSTK_PROP_BUTTON_BUTTONNUMBER "Button number"
+#define JSTK_PROP_BUTTON_BUTTONNUMBER "Button Number"
 static Atom prop_button_buttonnumber = 0;
 
 /* float, button amplify value per button */
-#define JSTK_PROP_BUTTON_AMPLIFY "Button amplify"
+#define JSTK_PROP_BUTTON_AMPLIFY "Button Amplify"
 static Atom prop_button_amplify = 0;
 
 /* 16 bit, set keysyms for button. Format: (button keysym1 keysym2 keysym3 keysym4) */
-#define JSTK_PROP_BUTTON_KEYS "Button keys (set only)"
+#define JSTK_PROP_BUTTON_KEYS "Button Keys"
 static Atom prop_button_keys = 0;
 
 
