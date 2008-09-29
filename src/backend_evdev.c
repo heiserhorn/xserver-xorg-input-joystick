@@ -192,6 +192,10 @@ jstkOpenDevice_evdev(JoystickDevPtr joystick, Bool probe)
     joystick->close_proc = jstkCloseDevice_evdev;
     joystick->devicedata = (void*) evdevdata;
 
+    if (buttons > MAXBUTTONS)
+        buttons = MAXBUTTONS;
+    if (axes > MAXAXES)
+        axes = MAXAXES;
     joystick->num_buttons = buttons;
     joystick->num_axes = axes;
     return joystick->fd;
