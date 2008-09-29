@@ -121,6 +121,13 @@ jstkOpenDevice_joystick(JoystickDevPtr joystick, Bool probe)
                 joy_name, axes, buttons);
     }
 
+    if (buttons > MAXBUTTONS)
+        buttons = MAXBUTTONS;
+    if (axes > MAXAXES)
+        axes = MAXAXES;
+    joystick->num_buttons = buttons;
+    joystick->num_axes = axes;
+
     joystick->open_proc = jstkOpenDevice_joystick;
     joystick->read_proc = jstkReadData_joystick;
     joystick->close_proc = jstkCloseDevice_joystick;
