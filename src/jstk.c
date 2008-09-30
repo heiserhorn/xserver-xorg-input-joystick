@@ -341,6 +341,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
     switch (what) {
     case DEVICE_INIT: {
         int m;
+        CARD8 buttonmap[BUTTONMAP_SIZE+1];
         DBG(1, ErrorF("jstkDeviceControlProc what=INIT\n"));
         /* Probe device and return if error */
         if (jstkOpenDevice(priv, TRUE) == -1) {
@@ -351,13 +352,12 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
             priv->close_proc(priv);
         }
 
-
-        if (priv->buttonmap.size != 0) {
-            if (InitButtonClassDeviceStruct(pJstk, priv->buttonmap.size, 
-                priv->buttonmap.map) == FALSE) {
-                ErrorF("unable to allocate Button class device\n");
-                return !Success;
-            }
+        for (m=0; m<=BUTTONMAP_SIZE; m++)
+            buttonmap[m] = m;
+        if (InitButtonClassDeviceStruct(pJstk, BUTTONMAP_SIZE, 
+            buttonmap) == FALSE) {
+            ErrorF("unable to allocate Button class device\n");
+            return !Success;
         }
         if (!InitPtrFeedbackClassDeviceStruct(pJstk, jstkPtrCtrlProc))
             return !Success;
@@ -530,7 +530,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->mouse_enabled = TRUE;
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
-    priv->buttonmap.size = 0;
     priv->keyboard_device = NULL;
     priv->keymap.size = 1;
     memset(priv->keymap.map, NoSymbol, sizeof(priv->keymap.map));
@@ -563,15 +562,13 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
             priv->button[i].keys[j] = 0;
     }
 
-    priv->buttonmap.map[0] = 0;
-
     /* First three joystick buttons generate mouse clicks */
     priv->button[0].mapping      = MAPPING_BUTTON;
-    priv->button[0].buttonnumber = jstkGetButtonNumberInMap(priv, 1);
+    priv->button[0].buttonnumber = 1;
     priv->button[1].mapping      = MAPPING_BUTTON;
-    priv->button[1].buttonnumber = jstkGetButtonNumberInMap(priv, 2);
+    priv->button[1].buttonnumber = 2;
     priv->button[2].mapping      = MAPPING_BUTTON;
-    priv->button[2].buttonnumber = jstkGetButtonNumberInMap(priv, 3);
+    priv->button[2].buttonnumber = 3;
 
     /* First two axes are a stick for moving */
     priv->axis[0].type      = TYPE_BYVALUE;
@@ -590,12 +587,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->axis[4].mapping   = MAPPING_X;
     priv->axis[5].type      = TYPE_ACCELERATED;
     priv->axis[5].mapping   = MAPPING_Y;
-
-    priv->buttonmap.scrollbutton[0] = jstkGetButtonNumberInMap(priv, 4);
-    priv->buttonmap.scrollbutton[1] = jstkGetButtonNumberInMap(priv, 5);
-    priv->buttonmap.scrollbutton[2] = jstkGetButtonNumberInMap(priv, 6);
-    priv->buttonmap.scrollbutton[3] = jstkGetButtonNumberInMap(priv, 7);
-
 
     xf86CollectInputOptions(local, NULL, NULL);
     xf86OptionListReport(local->options);

@@ -32,6 +32,7 @@
 #define MAXAXES 32
 #define MAXKEYSPERBUTTON 4
 #define MIN_KEYCODE 8
+#define BUTTONMAP_SIZE 32
 
 
 /******************************************************************************
@@ -134,11 +135,6 @@ typedef struct _JoystickDevRec {
 
     CARD8        num_buttons, num_axes; /* Detected number of buttons/axes */
 
-    struct _BUTTONMAP {
-        int size;
-        CARD8 scrollbutton[4];     /* Logical button numbers for scrollwheel */
-        CARD8 map[MAXBUTTONS+1];
-    } buttonmap;
     struct _KEYMAP {
         int size;
         KeySym map[256-MIN_KEYCODE];

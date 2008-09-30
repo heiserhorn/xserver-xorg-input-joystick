@@ -210,31 +210,31 @@ jstkAxisTimer(OsTimerPtr        timer,
 
     /* Generate scrolling events */
     while (movezy >= 1) {  /* down */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 
+        xf86PostButtonEvent(device, 0, 5,
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 
+        xf86PostButtonEvent(device, 0, 5,
                             0, 0, 0);
         movezy -= 1;
     }
     while (movezy <= -1) { /* up */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 
+        xf86PostButtonEvent(device, 0, 4,
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 
+        xf86PostButtonEvent(device, 0, 4,
                             0, 0, 0);
         movezy += 1;
     }
 
     while (movezx >= 1) {  /* right */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 
+        xf86PostButtonEvent(device, 0, 7, 
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 
+        xf86PostButtonEvent(device, 0, 7, 
                             0, 0, 0);
         movezx -= 1;
     }
     while (movezx <= -1) { /* left */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 
+        xf86PostButtonEvent(device, 0, 6,
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 
+        xf86PostButtonEvent(device, 0, 6,
                             0, 0, 0);
         movezx += 1;
     }

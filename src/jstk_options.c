@@ -43,31 +43,6 @@
 
 /***********************************************************************
  *
- * jstkGetButtonNumberInMap --
- *
- * Adds a button number to the button map and returns the index
- *
- ***********************************************************************
- */
-
-int
-jstkGetButtonNumberInMap(JoystickDevPtr priv,
-                         int buttonnumber)
-{
-    int j;
-    for (j=1; j<=priv->buttonmap.size; j++)
-        if (priv->buttonmap.map[j] == buttonnumber)
-            break;
-    if (j > MAXBUTTONS+1) return 0;
-    priv->buttonmap.map[j] = buttonnumber;
-    if (j > priv->buttonmap.size) priv->buttonmap.size = j;
-    return j;
-}
-
-
-
-/***********************************************************************
- *
  * jstkGetKeyNumberInMap --
  *
  * Adds a KeySym to the keymap and returns the index
@@ -155,8 +130,13 @@ jstkParseButtonOption(const char* org,
     if (strcmp(param, "none") == 0) {
         button->mapping = MAPPING_NONE;
     } else if (sscanf(param, "button=%d", &value) == 1) {
-        button->mapping      = MAPPING_BUTTON;
-        button->buttonnumber = jstkGetButtonNumberInMap(priv, value);
+        if (value<0 || value >BUTTONMAP_SIZE) {
+            xf86Msg(X_WARNING, "%s: button number out of range (0..%d): %d.\n", 
+                    name, BUTTONMAP_SIZE,  value);
+        } else {
+            button->mapping      = MAPPING_BUTTON;
+            button->buttonnumber = value;
+        }
     } else if (sscanf(param, "axis=%15s", p) == 1) {
         p[15]='\0';
         fvalue = 1.0f;
