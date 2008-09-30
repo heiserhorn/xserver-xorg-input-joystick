@@ -200,8 +200,25 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
         }
     }else if (atom == prop_button_buttonnumber)
     {
-        /* FIXME */
-        return BadValue;
+        CARD8 *values;
+        if (val->size != priv->num_buttons || val->format != 8 || val->type != XA_INTEGER)
+            return BadMatch;
+        values = (INT8*)val->data;
+        for (i = 0; i<val->size; i++) {
+            if (values[i] > BUTTONMAP_SIZE) {
+               DBG(1, ErrorF("Button number out of range (0..%d): %d\n",
+                   BUTTONMAP_SIZE, values[i]));
+               return BadValue;
+            }
+        }
+        for (i = 0; i<val->size; i++) {
+            priv->button[i].buttonnumber =
+                values[i];
+            DBG(1, ErrorF("Button number of button %d set to %d\n",
+                i,
+                priv->button[i].buttonnumber));
+        }
+        return Success;
     }else if (atom == prop_button_amplify)
     {
         /* FIXME */
@@ -323,8 +340,12 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
     XISetDevicePropertyDeletable(pJstk, prop_button_mapping, FALSE);
 
     /* priv->button[].buttonnumber */
-    for (i=0;i<priv->num_buttons;i++)
-        button_values8[i] = (INT8)priv->button[i].buttonnumber;
+    for (i=0;i<priv->num_buttons;i++) {
+        int index = priv->button[i].buttonnumber;
+        if (index>=0 && index<=MAXBUTTONS)
+            button_values8[i] = (CARD8)index;
+        else button_values8[i] = 0;
+    }
     prop_button_buttonnumber = MakeAtom(JSTK_PROP_BUTTON_BUTTONNUMBER, strlen(JSTK_PROP_BUTTON_BUTTONNUMBER), TRUE);
     XIChangeDeviceProperty(pJstk, prop_button_buttonnumber, XA_INTEGER, 8,
                                 PropModeReplace, priv->num_buttons,
