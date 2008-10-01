@@ -28,6 +28,8 @@
 @DRIVER_NAME@_drv_la_LDFLAGS = -module -avoid-version
 @DRIVER_NAME@_drv_ladir = @inputdir@
 
+INCLUDES=-I$(top_srcdir)/include/
+
 @DRIVER_NAME@_drv_la_SOURCES =  jstk.c jstk.h \
 				jstk_axis.c jstk_axis.h \
 				jstk_key.c jstk_key.h \

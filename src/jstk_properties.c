@@ -38,66 +38,23 @@
 
 #include "jstk.h"
 #include "jstk_properties.h"
+#include "joystick-properties.h" /* definitions of properties */
 
 
-/* 8 bit, 0..20 */
-#define JSTK_PROP_DEBUGLEVEL "Debug Level"
-static Atom prop_debuglevel  = 0;
-
-/* 8 bit, 0..MAXBUTTONS */
-#define JSTK_PROP_NUMBUTTONS "Buttons"
-static Atom prop_numbuttons  = 0;
-
-/* 8 bit, 0..MAXAXES */
-#define JSTK_PROP_NUMAXES "Axes"
-static Atom prop_numaxes  = 0;
-
-/* 8 bit, 0 or 1 */
-#define JSTK_PROP_MOUSE_ENABLED "Generate Mouse Events"
-static Atom prop_mouse_enabled  = 0;
-
-/* 8 bit, 0 or 1 */
-#define JSTK_PROP_KEYS_ENABLED "Generate Key Events"
+static Atom prop_debuglevel = 0;
+static Atom prop_numbuttons = 0;
+static Atom prop_numaxes = 0;
+static Atom prop_mouse_enabled = 0;
 static Atom prop_keys_enabled  = 0;
-
-/* 32 bit, 0..30000 for each axis*/
-#define JSTK_PROP_AXIS_DEADZONE   "Axis Deadzone"
-static Atom prop_axis_deadzone    = 0;
-
-/* 8 bit, one of enum _JOYSTICKTYPE @ jstk.h per axis*/
-#define JSTK_PROP_AXIS_TYPE   "Axis Type"
-static Atom prop_axis_type    = 0;
-
-/* 8 bit, one of enum _JOYSTICKMAPPING @ jstk.h per axis */
-#define JSTK_PROP_AXIS_MAPPING   "Axis Mapping"
+static Atom prop_axis_deadzone = 0;
+static Atom prop_axis_type = 0;
 static Atom prop_axis_mapping = 0;
-
-/* float, movement amplify value per axis */
-#define JSTK_PROP_AXIS_AMPLIFY "Axis Amplify"
 static Atom prop_axis_amplify = 0;
-
-/* 16 bit, set keysyms for low axis. Format: (axis keysym1 keysym2 keysym3 keysym4) */
-#define JSTK_PROP_AXIS_KEYS_LOW "Axis Keys (low)"
 static Atom prop_axis_keys_low = 0;
-
-/* 16 bit, set keysyms for high axis. Format: (axis keysym1 keysym2 keysym3 keysym4) */
-#define JSTK_PROP_AXIS_KEYS_HIGH "Axis keys (high)"
 static Atom prop_axis_keys_high = 0;
-
-/* 8 bit, one of enum _JOYSTICKMAPPING @ jstk.h per button */
-#define JSTK_PROP_BUTTON_MAPPING   "Button Mapping"
 static Atom prop_button_mapping = 0;
-
-/* 8 bit, logical button number per button */
-#define JSTK_PROP_BUTTON_BUTTONNUMBER "Button Number"
 static Atom prop_button_buttonnumber = 0;
-
-/* float, button amplify value per button */
-#define JSTK_PROP_BUTTON_AMPLIFY "Button Amplify"
 static Atom prop_button_amplify = 0;
-
-/* 16 bit, set keysyms for button. Format: (button keysym1 keysym2 keysym3 keysym4) */
-#define JSTK_PROP_BUTTON_KEYS "Button Keys"
 static Atom prop_button_keys = 0;
 
 

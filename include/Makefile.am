@@ -1,4 +1,4 @@
-#  Copyright 2005 Adam Jackson.
+#  Copyright 2008 Sascha Hlusiak
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -14,23 +14,10 @@
 #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #  FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.  IN NO EVENT SHALL
-#  ADAM JACKSON BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+#  SASCHA HLUSIAK BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-AUTOMAKE_OPTIONS = foreign
-SUBDIRS = src man config include
+EXTRA_DIST = joystick-properties.h
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = xorg-joystick.pc
-
-EXTRA_DIST = autogen.sh ChangeLog
-
-CLEANFILES = ChangeLog
-
-.PHONY: ChangeLog
-
-ChangeLog:
-	(GIT_DIR=$(top_srcdir)/.git git log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
-
-dist-hook: ChangeLog
+sdk_HEADERS = joystick-properties.h

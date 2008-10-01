@@ -73,6 +73,7 @@ XORG_DRIVER_CHECK_EXT(XKB, kbproto)
 PKG_CHECK_MODULES(XORG, 
                [xorg-server >= 1.3.99.901] xproto $REQUIRED_MODULES)
 sdkdir=$(pkg-config --variable=sdkdir xorg-server)
+AC_SUBST(sdkdir)
 
 CFLAGS="$CFLAGS $XORG_CFLAGS "' -I$(top_srcdir)/src'
 AC_SUBST([CFLAGS])
@@ -112,7 +113,12 @@ AC_HEADER_STDC
 XORG_MANPAGE_SECTIONS
 XORG_RELEASE_VERSION
 
-AC_OUTPUT([Makefile src/Makefile man/Makefile config/Makefile])
+AC_OUTPUT([Makefile
+           src/Makefile
+           man/Makefile
+           config/Makefile
+           include/Makefile
+           xorg-joystick.pc])
 
 echo 
 echo Building Linux joystick backend: $linux_backend
