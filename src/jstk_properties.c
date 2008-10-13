@@ -60,7 +60,8 @@ static Atom prop_button_keys = 0;
 
 
 static int
-jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
+jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val,
+                BOOL checkonly)
 {
     InputInfoPtr  pInfo = pJstk->public.devicePrivate;
     JoystickDevPtr priv = pInfo->private;
@@ -71,8 +72,11 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
 #if DEBUG
         if (val->size != 1 || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        debug_level = *((INT8*)val->data);
-	ErrorF("JOYSTICK: DebugLevel set to %d\n", debug_level);
+        if (!checkonly)
+        {
+            debug_level = *((INT8*)val->data);
+            ErrorF("JOYSTICK: DebugLevel set to %d\n", debug_level);
+        }
 #endif
     }else if (atom == prop_numbuttons)
     {
@@ -92,14 +96,20 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
     {
         if (val->size != 1 || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        priv->mouse_enabled = (*((INT8*)val->data)) != 0;
-        DBG(1, ErrorF("mouse_enabled set to %d\n", priv->mouse_enabled));
+        if (!checkonly)
+        {
+            priv->mouse_enabled = (*((INT8*)val->data)) != 0;
+            DBG(1, ErrorF("mouse_enabled set to %d\n", priv->mouse_enabled));
+        }
     }else if (atom == prop_keys_enabled)
     {
         if (val->size != 1 || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        priv->keys_enabled = (*((INT8*)val->data)) != 0;
-        DBG(1, ErrorF("keys_enabled set to %d\n", priv->keys_enabled));
+        if (!checkonly)
+        {
+            priv->keys_enabled = (*((INT8*)val->data)) != 0;
+            DBG(1, ErrorF("keys_enabled set to %d\n", priv->keys_enabled));
+        }
     }else if (atom == prop_axis_deadzone)
     {
         INT32 *values;
@@ -109,29 +119,38 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
         for (i =0; i<val->size; i++) /* Fail, if one value is out of range */ 
             if (values[i] > 30000 || values[i] < -30000)
                 return BadValue;
-        for (i =0; i<val->size; i++) {
-            priv->axis[i].deadzone = (values[i]<0)?(-values[i]):(values[i]);
-            DBG(1, ErrorF("Deadzone of axis %d set to %d\n",i, priv->axis[i].deadzone));
+        if (!checkonly)
+        {
+            for (i =0; i<val->size; i++) {
+                priv->axis[i].deadzone = (values[i]<0)?(-values[i]):(values[i]);
+                DBG(1, ErrorF("Deadzone of axis %d set to %d\n",i, priv->axis[i].deadzone));
+            }
         }
     }else if (atom == prop_axis_type)
     {
         INT8 *values;
         if (val->size != priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        values = (INT8*)val->data;
-        for (i =0; i<val->size; i++) {
-            priv->axis[i].type = values[i];
-            DBG(1, ErrorF("Type of axis %d set to %d\n",i, priv->axis[i].type));
+        if (!checkonly)
+        {
+            values = (INT8*)val->data;
+            for (i =0; i<val->size; i++) {
+                priv->axis[i].type = values[i];
+                DBG(1, ErrorF("Type of axis %d set to %d\n",i, priv->axis[i].type));
+            }
         }
     }else if (atom == prop_axis_mapping)
     {
         INT8 *values;
         if (val->size != priv->num_axes || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        values = (INT8*)val->data;
-        for (i =0; i<val->size; i++) {
-            priv->axis[i].mapping = values[i];
-            DBG(1, ErrorF("Mapping of axis %d set to %d\n",i, priv->axis[i].mapping));
+        if (!checkonly)
+        {
+            values = (INT8*)val->data;
+            for (i =0; i<val->size; i++) {
+                priv->axis[i].mapping = values[i];
+                DBG(1, ErrorF("Mapping of axis %d set to %d\n",i, priv->axis[i].mapping));
+            }
         }
     }else if (atom == prop_axis_amplify)
     {
@@ -150,10 +169,13 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
         INT8 *values;
         if (val->size != priv->num_buttons || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        values = (INT8*)val->data;
-        for (i =0; i<val->size; i++) {
-            priv->button[i].mapping = values[i];
-            DBG(1, ErrorF("Mapping of button %d set to %d\n",i, priv->button[i].mapping));
+        if (!checkonly)
+        {
+            values = (INT8*)val->data;
+            for (i =0; i<val->size; i++) {
+                priv->button[i].mapping = values[i];
+                DBG(1, ErrorF("Mapping of button %d set to %d\n",i, priv->button[i].mapping));
+            }
         }
     }else if (atom == prop_button_buttonnumber)
     {
@@ -168,12 +190,15 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val)
                return BadValue;
             }
         }
-        for (i = 0; i<val->size; i++) {
-            priv->button[i].buttonnumber =
-                values[i];
-            DBG(1, ErrorF("Button number of button %d set to %d\n",
-                i,
-                priv->button[i].buttonnumber));
+        if (!checkonly)
+        {
+            for (i = 0; i<val->size; i++) {
+                priv->button[i].buttonnumber =
+                    values[i];
+                DBG(1, ErrorF("Button number of button %d set to %d\n",
+                            i,
+                            priv->button[i].buttonnumber));
+            }
         }
         return Success;
     }else if (atom == prop_button_amplify)
