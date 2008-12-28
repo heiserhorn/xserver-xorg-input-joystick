@@ -169,7 +169,7 @@ jstkReadProc(LocalDevicePtr local)
                 priv->button[number].mapping));
 
             switch (priv->button[number].mapping) {
-            case MAPPING_BUTTON:
+            case JSTK_MAPPING_BUTTON:
                 if (priv->mouse_enabled == TRUE) {
                     xf86PostButtonEvent(local->dev, 0,
                         priv->button[number].buttonnumber,
@@ -177,35 +177,35 @@ jstkReadProc(LocalDevicePtr local)
                 }
                 break;
 
-            case MAPPING_X:
-            case MAPPING_Y:
-            case MAPPING_ZX:
-            case MAPPING_ZY:
+            case JSTK_MAPPING_X:
+            case JSTK_MAPPING_Y:
+            case JSTK_MAPPING_ZX:
+            case JSTK_MAPPING_ZY:
                 if (priv->button[number].pressed == 0) 
                     priv->button[number].currentspeed = 1.0;
                 else if (priv->mouse_enabled == TRUE)
                     jstkStartButtonAxisTimer(local, number);
                 break;
 
-            case MAPPING_KEY:
+            case JSTK_MAPPING_KEY:
                 if (priv->keys_enabled == TRUE)
                     jstkGenerateKeys(priv->keyboard_device, 
                                      priv->button[number].keys, 
                                      priv->button[number].pressed);
                 break;
 
-            case MAPPING_SPEED_MULTIPLY:
+            case JSTK_MAPPING_SPEED_MULTIPLY:
                 priv->amplify = 1.0;
                 /* Calculate new amplify value by multiplying them all */
                 for (i=0; i<MAXAXES; i++) {
                     if ((priv->button[i].pressed) && 
-                        (priv->button[i].mapping == MAPPING_SPEED_MULTIPLY))
+                        (priv->button[i].mapping == JSTK_MAPPING_SPEED_MULTIPLY))
                         priv->amplify *= priv->button[i].amplify;
                 }
                 DBG(2, ErrorF("Amplify is now %.3f\n", priv->amplify));
                 break;
 
-            case MAPPING_DISABLE:
+            case JSTK_MAPPING_DISABLE:
                 if (priv->button[number].pressed == 1) {
                     if ((priv->mouse_enabled == TRUE) || 
                         (priv->keys_enabled == TRUE))
@@ -220,7 +220,7 @@ jstkReadProc(LocalDevicePtr local)
                     }
                 }
                 break;
-            case MAPPING_DISABLE_MOUSE:
+            case JSTK_MAPPING_DISABLE_MOUSE:
                 if (priv->button[number].pressed == 1) {
                     if (priv->mouse_enabled == TRUE) 
                         priv->mouse_enabled = FALSE;
@@ -229,7 +229,7 @@ jstkReadProc(LocalDevicePtr local)
                         priv->mouse_enabled ? "enabled" : "disabled"));
                 }
                 break;
-            case MAPPING_DISABLE_KEYS:
+            case JSTK_MAPPING_DISABLE_KEYS:
                 if (priv->button[number].pressed == 1) {
                     if (priv->keys_enabled == TRUE) 
                         priv->keys_enabled = FALSE;
@@ -246,7 +246,7 @@ jstkReadProc(LocalDevicePtr local)
 
         /* An axis was moved */
         if ((event == EVENT_AXIS) && 
-            (priv->axis[number].type != TYPE_NONE))
+            (priv->axis[number].type != JSTK_TYPE_NONE))
         {
             DBG(5, ErrorF("Axis %d moved to %d. Type: %d, Mapping: %d\n", 
                           number,
@@ -259,30 +259,30 @@ jstkReadProc(LocalDevicePtr local)
                                     1, priv->axis[number].value);
 
             switch (priv->axis[number].mapping) {
-            case MAPPING_X:
-            case MAPPING_Y:
-            case MAPPING_ZX:
-            case MAPPING_ZY:
+            case JSTK_MAPPING_X:
+            case JSTK_MAPPING_Y:
+            case JSTK_MAPPING_ZX:
+            case JSTK_MAPPING_ZY:
                 switch (priv->axis[number].type) {
-                case TYPE_BYVALUE:
-                case TYPE_ACCELERATED:
+                case JSTK_TYPE_BYVALUE:
+                case JSTK_TYPE_ACCELERATED:
                     if (priv->axis[number].value == 0)
                         priv->axis[number].currentspeed = 1.0;
                     if (priv->mouse_enabled == TRUE)
                         jstkStartAxisTimer(local, number);
                     break;
 
-                case TYPE_ABSOLUTE:
+                case JSTK_TYPE_ABSOLUTE:
                     if (priv->mouse_enabled == TRUE)
                         jstkHandleAbsoluteAxis(local, number);
                     break;
                 default:
                     break;
                 } /* switch (priv->axis[number].type) */
-                break; /* case MAPPING_ZY */
+                break; /* case JSTK_MAPPING_ZY */
 
-            case MAPPING_KEY: if (priv->keys_enabled == TRUE) {
-                if (priv->axis[number].type == TYPE_ACCELERATED) {
+            case JSTK_MAPPING_KEY: if (priv->keys_enabled == TRUE) {
+                if (priv->axis[number].type == JSTK_TYPE_ACCELERATED) {
                     if ((priv->axis[number].value > 0) != 
                         (priv->axis[number].oldvalue > 0))
                         jstkGenerateKeys(priv->keyboard_device, 
@@ -294,14 +294,14 @@ jstkReadProc(LocalDevicePtr local)
                         jstkGenerateKeys(priv->keyboard_device,
                                          priv->axis[number].keys_low,
                                          (priv->axis[number].value < 0) ? 1:0);
-                } else if (priv->axis[number].type == TYPE_BYVALUE) {
+                } else if (priv->axis[number].type == JSTK_TYPE_BYVALUE) {
                     if (priv->keys_enabled == TRUE)
                         jstkStartAxisTimer(local, number);
                 }
                 break;
             }
 
-            case MAPPING_NONE:
+            case JSTK_MAPPING_NONE:
             default:
                 break;
             } /* switch (priv->axis[number].mapping) */
@@ -469,7 +469,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
 
 
 
-_X_EXPORT InputDriverRec JOYSTICK_KEYBOARD = {
+_X_EXPORT InputDriverRec JSTK_KEYBOARD = {
     1,
     "joystick_keyboard",
     NULL,
@@ -546,8 +546,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         priv->axis[i].value        = 0;
         priv->axis[i].oldvalue     = 0;
         priv->axis[i].deadzone     = 5000;
-        priv->axis[i].type         = TYPE_NONE;
-        priv->axis[i].mapping      = MAPPING_NONE;
+        priv->axis[i].type         = JSTK_TYPE_NONE;
+        priv->axis[i].mapping      = JSTK_MAPPING_NONE;
         priv->axis[i].currentspeed = 0.0f;
         priv->axis[i].amplify      = 1.0f;
         priv->axis[i].valuator     = -1;
@@ -558,7 +558,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     for (i=0; i<MAXBUTTONS; i++) {
         priv->button[i].pressed      = 0;
         priv->button[i].buttonnumber = 0;
-        priv->button[i].mapping      = MAPPING_NONE;
+        priv->button[i].mapping      = JSTK_MAPPING_NONE;
         priv->button[i].currentspeed = 1.0f;
         priv->button[i].subpixel     = 0.0f;
         for (j=0; j<MAXKEYSPERBUTTON; j++)
@@ -566,30 +566,30 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     }
 
     /* First three joystick buttons generate mouse clicks */
-    priv->button[0].mapping      = MAPPING_BUTTON;
+    priv->button[0].mapping      = JSTK_MAPPING_BUTTON;
     priv->button[0].buttonnumber = 1;
-    priv->button[1].mapping      = MAPPING_BUTTON;
+    priv->button[1].mapping      = JSTK_MAPPING_BUTTON;
     priv->button[1].buttonnumber = 2;
-    priv->button[2].mapping      = MAPPING_BUTTON;
+    priv->button[2].mapping      = JSTK_MAPPING_BUTTON;
     priv->button[2].buttonnumber = 3;
 
     /* First two axes are a stick for moving */
-    priv->axis[0].type      = TYPE_BYVALUE;
-    priv->axis[0].mapping   = MAPPING_X;
-    priv->axis[1].type      = TYPE_BYVALUE;
-    priv->axis[1].mapping   = MAPPING_Y;
+    priv->axis[0].type      = JSTK_TYPE_BYVALUE;
+    priv->axis[0].mapping   = JSTK_MAPPING_X;
+    priv->axis[1].type      = JSTK_TYPE_BYVALUE;
+    priv->axis[1].mapping   = JSTK_MAPPING_Y;
 
     /* Next two axes are a stick for scrolling */
-    priv->axis[2].type      = TYPE_BYVALUE;
-    priv->axis[2].mapping   = MAPPING_ZX;
-    priv->axis[3].type      = TYPE_BYVALUE;
-    priv->axis[3].mapping   = MAPPING_ZY;
+    priv->axis[2].type      = JSTK_TYPE_BYVALUE;
+    priv->axis[2].mapping   = JSTK_MAPPING_ZX;
+    priv->axis[3].type      = JSTK_TYPE_BYVALUE;
+    priv->axis[3].mapping   = JSTK_MAPPING_ZY;
 
     /* Next two axes are a pad for moving */
-    priv->axis[4].type      = TYPE_ACCELERATED;
-    priv->axis[4].mapping   = MAPPING_X;
-    priv->axis[5].type      = TYPE_ACCELERATED;
-    priv->axis[5].mapping   = MAPPING_Y;
+    priv->axis[4].type      = JSTK_TYPE_ACCELERATED;
+    priv->axis[4].mapping   = JSTK_MAPPING_X;
+    priv->axis[5].type      = JSTK_TYPE_ACCELERATED;
+    priv->axis[5].mapping   = JSTK_MAPPING_Y;
 
     xf86CollectInputOptions(local, NULL, NULL);
     xf86OptionListReport(local->options);
@@ -669,7 +669,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     /* return the LocalDevice */
     local->flags |= XI86_CONFIGURED;
 
-    priv->keyboard_device = jstkKeyboardPreInit(&JOYSTICK_KEYBOARD, dev, flags);
+    priv->keyboard_device = jstkKeyboardPreInit(&JSTK_KEYBOARD, dev, flags);
     if (priv->keyboard_device) {
         priv->keyboard_device->private = priv;
     }
@@ -746,7 +746,7 @@ jstkDriverPlug(pointer  module,
                int      *errmin)
 {
     xf86AddInputDriver(&JOYSTICK, module, 0);
-    xf86AddInputDriver(&JOYSTICK_KEYBOARD, module, 0);
+    xf86AddInputDriver(&JSTK_KEYBOARD, module, 0);
     return module;
 }
 

@@ -69,32 +69,32 @@ typedef int(*jstkReadDataProc)(JoystickDevPtr joystick,
                                JOYSTICKEVENT *event, int *number);
 
 
-typedef enum _JOYSTICKTYPE{
-    TYPE_NONE=0,      /* Axis value is not relevant */
-    TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
-    TYPE_ACCELERATED, /* Speed is accelerated */
-    TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
-} JOYSTICKTYPE;
+typedef enum _JSTK_TYPE {
+    JSTK_TYPE_NONE=0,      /* Axis value is not relevant */
+    JSTK_TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
+    JSTK_TYPE_ACCELERATED, /* Speed is accelerated */
+    JSTK_TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
+} JSTK_TYPE;
 
-typedef enum _JOYSTICKMAPPING{
-    MAPPING_NONE=0,           /* Nothing */
-    MAPPING_X,              /* X-Axis */
-    MAPPING_Y,              /* Y-Axis */
-    MAPPING_ZX,             /* Horizontal scrolling */
-    MAPPING_ZY,             /* Vertical scrolling */
-    MAPPING_BUTTON,         /* Mouse button */
-    MAPPING_KEY,            /* Keyboard event */
-    MAPPING_SPEED_MULTIPLY, /* Will amplify all axis movement */
-    MAPPING_DISABLE,        /* Disable mouse and key events */
-    MAPPING_DISABLE_MOUSE,  /* Disable only mouse events */
-    MAPPING_DISABLE_KEYS    /* Disable only key events */
-} JOYSTICKMAPPING;
+typedef enum _JSTK_MAPPING {
+    JSTK_MAPPING_NONE=0,         /* Nothing */
+    JSTK_MAPPING_X,              /* X-Axis */
+    JSTK_MAPPING_Y,              /* Y-Axis */
+    JSTK_MAPPING_ZX,             /* Horizontal scrolling */
+    JSTK_MAPPING_ZY,             /* Vertical scrolling */
+    JSTK_MAPPING_BUTTON,         /* Mouse button */
+    JSTK_MAPPING_KEY,            /* Keyboard event */
+    JSTK_MAPPING_SPEED_MULTIPLY, /* Will amplify all axis movement */
+    JSTK_MAPPING_DISABLE,        /* Disable mouse and key events */
+    JSTK_MAPPING_DISABLE_MOUSE,  /* Disable only mouse events */
+    JSTK_MAPPING_DISABLE_KEYS    /* Disable only key events */
+} JSTK_MAPPING;
 
 typedef unsigned int KEYSCANCODES [MAXKEYSPERBUTTON];
 
 typedef struct _AXIS {
-    JOYSTICKTYPE    type;
-    JOYSTICKMAPPING mapping;
+    JSTK_TYPE    type;
+    JSTK_MAPPING mapping;
     int             value, oldvalue;
     int             valuator;
     int             deadzone;
@@ -106,7 +106,7 @@ typedef struct _AXIS {
 } AXIS;
 
 typedef struct _BUTTON {
-    JOYSTICKMAPPING mapping;
+    JSTK_MAPPING mapping;
     char            pressed;
     int             buttonnumber;    /* MAPPING_BUTTON */
     float           amplify;       /* MAPPING_X/Y/ZX/ZY, 
