@@ -30,6 +30,33 @@
  */
 
 
+
+/** To be used with property JSTK_PROP_AXIS_TYPE **/
+typedef enum _JSTK_TYPE {
+    JSTK_TYPE_NONE=0,      /* Axis value is not relevant */
+    JSTK_TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
+    JSTK_TYPE_ACCELERATED, /* Speed is accelerated */
+    JSTK_TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
+} JSTK_TYPE;
+
+
+/** To be used with properties JSTK_PROP_AXIS_MAPPING, JSTK_PROP_BUTTON_MAPPING */
+typedef enum _JSTK_MAPPING {
+    JSTK_MAPPING_NONE=0,         /* Nothing */
+    JSTK_MAPPING_X,              /* X-Axis */
+    JSTK_MAPPING_Y,              /* Y-Axis */
+    JSTK_MAPPING_ZX,             /* Horizontal scrolling */
+    JSTK_MAPPING_ZY,             /* Vertical scrolling */
+    JSTK_MAPPING_BUTTON,         /* Mouse button */
+    JSTK_MAPPING_KEY,            /* Keyboard event */
+    JSTK_MAPPING_SPEED_MULTIPLY, /* Will amplify all axis movement */
+    JSTK_MAPPING_DISABLE,        /* Disable mouse and key events */
+    JSTK_MAPPING_DISABLE_MOUSE,  /* Disable only mouse events */
+    JSTK_MAPPING_DISABLE_KEYS    /* Disable only key events */
+} JSTK_MAPPING;
+
+
+
 /** Controls the verbosity of the driver */
 /* 8 bit (0..20) */
 #define JSTK_PROP_DEBUGLEVEL "Debug Level"

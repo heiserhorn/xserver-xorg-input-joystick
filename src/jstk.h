@@ -26,6 +26,7 @@
 
 #include <xf86Xinput.h>
 #include <X11/extensions/XIproto.h>
+#include "joystick-properties.h" /* definitions */
 
 
 #define MAXBUTTONS 32
@@ -67,28 +68,6 @@ typedef int(*jstkOpenDeviceProc)(JoystickDevPtr joystick, Bool probe);
 typedef void(*jstkCloseDeviceProc)(JoystickDevPtr joystick);
 typedef int(*jstkReadDataProc)(JoystickDevPtr joystick,
                                JOYSTICKEVENT *event, int *number);
-
-
-typedef enum _JSTK_TYPE {
-    JSTK_TYPE_NONE=0,      /* Axis value is not relevant */
-    JSTK_TYPE_BYVALUE,     /* Speed of cursor is relative to amplitude */
-    JSTK_TYPE_ACCELERATED, /* Speed is accelerated */
-    JSTK_TYPE_ABSOLUTE     /* The amplitude defines the cursor position */
-} JSTK_TYPE;
-
-typedef enum _JSTK_MAPPING {
-    JSTK_MAPPING_NONE=0,         /* Nothing */
-    JSTK_MAPPING_X,              /* X-Axis */
-    JSTK_MAPPING_Y,              /* Y-Axis */
-    JSTK_MAPPING_ZX,             /* Horizontal scrolling */
-    JSTK_MAPPING_ZY,             /* Vertical scrolling */
-    JSTK_MAPPING_BUTTON,         /* Mouse button */
-    JSTK_MAPPING_KEY,            /* Keyboard event */
-    JSTK_MAPPING_SPEED_MULTIPLY, /* Will amplify all axis movement */
-    JSTK_MAPPING_DISABLE,        /* Disable mouse and key events */
-    JSTK_MAPPING_DISABLE_MOUSE,  /* Disable only mouse events */
-    JSTK_MAPPING_DISABLE_KEYS    /* Disable only key events */
-} JSTK_MAPPING;
 
 typedef unsigned int KEYSCANCODES [MAXKEYSPERBUTTON];
 
