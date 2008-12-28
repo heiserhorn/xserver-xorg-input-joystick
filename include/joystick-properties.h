@@ -82,11 +82,11 @@ typedef enum _JSTK_MAPPING {
 #define JSTK_PROP_AXIS_DEADZONE   "Axis Deadzone"
 
 /** Set axis type to none, byvalue, accelerated, absolute */
-/* 8 bit, one of enum _JOYSTICKTYPE @ jstk.h per axis*/
+/* 8 bit, one of enum _JSTK_TYPE per axis*/
 #define JSTK_PROP_AXIS_TYPE   "Axis Type"
 
 /** Set mapping of axis to none, x, y, zx, zy, key */
-/* 8 bit, one of enum _JOYSTICKMAPPING @ jstk.h per axis */
+/* 8 bit, one of enum _JSTK_MAPPING per axis */
 #define JSTK_PROP_AXIS_MAPPING   "Axis Mapping"
 
 /** Set movement factor of axis (default 1.0f) */
@@ -104,7 +104,7 @@ typedef enum _JSTK_MAPPING {
 /** Set the mapping of each button to
     none, x, y, zx, zy, button, key, speed_multiply,
     disable, disable_mouse, disable_keys */
-/* 8 bit, one of enum _JOYSTICKMAPPING @ jstk.h per button */
+/* 8 bit, one of enum _JSTK_MAPPING per button */
 #define JSTK_PROP_BUTTON_MAPPING   "Button Mapping"
 
 /** Set the logical button to report for this physical button */
