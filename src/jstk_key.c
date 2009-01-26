@@ -70,6 +70,7 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
     int i, j;
     XkbSrvInfoPtr xkbi;
     XkbControlsPtr ctrls;
+    XkbComponentNamesRec xkbnames;
 
     static struct { KeySym keysym; CARD8 mask; } modifiers[] = {
         { XK_Shift_L,           ShiftMask },
@@ -108,7 +109,7 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
         }
     }
 
-    InitKeyboardDeviceStruct ((DevicePtr)pJstk, &keySyms, modMap,
+    XkbInitKeyboardDeviceStruct (pJstk, &xkbnames, &keySyms, modMap,
             NULL, jstkKbdCtrl);
 
     /* Set Autorepeat and Delay */
