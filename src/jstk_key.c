@@ -109,11 +109,26 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
         }
     }
 
-    XkbInitKeyboardDeviceStruct (pJstk, &xkbnames, &keySyms, modMap,
-            NULL, jstkKbdCtrl);
+#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 5
+    {
+        XkbRMLVOSet rmlvo;
+        XkbGetRulesDflts(&rmlvo);
+    	/* FIXME */
+	#warning KEYMAP FOR ABI_XINPUT_VERSION >= 5 BROKEN RIGHT NOW
+        if (!InitKeyboardDeviceStruct(pJstk, &rmlvo, NULL, jstkKbdCtrl))
+        {
+            ErrorF("unable to init keyboard device\n");
+            return !Success;
+        }
+    }
+#else
+    if (InitKeyboardDeviceStruct((DevicePtr)pJstk, &keySyms, modMap, NULL, jstkKbdCtrl) == FALSE) {
+	ErrorF("unable to init keyboard device\n");
+        return !Success;
+    }
+#endif
 
     /* Set Autorepeat and Delay */
-
     if ((priv->repeat_delay || priv->repeat_interval) && 
         pJstk->key && 
         pJstk->key->xkbInfo)
