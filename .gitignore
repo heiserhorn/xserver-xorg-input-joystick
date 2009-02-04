@@ -1,3 +1,5 @@
+.deps
+.libs
 Makefile
 Makefile.in
 *.la
@@ -18,7 +20,9 @@ ltmain.sh
 missing
 stamp-h1
 *~
+*.4
 xf86-input-joystick-*.tar.bz2
 xf86-input-joystick-*.tar.gz
 ChangeLog
 *.pc
+tags

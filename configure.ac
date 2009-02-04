@@ -32,15 +32,16 @@ AM_INIT_AUTOMAKE([dist-bzip2])
 
 AM_MAINTAINER_MODE
 
-DRIVER_NAME=joystick
-AC_SUBST([DRIVER_NAME])
-
+# Require xorg-macros: XORG_CWARNFLAGS, XORG_CHANGELOG
+m4_ifndef([XORG_MACROS_VERSION], [AC_FATAL([must install xorg-macros 1.2 or later before running autoconf/autogen])])
+XORG_MACROS_VERSION(1.2)
 AM_CONFIG_HEADER([config.h])
 
 # Checks for programs.
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 AC_PROG_CC
+XORG_CWARNFLAGS
 
 AH_TOP([#include "xorg-server.h"])
 
@@ -72,11 +73,13 @@ XORG_DRIVER_CHECK_EXT(XKB, kbproto)
 # Checks for pkg-config packages
 PKG_CHECK_MODULES(XORG, 
                [xorg-server >= 1.3.99.901] xproto $REQUIRED_MODULES)
-sdkdir=$(pkg-config --variable=sdkdir xorg-server)
+XORG_CFLAGS="$CWARNFLAGS $XORG_CFLAGS"
+xorg_sdkdir=$(pkg-config --variable=sdkdir xorg-server)
+AC_ARG_WITH(sdkdir,
+	AC_HELP_STRING([--with-sdkdir=<path>],
+		[Xorg X Server sdk headers (default is autodetected)]),
+	[sdkdir="$withval"], [sdkdir="${xorg_sdkdir}"])
 AC_SUBST(sdkdir)
-
-CFLAGS="$CFLAGS $XORG_CFLAGS "' -I$(top_srcdir)/src'
-AC_SUBST([CFLAGS])
 
 # Checks for libraries.
 
@@ -110,8 +113,12 @@ fi
 
 AC_HEADER_STDC
 
+DRIVER_NAME=joystick
+AC_SUBST([DRIVER_NAME])
+
 XORG_MANPAGE_SECTIONS
 XORG_RELEASE_VERSION
+XORG_CHANGELOG
 
 AC_OUTPUT([Makefile
            src/Makefile
