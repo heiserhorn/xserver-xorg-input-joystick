@@ -519,7 +519,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     local->private = priv;
     local->type_name = XI_JOYSTICK;
     local->history_size = 0;
-    local->always_core_feedback = 0;
+    local->always_core_feedback = NULL;
     local->conf_idev = dev;
 
     priv->fd = -1;

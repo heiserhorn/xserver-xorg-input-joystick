@@ -34,8 +34,13 @@
 #include <X11/keysym.h>
 #include <X11/XF86keysym.h>
 #include <xf86Optrec.h>
+
 #include "jstk.h"
 #include "jstk_key.h"
+
+#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 5
+#include <xkbsrv.h>
+#endif
 
 #define AltMask		Mod1Mask
 #define NumLockMask	Mod2Mask
@@ -70,7 +75,6 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
     int i, j;
     XkbSrvInfoPtr xkbi;
     XkbControlsPtr ctrls;
-    XkbComponentNamesRec xkbnames;
 
     static struct { KeySym keysym; CARD8 mask; } modifiers[] = {
         { XK_Shift_L,           ShiftMask },
