@@ -43,6 +43,9 @@
 #include <usbhid.h>
 #include <dev/usb/usb.h>
 #include <dev/usb/usbhid.h>
+#ifdef HAVE_DEV_USB_USB_IOCTL_H
+    #include <dev/usb/usb_ioctl.h>
+#endif
 
 #include "jstk.h"
 #include "backend_bsd.h"
