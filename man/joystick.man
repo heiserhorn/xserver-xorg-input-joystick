@@ -174,7 +174,11 @@ If
 .B mode
 is set to 
 .IR accelerated :
-One keydown event is generated, when the axis is moved out of the deadzone, the keyup event is generated, when the axis moves back to the deadzone. The keys will be autorepeated according to the keyboard settings.
+Keydown and keyup events will be generated repeatedly. The time between a keydown and a keyup event corresponds to the deflection of the axis.
+If the axis is deflected by 30%, the key will be considered to be down 300ms out of 1 second. The exact intervals may vary and can be adjusted with the
+.I amplify
+parameter. If the axis is deflected by 100%, there will only be one keydown event, so the key is considered down all the time.
+The keys will be autorepeated according to the Xorg keyboard settings.
 
 See special section about key events below.
 .TP 7
