@@ -283,20 +283,9 @@ jstkReadProc(LocalDevicePtr local)
 
             case JSTK_MAPPING_KEY: if (priv->keys_enabled == TRUE) {
                 if (priv->axis[number].type == JSTK_TYPE_ACCELERATED) {
-                    if ((priv->axis[number].value > 0) != 
-                        (priv->axis[number].oldvalue > 0))
-                        jstkGenerateKeys(priv->keyboard_device, 
-                                         priv->axis[number].keys_high,
-                                         (priv->axis[number].value > 0) ? 1:0);
-
-                    if ((priv->axis[number].value < 0) != 
-                        (priv->axis[number].oldvalue < 0))
-                        jstkGenerateKeys(priv->keyboard_device,
-                                         priv->axis[number].keys_low,
-                                         (priv->axis[number].value < 0) ? 1:0);
+                    jstkHandlePWMAxis(local, number);
                 } else if (priv->axis[number].type == JSTK_TYPE_BYVALUE) {
-                    if (priv->keys_enabled == TRUE)
-                        jstkStartAxisTimer(local, number);
+                    jstkStartAxisTimer(local, number);
                 }
                 break;
             }
@@ -449,6 +438,12 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
             priv->timerrunning = FALSE;
             TimerCancel(priv->timer);
         }
+        for (i = 0; i < MAXAXES; i++)
+            if (priv->axis[i].timerrunning)
+        {
+            priv->axis[i].timerrunning = FALSE;
+            TimerCancel(priv->axis[i].timer);
+        }
 
         if (local->fd >= 0)
             RemoveEnabledDevice(local->fd);
@@ -552,6 +547,9 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         priv->axis[i].amplify      = 1.0f;
         priv->axis[i].valuator     = -1;
         priv->axis[i].subpixel     = 0.0f;
+        priv->axis[i].timer        = NULL;
+        priv->axis[i].timerrunning = FALSE;
+        priv->axis[i].key_isdown   = 0;
         for (j=0; j<MAXKEYSPERBUTTON; j++)
             priv->axis[i].keys_low[j] = priv->axis[i].keys_high[j] = 0;
     }

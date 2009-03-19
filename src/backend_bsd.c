@@ -267,7 +267,6 @@ jstkReadData_bsd(JoystickDevPtr joystick,
                          - bsddata->axis_item[j].logical_minimum);
         if (abs(d) < joystick->axis[j].deadzone) d = 0;
         if (d != joystick->axis[j].value) {
-            joystick->axis[j].oldvalue = joystick->axis[j].value;
             joystick->axis[j].value = d;
             if (event != NULL) *event = EVENT_AXIS;
             if (number != NULL) *number = j;
@@ -286,14 +285,12 @@ jstkReadData_bsd(JoystickDevPtr joystick,
         d = hid_get_data(bsddata->data_buf, &bsddata->hat_item[j]) 
             - bsddata->hat_item[j].logical_minimum;
         if (joystick->axis[a].value != v1_data[d]) {
-            joystick->axis[a].oldvalue = joystick->axis[a].value;
             joystick->axis[a].value = v1_data[d];
             if (event != NULL) *event = EVENT_AXIS;
             if (number != NULL) *number = a;
             return 2;
         }
         if (joystick->axis[a+1].value != v2_data[d]) {
-            joystick->axis[a+1].oldvalue = joystick->axis[a+1].value;
             joystick->axis[a+1].value = v2_data[d];
             if (event != NULL) *event = EVENT_AXIS;
             if (number != NULL) *number = a+1;
