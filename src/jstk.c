@@ -561,6 +561,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         priv->button[i].mapping      = JSTK_MAPPING_NONE;
         priv->button[i].currentspeed = 1.0f;
         priv->button[i].subpixel     = 0.0f;
+        priv->button[i].amplify      = 1.0;
         for (j=0; j<MAXKEYSPERBUTTON; j++)
             priv->button[i].keys[j] = 0;
     }
