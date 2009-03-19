@@ -197,7 +197,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val,
         CARD8 *values;
         if (val->size != priv->num_buttons || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        values = (INT8*)val->data;
+        values = (CARD8*)val->data;
         for (i = 0; i<val->size; i++) {
             if (values[i] > BUTTONMAP_SIZE) {
                DBG(1, ErrorF("Button number out of range (0..%d): %d\n",
