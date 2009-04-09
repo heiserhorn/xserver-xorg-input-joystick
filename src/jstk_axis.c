@@ -34,6 +34,7 @@
 
 #include "jstk.h"
 #include "jstk_axis.h"
+#include "jstk_key.h"
 
 
 /***********************************************************************
@@ -66,7 +67,7 @@ jstkAxisTimer(OsTimerPtr        timer,
     sigstate = xf86BlockSIGIO();
 
     for (i=0; i<MAXAXES; i++) if ((priv->axis[i].value != 0) &&
-                                  (priv->axis[i].type != TYPE_NONE)) {
+                                  (priv->axis[i].type != JSTK_TYPE_NONE)) {
         float p1 = 0.0f;     /* Pixels to move cursor */
         float p2 = 0.0f;     /* Pixels to scroll */
         float scale;
@@ -75,7 +76,7 @@ jstkAxisTimer(OsTimerPtr        timer,
 
         nexttimer = NEXTTIMER;
 
-        if (priv->axis[i].type == TYPE_BYVALUE) {
+        if (priv->axis[i].type == JSTK_TYPE_BYVALUE) {
             /* Calculate scale value, so we get a range from 0 to 32768 */
             scale = (32768.0f / (float)(32768 - axis->deadzone));
 
@@ -87,7 +88,7 @@ jstkAxisTimer(OsTimerPtr        timer,
             p2 = ((pow((abs((float)axis->value) - (float)axis->deadzone) *
                   scale / 1000.0f, 2.5f)) + 200.0f) *
                  ((float)NEXTTIMER / 200000.0f);
-        } else if (axis->type == TYPE_ACCELERATED) {
+        } else if (axis->type == JSTK_TYPE_ACCELERATED) {
             /* Stop to accelerate at a certain speed */
             if (axis->currentspeed < 100.0f)
                axis->currentspeed = (axis->currentspeed + 3.0f) * 1.07f - 3.0f;
@@ -103,13 +104,13 @@ jstkAxisTimer(OsTimerPtr        timer,
 
         /* Apply movement to global amount of pixels to move */
         switch (axis->mapping) {
-        case MAPPING_X:
-        case MAPPING_Y:
+        case JSTK_MAPPING_X:
+        case JSTK_MAPPING_Y:
             axis->subpixel += p1;
             break;
-        case MAPPING_ZX:
-        case MAPPING_ZY:
-        case MAPPING_KEY:
+        case JSTK_MAPPING_ZX:
+        case JSTK_MAPPING_ZY:
+        case JSTK_MAPPING_KEY:
             axis->subpixel += p2;
             break;
         default:
@@ -117,32 +118,32 @@ jstkAxisTimer(OsTimerPtr        timer,
         }
         if ((int)axis->subpixel != 0) {
             switch (axis->mapping) {
-            case MAPPING_X:
+            case JSTK_MAPPING_X:
                 movex += (int)axis->subpixel;
                 break;
-            case MAPPING_Y:
+            case JSTK_MAPPING_Y:
                 movey += (int)axis->subpixel;
                 break;
-            case MAPPING_ZX:
+            case JSTK_MAPPING_ZX:
                 movezx += (int)axis->subpixel;
                 break;
-            case MAPPING_ZY:
+            case JSTK_MAPPING_ZY:
                 movezy += (int)axis->subpixel;
                 break;
 
-            case MAPPING_KEY: if ((priv->keys_enabled == TRUE) && 
-                                  (priv->axis[i].type == TYPE_BYVALUE)) {
+            case JSTK_MAPPING_KEY: if ((priv->keys_enabled == TRUE) && 
+                                  (priv->axis[i].type == JSTK_TYPE_BYVALUE)) {
                 int num;
                 num = abs((int)axis->subpixel);
                 if ((int)axis->subpixel < 0) {
                     for (i=0; i<num; i++) {
-                        jstkGenerateKeys(device, axis->keys_low, 1);
-                        jstkGenerateKeys(device, axis->keys_low, 0);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_low, 1);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_low, 0);
                     }
                 } else {
                     for (i=0; i<num; i++) {
-                        jstkGenerateKeys(device, axis->keys_high, 1);
-                        jstkGenerateKeys(device, axis->keys_high, 0);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_high, 1);
+                        jstkGenerateKeys(priv->keyboard_device, axis->keys_high, 0);
                     }
                 }
                 break;
@@ -168,13 +169,13 @@ jstkAxisTimer(OsTimerPtr        timer,
 
         /* Apply movement to amount of pixels to move */
         switch (priv->button[i].mapping) {
-        case MAPPING_X:
-        case MAPPING_Y:
+        case JSTK_MAPPING_X:
+        case JSTK_MAPPING_Y:
             priv->button[i].subpixel += p1;
             nexttimer = NEXTTIMER;
             break;
-        case MAPPING_ZX:
-        case MAPPING_ZY:
+        case JSTK_MAPPING_ZX:
+        case JSTK_MAPPING_ZY:
             priv->button[i].subpixel += p2;
             nexttimer = NEXTTIMER;
             break;
@@ -183,16 +184,16 @@ jstkAxisTimer(OsTimerPtr        timer,
         }
         if ((int)priv->button[i].subpixel != 0) {
             switch (priv->button[i].mapping) {
-            case MAPPING_X:
+            case JSTK_MAPPING_X:
                 movex += (int)priv->button[i].subpixel;
                 break;
-            case MAPPING_Y:
+            case JSTK_MAPPING_Y:
                 movey += (int)priv->button[i].subpixel;
                 break;
-            case MAPPING_ZX:
+            case JSTK_MAPPING_ZX:
                 movezx += (int)priv->button[i].subpixel;
                 break;
-            case MAPPING_ZY:
+            case JSTK_MAPPING_ZY:
                 movezy += (int)priv->button[i].subpixel;
                 break;
             default:
@@ -209,31 +210,31 @@ jstkAxisTimer(OsTimerPtr        timer,
 
     /* Generate scrolling events */
     while (movezy >= 1) {  /* down */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 
+        xf86PostButtonEvent(device, 0, 5,
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[1], 
+        xf86PostButtonEvent(device, 0, 5,
                             0, 0, 0);
         movezy -= 1;
     }
     while (movezy <= -1) { /* up */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 
+        xf86PostButtonEvent(device, 0, 4,
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[0], 
+        xf86PostButtonEvent(device, 0, 4,
                             0, 0, 0);
         movezy += 1;
     }
 
     while (movezx >= 1) {  /* right */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 
+        xf86PostButtonEvent(device, 0, 7, 
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[3], 
+        xf86PostButtonEvent(device, 0, 7, 
                             0, 0, 0);
         movezx -= 1;
     }
     while (movezx <= -1) { /* left */
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 
+        xf86PostButtonEvent(device, 0, 6,
                             1, 0, 0);
-        xf86PostButtonEvent(device, 0, priv->buttonmap.scrollbutton[2], 
+        xf86PostButtonEvent(device, 0, 6,
                             0, 0, 0);
         movezx += 1;
     }
@@ -308,10 +309,10 @@ jstkStartButtonAxisTimer(LocalDevicePtr device, int number)
     pixel = 1;
     if (priv->button[number].amplify < 0) pixel = -1;
     switch (priv->button[number].mapping) {
-    case MAPPING_X:
-    case MAPPING_Y:
-    case MAPPING_ZX:
-    case MAPPING_ZY:
+    case JSTK_MAPPING_X:
+    case JSTK_MAPPING_Y:
+    case JSTK_MAPPING_ZX:
+    case JSTK_MAPPING_ZY:
         priv->button[number].subpixel += pixel;
         break;
     default:
@@ -346,7 +347,7 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number)
     y=0;
 
     for (i=0; i<MAXAXES; i++) 
-        if (priv->axis[i].type == TYPE_ABSOLUTE)
+        if (priv->axis[i].type == JSTK_TYPE_ABSOLUTE)
     {
         float rel;
         int dif;
@@ -365,11 +366,11 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number)
         /* Calculate difference to previous position on screen in pixels */
         dif = (int)(rel - priv->axis[i].previousposition + 0.5f);
         if ((dif >= 1)||(dif <= -1)) {
-            if (priv->axis[i].mapping == MAPPING_X) {
+            if (priv->axis[i].mapping == JSTK_MAPPING_X) {
                 x += (dif);
                 priv->axis[i].previousposition += (float)dif;
             }
-            if (priv->axis[i].mapping == MAPPING_Y) {
+            if (priv->axis[i].mapping == JSTK_MAPPING_Y) {
                 y += (int)(dif);
                 priv->axis[i].previousposition += (float)dif;
             }

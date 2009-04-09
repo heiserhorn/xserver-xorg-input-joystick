@@ -22,7 +22,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT([xf86-input-joystick],
-        1.3.2,
+        1.4.0,
         [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],
         xf86-input-joystick)
 
@@ -66,7 +66,6 @@ inputdir=${moduledir}/input
 AC_SUBST(inputdir)
 
 # Checks for extensions
-XORG_DRIVER_CHECK_EXT(RANDR, randrproto)
 XORG_DRIVER_CHECK_EXT(XINPUT, inputproto)
 XORG_DRIVER_CHECK_EXT(XKB, kbproto)
 
@@ -74,6 +73,7 @@ XORG_DRIVER_CHECK_EXT(XKB, kbproto)
 PKG_CHECK_MODULES(XORG, 
                [xorg-server >= 1.3.99.901] xproto $REQUIRED_MODULES)
 sdkdir=$(pkg-config --variable=sdkdir xorg-server)
+AC_SUBST(sdkdir)
 
 CFLAGS="$CFLAGS $XORG_CFLAGS "' -I$(top_srcdir)/src'
 AC_SUBST([CFLAGS])
@@ -89,7 +89,12 @@ if test "x$linux_backend" = xyes; then
 fi
 
 bsd_backend=yes
-AC_CHECK_HEADERS([usbhid.h dev/usb/usb.h dev/usb/usbhid.h],, [bsd_backend=no])
+AC_CHECK_HEADERS([dev/usb/usb.h])
+AC_CHECK_HEADERS([usbhid.h dev/usb/usbhid.h],, [bsd_backend=no],
+[[#if HAVE_DEV_USB_USB_H
+#include <dev/usb/usb.h>
+#endif
+]])
 AC_CHECK_LIB([usbhid],[hid_get_item],, [bsd_backend=no])
 AM_CONDITIONAL(BSD_BACKEND, [test "x$bsd_backend" = xyes])
 if test "x$bsd_backend" = xyes; then
@@ -108,7 +113,12 @@ AC_HEADER_STDC
 XORG_MANPAGE_SECTIONS
 XORG_RELEASE_VERSION
 
-AC_OUTPUT([Makefile src/Makefile man/Makefile config/Makefile])
+AC_OUTPUT([Makefile
+           src/Makefile
+           man/Makefile
+           config/Makefile
+           include/Makefile
+           xorg-joystick.pc])
 
 echo 
 echo Building Linux joystick backend: $linux_backend

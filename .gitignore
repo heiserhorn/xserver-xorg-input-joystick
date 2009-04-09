@@ -20,3 +20,5 @@ stamp-h1
 *~
 xf86-input-joystick-*.tar.bz2
 xf86-input-joystick-*.tar.gz
+ChangeLog
+*.pc
