@@ -4,6 +4,7 @@ xserver-xorg-input-joystick (1:1.4.0-1) UNRELEASED; urgency=low
   * Allow parallel builds.
   * New upstream release.
   * Build against xserver 1.6.
+  * Use Vcs-* instead of XS-Vcs-*.
 
  -- Julien Cristau <jcristau@debian.org>  Thu, 09 Apr 2009 16:06:42 +0100
 
