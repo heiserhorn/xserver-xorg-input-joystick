@@ -10,7 +10,7 @@ Build-Depends:
  automake,
  libtool,
  xutils-dev,
- xserver-xorg-dev (>= 2:1.4),
+ xserver-xorg-dev (>= 2:1.6),
  x11proto-input-dev,
  x11proto-core-dev,
  x11proto-randr-dev,
