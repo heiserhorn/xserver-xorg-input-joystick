@@ -80,7 +80,7 @@ typedef void(*jstkCloseDeviceProc)(JoystickDevPtr joystick);
 typedef int(*jstkReadDataProc)(JoystickDevPtr joystick,
                                JOYSTICKEVENT *event, int *number);
 
-typedef unsigned int KEYSCANCODES [MAXKEYSPERBUTTON];
+typedef unsigned char KEYSCANCODES [MAXKEYSPERBUTTON];
 
 typedef struct _AXIS {
     JSTK_TYPE    type;
