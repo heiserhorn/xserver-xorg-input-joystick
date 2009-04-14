@@ -72,7 +72,7 @@ XORG_DRIVER_CHECK_EXT(XKB, kbproto)
 
 # Checks for pkg-config packages
 PKG_CHECK_MODULES(XORG, 
-               [xorg-server >= 1.3.99.901] xproto $REQUIRED_MODULES)
+               [xorg-server >= 1.3.99.901 xorg-server <= 1.6.99] xproto $REQUIRED_MODULES)
 XORG_CFLAGS="$CWARNFLAGS $XORG_CFLAGS"
 xorg_sdkdir=$(pkg-config --variable=sdkdir xorg-server)
 AC_ARG_WITH(sdkdir,
