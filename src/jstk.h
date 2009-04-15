@@ -81,7 +81,11 @@ typedef struct _AXIS {
     float           previousposition; /* TYPE_ABSOLUTE */
     float           amplify;
     float           subpixel; /* Pending subpixel movement */
+
     KEYSCANCODES    keys_low, keys_high;  /* MAPPING_KEY */
+    int             key_isdown;
+    OsTimerPtr      timer;
+    Bool            timerrunning;
 } AXIS;
 
 typedef struct _BUTTON {

@@ -50,7 +50,7 @@
  ***********************************************************************
  */
 
-int
+static int
 jstkGetKeyNumberInMap(JoystickDevPtr priv,
                       KeySym keysym)
 {

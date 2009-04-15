@@ -351,9 +351,11 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number)
     {
         float rel;
         int dif;
-        if (priv->axis[i].value >= priv->axis[i].deadzone)
+        
+    	rel = 0.0f;
+        if (priv->axis[i].value > +priv->axis[i].deadzone)
             rel = (priv->axis[i].value - priv->axis[i].deadzone);
-        if (priv->axis[i].value <= -priv->axis[i].deadzone)
+        if (priv->axis[i].value < -priv->axis[i].deadzone)
             rel = (priv->axis[i].value + priv->axis[i].deadzone);
 
         rel = (rel) / (2.0f * (float)(32768 - priv->axis[i].deadzone));
@@ -381,4 +383,171 @@ jstkHandleAbsoluteAxis(LocalDevicePtr device, int number)
         DBG(4, ErrorF("Moving mouse by %dx%d pixels\n", x, y));
         xf86PostMotionEvent(device->dev, 0, 0, 2, x, y);
     }
+}
+
+
+
+
+
+/***********************************************************************
+ *
+ * jstkPWMAxisTimer --
+ *
+ * The timer that will generate Key events.
+ * The deflection of the axis will control the PERCENT OF TIME the key is
+ * down, not the amount of impulses.
+ * Return 0, when timer can be stopped.
+ *
+ ***********************************************************************
+ */
+static CARD32
+jstkPWMAxisTimer(OsTimerPtr        timer,
+                 CARD32            atime,
+                 pointer           arg)
+{
+    DeviceIntPtr          device = (DeviceIntPtr)arg;
+    JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(device);
+
+    int sigstate, i;
+    int nexttimer;
+
+    nexttimer = 0;
+
+    sigstate = xf86BlockSIGIO();
+
+    for (i=0; i<MAXAXES; i++)
+        if (priv->axis[i].timer == timer) /* The timer handles only one axis! Find it. */
+    {
+        AXIS *axis;
+        axis = &priv->axis[i];
+
+        DBG(8, ErrorF("PWM Axis %d value %d (old %d)\n", i, axis->value, axis->oldvalue));
+
+        /* Force key_high down if centered */
+        if ((axis->value <= 0) && 
+            (axis->oldvalue > 0) &&
+            (axis->key_isdown)) 
+        {
+            DBG(7, ErrorF("PWM Axis %d jumped over. Forcing keys_high up.\n", i));
+            jstkGenerateKeys(priv->keyboard_device, 
+                axis->keys_high,
+                0);
+            axis->key_isdown = 0;
+        }
+
+        /* Force key_low down if centered */
+        if ((axis->value >= 0) && 
+            (axis->oldvalue < 0) &&
+            (axis->key_isdown))
+        {
+            DBG(7, ErrorF("PWM Axis %d jumped over. Forcing keys_low up.\n", i));
+            jstkGenerateKeys(priv->keyboard_device, 
+                axis->keys_low,
+                0);
+            axis->key_isdown = 0;
+        }
+
+        if (axis->value == 0)
+            nexttimer = 0;
+        else {
+            float time_on, time_off;
+            float scale;
+            KEYSCANCODES *keys;
+
+            if (axis->value < 0)
+                keys = &axis->keys_low;
+            else keys = &axis->keys_high;
+
+            /* Calculate next timer */
+            time_on = (float)(abs(axis->value) - axis->deadzone) / 32768.0;
+            time_on *= (32768.0f / (float)(32768 - axis->deadzone));
+
+            time_off = 1.0f - time_on;
+
+            time_on  += 0.01f; /* Ugly but ensures we don't divide by 0 */
+            time_off += 0.01f;
+
+            /* Scale both durations, so the smaller always is 50ms */
+            scale = 50.0f * axis->amplify;
+
+            if (time_on < time_off)
+                scale /= time_on;
+            else scale /= time_off;
+
+            time_on  *= scale;
+            time_off *= scale;
+
+
+            if (time_off > 600.0f) {
+                /* Might as well just have it down forever */
+                DBG(7, ErrorF("PWM Axis %d up time too long (%.0fms). Forcing up)\n", i, time_off));
+                if (axis->key_isdown == 1) {
+                    axis->key_isdown = 0;
+                    jstkGenerateKeys(priv->keyboard_device,
+                        *keys,
+                        axis->key_isdown);
+                }
+                nexttimer = 0;
+            } else if (time_on > 600.0f) { 
+                /* Might as well just have it up forever */
+                DBG(7, ErrorF("PWM Axis %d down time too long (%.0fms). Forcing down)\n", i, time_on));
+                if (axis->key_isdown == 0) {
+                    axis->key_isdown = 1;
+                    jstkGenerateKeys(priv->keyboard_device,
+                        *keys,
+                        axis->key_isdown);
+                }
+                nexttimer = 0;
+            } else {
+                /* Flip key state */
+                axis->key_isdown = 1 - axis->key_isdown;
+                jstkGenerateKeys(priv->keyboard_device,
+                    *keys,
+                    axis->key_isdown);
+
+                DBG(7, ErrorF("PWM Axis %d state=%d (%.0fms down, %.0fms up).\n", i, axis->key_isdown, time_on, time_off));
+
+                nexttimer = axis->key_isdown ? (int)time_on : (int)time_off;
+            }
+        }
+
+        if (nexttimer == 0) { /* No next timer, stop */
+            axis->timerrunning = FALSE;
+
+            DBG(2, ErrorF("Stopping PWM Axis %d Timer\n", i));
+        }
+        axis->oldvalue = axis->value;
+        break;
+    }
+
+    xf86UnblockSIGIO (sigstate);
+    return nexttimer;
+}
+
+
+/***********************************************************************
+ *
+ * jstkStartAxisTimer --
+ *
+ * Starts the timer for the movement.
+ * Will already prepare for moving one pixel, for "tipping" the stick
+ *
+ ***********************************************************************
+ */
+void
+jstkHandlePWMAxis(LocalDevicePtr device, int number) 
+{
+    JoystickDevPtr priv = device->private;
+    if (priv->axis[number].timerrunning) return;
+
+    priv->axis[number].timerrunning = TRUE;
+
+    DBG(2, ErrorF("Starting PWM Axis Timer (triggered by axis %d, value %d)\n", 
+               number, priv->axis[number].value));
+    priv->axis[number].timer = TimerSet(
+        priv->axis[number].timer, 
+        0,         /* Relative */
+        1,         /* What about NOW? */
+        jstkPWMAxisTimer,
+        device->dev);
 }

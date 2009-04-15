@@ -30,6 +30,7 @@
 #if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 3
 
 
+
 #include <misc.h>
 #include <xf86.h>
 #include <X11/Xatom.h>
@@ -57,6 +58,11 @@ static Atom prop_button_buttonnumber = 0;
 static Atom prop_button_amplify = 0;
 static Atom prop_button_keys = 0;
 
+
+#ifndef XATOM_FLOAT
+#define XATOM_FLOAT "FLOAT"
+#endif
+static Atom float_type = 0;
 
 
 static int
@@ -154,8 +160,17 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val,
         }
     }else if (atom == prop_axis_amplify)
     {
-        /* FIXME */
-        return BadValue;
+        float *values;
+        if (val->size != priv->num_axes || val->format != 32 || val->type != float_type)
+            return BadMatch;
+        if (!checkonly)
+        {
+            values = (float*)val->data;
+            for (i =0; i<val->size; i++) {
+                priv->axis[i].amplify = values[i];
+                DBG(1, ErrorF("Amplify of axis %d set to %.3f\n", i, priv->axis[i].amplify));
+            }
+        }
     }else if (atom == prop_axis_keys_low)
     {
         /* FIXME */
@@ -182,7 +197,7 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val,
         CARD8 *values;
         if (val->size != priv->num_buttons || val->format != 8 || val->type != XA_INTEGER)
             return BadMatch;
-        values = (INT8*)val->data;
+        values = (CARD8*)val->data;
         for (i = 0; i<val->size; i++) {
             if (values[i] > BUTTONMAP_SIZE) {
                DBG(1, ErrorF("Button number out of range (0..%d): %d\n",
@@ -203,8 +218,17 @@ jstkSetProperty(DeviceIntPtr pJstk, Atom atom, XIPropertyValuePtr val,
         return Success;
     }else if (atom == prop_button_amplify)
     {
-        /* FIXME */
-        return BadValue;
+        float *values;
+        if (val->size != priv->num_buttons || val->format != 32 || val->type != float_type)
+            return BadMatch;
+        if (!checkonly)
+        {
+            values = (float*)val->data;
+            for (i =0; i<val->size; i++) {
+                priv->button[i].amplify = values[i];
+                DBG(1, ErrorF("Amplify of button %d set to %.3f\n", i, priv->button[i].amplify));
+            }
+        }
     }else if (atom == prop_button_keys)
     {
         /* FIXME */
@@ -221,9 +245,21 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
     INT32 axes_values32[MAXAXES];
     INT8  axes_values8[MAXAXES];
     INT8  button_values8[MAXBUTTONS];
+    float axes_floats[MAXAXES];
+    float button_floats[MAXBUTTONS];
     int i;
 
     XIRegisterPropertyHandler(pJstk, jstkSetProperty, NULL, NULL);
+
+    float_type = XIGetKnownProperty(XATOM_FLOAT);
+    if (!float_type) {
+	float_type = MakeAtom(XATOM_FLOAT, strlen(XATOM_FLOAT), TRUE);
+	if (!float_type) {
+	    xf86Msg(X_WARNING, "%s: Failed to init float atom. "
+			       "Disabling support for float properties.\n", pJstk->name);
+	}
+    }
+
 
 #ifdef DEBUG
     /* Debug Level */
@@ -300,7 +336,15 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
     XISetDevicePropertyDeletable(pJstk, prop_axis_mapping, FALSE);
 
     /* priv->axis[].amplify */
-    /* FIXME: prop_axis_amplify as float[] */
+    if (float_type) {
+	for (i=0;i<priv->num_axes;i++)
+	    axes_floats[i] = priv->axis[i].amplify;
+	prop_axis_amplify = MakeAtom(JSTK_PROP_AXIS_AMPLIFY, strlen(JSTK_PROP_AXIS_AMPLIFY), TRUE);
+	XIChangeDeviceProperty(pJstk, prop_axis_amplify, float_type, 32,
+				PropModeReplace, priv->num_axes, axes_floats,
+				FALSE);
+	XISetDevicePropertyDeletable(pJstk, prop_axis_amplify, FALSE);
+    }
 
     /* priv->axis[].keys_low */
     /* FIXME: prop_axis_keys_low */
@@ -336,7 +380,15 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
     XISetDevicePropertyDeletable(pJstk, prop_button_buttonnumber, FALSE);
 
     /* priv->button[].amplify */
-    /* FIXME: prop_button_amplify as float[] */
+    if (float_type) {
+	for (i=0;i<priv->num_buttons;i++)
+	    button_floats[i] = priv->button[i].amplify;
+	prop_button_amplify = MakeAtom(JSTK_PROP_BUTTON_AMPLIFY, strlen(JSTK_PROP_BUTTON_AMPLIFY), TRUE);
+	XIChangeDeviceProperty(pJstk, prop_button_amplify, float_type, 32,
+				PropModeReplace, priv->num_buttons, button_floats,
+				FALSE);
+	XISetDevicePropertyDeletable(pJstk, prop_button_amplify, FALSE);
+    }
 
     /* priv->button[].keys */
     /* FIXME: prop_button_keys */
