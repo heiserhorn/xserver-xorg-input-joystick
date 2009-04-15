@@ -1,3 +1,159 @@
+commit 88a084952f547ebc2f30a257e441930024a69be9
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Tue Apr 14 22:33:01 2009 +0200
+
+    Fail configure on xorg-server >= 1.6.99
+    
+    The 1.4 branch is broken on xorg-server >= 1.6.99. Use master instead.
+
+commit 7d6a068c29e372747fc621020976797df9f61bac
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Tue Apr 14 22:25:49 2009 +0200
+
+    Bump 1.4.1
+
+commit e1710072396a97369ef71b1fd1738ad092a5e902
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Mar 19 21:14:22 2009 +0100
+
+    Fix compiler warning about stray INT8-CARD8 conversion
+
+commit 7af61c78fd48ea9cc2442fb55570ba0d9f37f8c8
+Merge: bc430cc 4b9aafd
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Mar 19 21:13:13 2009 +0100
+
+    Merge branch 'pwm'
+
+commit bc430cc2aacdcda45ddc38d457b84ff040be6a8c
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Mar 19 21:08:30 2009 +0100
+
+    Missing initialization of button amplify
+    
+    Always initialize button[]->amplify with 1.0
+
+commit dca19bde2bdd275744e9182dd49a2f2dd81f8c81
+Merge: 6f2a211 c6217b5
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Mar 19 08:36:10 2009 +0100
+
+    Merge branch 'master' of sascha:develop/xorg/xf86-input-joystick
+
+commit 4b9aafd82bf78e86b2b2ddc78c37d73ccc7c25d5
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Mar 18 18:13:12 2009 +0100
+
+    Mention PWM mode in man page
+
+commit 6f2a211b7c3b45e8de9a90835fb7f1a24635c8e5
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Wed Mar 18 17:39:07 2009 +0100
+
+    Fix build on FreeBSD with USB2
+    
+    Including dev/usb/usb_ioctl.h fixes missing declaration
+    of USB_GET_REPORT_ID on FreeBSD-Current.
+
+commit c6217b5849b1c2680a9a8c29ca26b3468955b1c1
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Mar 1 21:06:52 2009 +0100
+
+    Comment float properties in joystick-properties.h
+    
+    Signed-off-by: Sascha Hlusiak <saschahlusiak@arcor.de>
+
+commit 367c32bab57d69d85e95f4e76e2f1c8aaab45189
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Sun Mar 1 21:00:18 2009 +0100
+
+    Support for float properties
+    
+    Signed-off-by: Sascha Hlusiak <saschahlusiak@arcor.de>
+
+commit 4978e78e7c49bc0aabf5c7ade4223c2529a9f046
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Feb 19 23:40:58 2009 +0100
+
+    Add PWM key generation when axis in accelerated mode
+    
+    When axis is in accelerated mode and keyhigh/keylow is set,
+    the deflection of the axis will be linked to the _percent of time_ the key
+    will be down. Full deflection will set the key permanently down (old behaviour).
+    
+    50% deflection will result in the key being  50ms down and 50ms up.
+    75% deflection will result in the key being 150ms down and 50ms up.
+    etc.
+    Minimum interval is 50ms, maximum is 600ms.
+
+commit d4bb86ddb0ba570de0f501cd0edb13861456b711
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Thu Feb 19 23:37:46 2009 +0100
+
+    Don't set axis.oldvalue in backend
+    
+    The value needs to be set where it's needed, like in timers.
+
+commit 4ec4376522b1c393ee44f25adcd28b12d7cadff6
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Tue Feb 17 20:18:05 2009 +0100
+
+    Fix for sparse warning of uninitialized variable
+    
+    If axis is inside deadzone, 0.0 should be assumed.
+
+commit b70b1f7d827b87ceb63110c781b01175363fb7d0
+Author: Paulo Cesar Pereira de Andrade <pcpa@mandriva.com.br>
+Date:   Wed Feb 4 18:23:00 2009 -0200
+
+    Janitor: gcc 4.5 and sparse warnings.
+    
+    It is still required a patch in the X Server sdk to correct some
+    remaining warnings. Isn't it amazing that <X11/extensions/XKBsrv.h>
+    and $sdkdir/xkbsrv.h both use the #ifndef _XKBSRV_H_ include guard?
+    
+    Signed-off-by: Paulo Cesar Pereira de Andrade <pcpa@mandriva.com.br>
+
+commit 76b82a41a6733ef5a2a89dd370357320ea78792a
+Author: Paulo Cesar Pereira de Andrade <pcpa@mandriva.com.br>
+Date:   Wed Feb 4 18:10:26 2009 -0200
+
+    Janitor: make distcheck, .gitignore.
+    
+    The correction for make distcheck uses the same solution proposed
+    for xf86-input-evdev, that uses the new configure option --with-sdkdir.
+    
+    Signed-off-by: Paulo Cesar Pereira de Andrade <pcpa@mandriva.com.br>
+
+commit 4671904035d4da4d112f53cce8781bcc77b0d0db
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Mon Feb 2 00:10:42 2009 +0100
+
+    Use InitKeyboardDeviceStruct instead of nonexistant XkbInitKeyboardDeviceStruct
+    
+    Realizing XkbInitKeyboardDeviceStruct has been removed, we do need to use InitKeyboardDeviceStruct.
+    This breaks custom keymaps on ABI_XINPUT_VERSION >= 5.
+    
+    Hopefully this can be reimplemented later.
+
+commit 3984947ada771619f21b511507a2fb9cca3ed645
+Author: Alan Coopersmith <alan.coopersmith@sun.com>
+Date:   Fri Jan 30 20:23:09 2009 -0800
+
+    Add README with pointers to mailing list, bugzilla & git repos
+
+commit fb632ba226725a7101c5c1a3bfc2201905532b6f
+Author: Sascha Hlusiak <saschahlusiak@arcor.de>
+Date:   Mon Jan 26 20:48:00 2009 +0100
+
+    Fix build on master. All hail XKB!
+
+commit f62159e4dfc22550ec2de3eb4fd46027d85a1e88
+Author: Alan Coopersmith <alan.coopersmith@sun.com>
+Date:   Fri Jan 9 16:14:12 2009 -0800
+
+    Remove xorgconfig & xorgcfg from See Also list in man page
+
 commit 43e2f0526894cb5eacac8730a21ccdf415421d72
 Author: Sascha Hlusiak <saschahlusiak@arcor.de>
 Date:   Sun Dec 28 18:57:36 2008 +0100
