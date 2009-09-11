@@ -669,15 +669,15 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
     priv->rmlvo.layout = xf86SetStrOption(dev->commonOptions, "xkb_layout", NULL);
     if (!priv->rmlvo.layout)
-	priv->rmlvo.layout = xf86SetStrOption(dev->commonOptions, "XkbLayout", "uk");
+	priv->rmlvo.layout = xf86SetStrOption(dev->commonOptions, "XkbLayout", "us");
 
     priv->rmlvo.variant = xf86SetStrOption(dev->commonOptions, "xkb_variant", NULL);
     if (!priv->rmlvo.variant)
-	priv->rmlvo.variant = xf86SetStrOption(dev->commonOptions, "XkbVariant", NULL);
+	priv->rmlvo.variant = xf86SetStrOption(dev->commonOptions, "XkbVariant", "");
 
     priv->rmlvo.options = xf86SetStrOption(dev->commonOptions, "xkb_options", NULL);
     if (!priv->rmlvo.options)
-	priv->rmlvo.options = xf86SetStrOption(dev->commonOptions, "XkbOptions", NULL);
+	priv->rmlvo.options = xf86SetStrOption(dev->commonOptions, "XkbOptions", "");
 
     priv->mouse_enabled = xf86SetBoolOption(dev->commonOptions, "StartMouseEnabled", TRUE);
     priv->keys_enabled = xf86SetBoolOption(dev->commonOptions, "StartKeysEnabled", TRUE);

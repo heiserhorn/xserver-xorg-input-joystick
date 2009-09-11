@@ -348,10 +348,6 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
 
 #if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 5
     {
-/*        XkbRMLVOSet rmlvo; */
-/*        XkbGetRulesDflts(&rmlvo); */
-    	/* FIXME */
-	#warning KEYMAP FOR ABI_XINPUT_VERSION >= 5 BROKEN RIGHT NOW
         if (!InitKeyboardDeviceStruct(pJstk, &priv->rmlvo, NULL, jstkKbdCtrl))
         {
             ErrorF("unable to init keyboard device\n");
@@ -388,7 +384,7 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
     if (!XkbInitKeyboardDeviceStruct(pJstk, &xkbnames,
                 &keySyms, modMap, NULL,
                 jstkKbdCtrl))
-        return 0;
+        return !Success;
 #endif
 
     /* Set Autorepeat and Delay */
