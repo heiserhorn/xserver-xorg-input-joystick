@@ -136,7 +136,8 @@ echo Building BSD usbhid backend: $bsd_backend
 if test "x$linux_backend" != "xyes" -a \
 	"x$bsd_backend" != "xyes" -a \
 	"x$evdev_backend" != "xyes"; then
-    AC_MSG_ERROR([No backends were found. Your operating is not supported by the
-                  joystick driver. Contact xorg@lists.freedesktop.org if you are 
-                  interested in porting it.])
+    AC_MSG_ERROR([No backends were found. Your operating system is not
+                  supported by the joystick driver. Contact
+                  xorg@lists.freedesktop.org if you are interested in
+                  porting it.])
 fi
