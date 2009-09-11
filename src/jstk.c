@@ -555,8 +555,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->keys_enabled = TRUE;
     priv->amplify = 1.0f;
     priv->keyboard_device = NULL;
-    priv->keymap.size = 1;
-    memset(priv->keymap.map, NoSymbol, sizeof(priv->keymap.map));
     priv->repeat_delay = 0;
     priv->repeat_interval = 0;
     priv->num_axes    = MAXAXES;
@@ -660,6 +658,26 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         }
         xfree(s);
     }
+    
+    priv->rmlvo.rules = xf86SetStrOption(dev->commonOptions, "xkb_rules", NULL);
+    if (!priv->rmlvo.rules)
+	priv->rmlvo.rules = xf86SetStrOption(dev->commonOptions, "XkbRules", "evdev");
+
+    priv->rmlvo.model = xf86SetStrOption(dev->commonOptions, "xkb_model", NULL);
+    if (!priv->rmlvo.model)
+	priv->rmlvo.model = xf86SetStrOption(dev->commonOptions, "XkbModel", "evdev");
+
+    priv->rmlvo.layout = xf86SetStrOption(dev->commonOptions, "xkb_layout", NULL);
+    if (!priv->rmlvo.layout)
+	priv->rmlvo.layout = xf86SetStrOption(dev->commonOptions, "XkbLayout", "uk");
+
+    priv->rmlvo.variant = xf86SetStrOption(dev->commonOptions, "xkb_variant", NULL);
+    if (!priv->rmlvo.variant)
+	priv->rmlvo.variant = xf86SetStrOption(dev->commonOptions, "XkbVariant", NULL);
+
+    priv->rmlvo.options = xf86SetStrOption(dev->commonOptions, "xkb_options", NULL);
+    if (!priv->rmlvo.options)
+	priv->rmlvo.options = xf86SetStrOption(dev->commonOptions, "XkbOptions", NULL);
 
     priv->mouse_enabled = xf86SetBoolOption(dev->commonOptions, "StartMouseEnabled", TRUE);
     priv->keys_enabled = xf86SetBoolOption(dev->commonOptions, "StartKeysEnabled", TRUE);
