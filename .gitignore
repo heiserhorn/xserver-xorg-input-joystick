@@ -26,3 +26,5 @@ xf86-input-joystick-*.tar.gz
 ChangeLog
 *.pc
 tags
+shave
+shave-libtool
