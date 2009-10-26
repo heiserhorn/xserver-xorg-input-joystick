@@ -25,9 +25,6 @@ SUBDIRS = src man config include
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xorg-joystick.pc
 
-EXTRA_DIST = ChangeLog
-MAINTAINERCLEANFILES = ChangeLog
-
 .PHONY: ChangeLog
 
 ChangeLog:
