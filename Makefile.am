@@ -20,6 +20,7 @@
 
 DISTCHECK_CONFIGURE_FLAGS = --with-sdkdir=\$${includedir}/xorg
 SUBDIRS = src man config include
+MAINTAINERCLEANFILES = ChangeLog INSTALL
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = xorg-joystick.pc
