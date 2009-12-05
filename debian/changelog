@@ -1,4 +1,4 @@
-xserver-xorg-input-joystick (1:1.5.0-1) UNRELEASED; urgency=low
+xserver-xorg-input-joystick (1:1.5.0-1) experimental; urgency=low
 
   [ Timo Aaltonen ]
   * New upstream release.
@@ -8,7 +8,10 @@ xserver-xorg-input-joystick (1:1.5.0-1) UNRELEASED; urgency=low
   [ Julien Cristau ]
   * Build-depend on libusbhid-dev on kfreebsd.
 
- -- Timo Aaltonen <tjaalton@ubuntu.com>  Sat, 05 Dec 2009 01:49:03 +0200
+  [ Cyril Brulebois ]
+  * Upload to experimental.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 05 Dec 2009 22:56:05 +0100
 
 xserver-xorg-input-joystick (1:1.4.1-1) unstable; urgency=low
 
