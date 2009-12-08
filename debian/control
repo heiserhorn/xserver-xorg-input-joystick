@@ -36,3 +36,19 @@ Description: X.Org X server -- joystick input driver
  <URL:http://lists.freedesktop.org/mailman/listinfo/xorg>
  .
  This package is built from the X.org xf86-input-joystick driver module.
+
+Package: xserver-xorg-input-joystick
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: X.Org X server -- joystick input driver (development headers)
+ This package provides the development headers for the joystick input
+ driver found in xserver-xorg-input-joystick. Non-developers likely have
+ little use for this package.
+ .
+ More information about X.Org can be found at:
+ <URL:http://www.X.org>
+ <URL:http://xorg.freedesktop.org>
+ <URL:http://lists.freedesktop.org/mailman/listinfo/xorg>
+ .
+ This package is built from the X.org xf86-input-joystick driver module.
