@@ -76,7 +76,7 @@ XORG_DRIVER_CHECK_EXT(XKB, kbproto)
 PKG_CHECK_MODULES(XORG, 
                [xorg-server >= 1.3.99.901] xproto $REQUIRED_MODULES)
 XORG_CFLAGS="$CWARNFLAGS $XORG_CFLAGS"
-xorg_sdkdir=$(pkg-config --variable=sdkdir xorg-server)
+xorg_sdkdir=`$PKG_CONFIG --variable=sdkdir xorg-server`
 AC_ARG_WITH(sdkdir,
 	AC_HELP_STRING([--with-sdkdir=<path>],
 		[Xorg X Server sdk headers (default is autodetected)]),
