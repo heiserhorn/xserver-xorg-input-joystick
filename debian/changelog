@@ -1,8 +1,13 @@
 xserver-xorg-input-joystick (1:1.5.0-2) UNRELEASED; urgency=low
 
+  [ Timo Aaltonen ]
   * Install a udev rules file to autoload the driver.
   * Run udevadm trigger on postinst, and depend on udev [linux-any].
   * Add xserver-xorg-input-joystick-dev for the header and .pc files.
+
+  [ Julien Cristau ]
+  * Rename the build directory to not include DEB_BUILD_GNU_TYPE for no
+    good reason.  Thanks, Colin Watson!
 
  -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 08 Dec 2009 16:32:07 +0200
 
