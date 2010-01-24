@@ -39,7 +39,7 @@ Description: X.Org X server -- joystick input driver
 
 Package: xserver-xorg-input-joystick-dev
 Section: libdevel
-Architecture: any
+Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: X.Org X server -- joystick input driver (development headers)
  This package provides the development headers for the joystick input
