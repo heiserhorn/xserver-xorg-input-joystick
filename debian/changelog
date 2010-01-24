@@ -12,8 +12,9 @@ xserver-xorg-input-joystick (1:1.5.0-2) UNRELEASED; urgency=low
   [ Robert Hooker ]
   * Correct xserver-xorg-input-joystick-dev package name.
   * Build xserver-xorg-input-joystick-dev on arch: all.
+  * Fix udev rules install.
 
- -- Robert Hooker <sarvatt@ubuntu.com>  Sun, 24 Jan 2010 14:30:08 -0500
+ -- Robert Hooker <sarvatt@ubuntu.com>  Sun, 24 Jan 2010 15:06:51 -0500
 
 xserver-xorg-input-joystick (1:1.5.0-1) experimental; urgency=low
 
