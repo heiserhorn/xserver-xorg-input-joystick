@@ -37,7 +37,7 @@ Description: X.Org X server -- joystick input driver
  .
  This package is built from the X.org xf86-input-joystick driver module.
 
-Package: xserver-xorg-input-joystick
+Package: xserver-xorg-input-joystick-dev
 Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
