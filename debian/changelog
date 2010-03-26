@@ -1,3 +1,9 @@
+xserver-xorg-input-joystick (1:1.5.0-2.1) UNRELEASED; urgency=low
+
+  * Install 10-joystick.conf.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Fri, 26 Mar 2010 10:58:22 +0200
+
 xserver-xorg-input-joystick (1:1.5.0-2) unstable; urgency=low
 
   [ Timo Aaltonen ]
