@@ -23,7 +23,7 @@ Vcs-Browser: http://git.debian.org/?p=pkg-xorg/driver/xserver-xorg-input-joystic
 
 Package: xserver-xorg-input-joystick
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${xserver:Depends},
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${xinpdriver:Depends},
 Provides: ${xinpdriver:Provides}
 Replaces: xserver-xorg (<< 6.8.2-35)
 Description: X.Org X server -- joystick input driver
