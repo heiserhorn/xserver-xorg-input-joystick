@@ -1,8 +1,12 @@
 xserver-xorg-input-joystick (1:1.5.0-4) UNRELEASED; urgency=low
 
+  [ Julien Cristau ]
   * Bump xserver-xorg-dev build-dep, move 10-joystick.conf to
     50-joystick.conf, and install it in /usr/share/X11/xorg.conf.d.
   * Use new xsfbs and ${xinpdriver:Depends} variable.
+
+  [ Cyril Brulebois ]
+  * Add myself to Uploaders.
 
  -- Julien Cristau <jcristau@debian.org>  Sat, 17 Apr 2010 01:46:58 +0200
 
