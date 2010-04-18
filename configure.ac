@@ -111,8 +111,6 @@ if test "x$evdev_backend" = xyes; then
     AC_DEFINE(EVDEV_BACKEND, 1, [Compile Linux evdev backend])
 fi
 
-AC_HEADER_STDC
-
 DRIVER_NAME=joystick
 AC_SUBST([DRIVER_NAME])
 
