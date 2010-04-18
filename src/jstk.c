@@ -26,6 +26,7 @@
 #include "config.h"
 #endif
 
+#include <xorg-server.h>
 #include <stdio.h>
 #include <xorgVersion.h>
 

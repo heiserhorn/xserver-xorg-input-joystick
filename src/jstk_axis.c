@@ -27,6 +27,7 @@
 #include "config.h"
 #endif
 
+#include <xorg-server.h>
 #include <xf86Xinput.h>
 #include <xf86_OSproc.h>
 #include <math.h>
