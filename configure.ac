@@ -20,18 +20,23 @@
 #
 # Process this file with autoconf to produce a configure script
 
-AC_PREREQ(2.60)
+# Initialize Autoconf
+AC_PREREQ([2.60])
 AC_INIT([xf86-input-joystick],
-        1.5.0,
+        [1.5.0],
         [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg],
-        xf86-input-joystick)
-
+        [xf86-input-joystick])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR(.)
 
+# Initialize Automake
 AM_INIT_AUTOMAKE([foreign dist-bzip2])
 AM_MAINTAINER_MODE
+
+# Initialize libtool
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
 
 # Require xorg-macros: XORG_DEFAULT_OPTIONS
 m4_ifndef([XORG_MACROS_VERSION], 
@@ -39,49 +44,49 @@ m4_ifndef([XORG_MACROS_VERSION],
 XORG_MACROS_VERSION(1.3)
 XORG_DEFAULT_OPTIONS
 
-# Checks for programs.
-AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
-
-
-AC_ARG_WITH(xorg-module-dir,
-            AC_HELP_STRING([--with-xorg-module-dir=DIR],
-                           [Default xorg module directory 
-                           [[default=$libdir/xorg/modules]]]),
-            [moduledir="$withval"],
-            [moduledir="$libdir/xorg/modules"])
-
-AC_ARG_ENABLE(debug,
-            AS_HELP_STRING([--enable-debug],
-                           [Enable debugging (default: enabled)]),
-			   [DEBUGGING=$enableval], [DEBUGGING=yes])
-if test "x$DEBUGGING" = xyes; then
-    AC_DEFINE(DEBUG, 1, [Enable debugging code])
-else
-    AC_DEFINE(NDEBUG, 1, [Disable some debugging code])
-fi
-AM_CONDITIONAL(DEBUG, [test "x$DEBUGGING" = xyes])
-
-inputdir=${moduledir}/input
-AC_SUBST(inputdir)
-
 # Checks for extensions
 XORG_DRIVER_CHECK_EXT(XINPUT, inputproto)
 XORG_DRIVER_CHECK_EXT(XKB, kbproto)
 
 # Checks for pkg-config packages
-PKG_CHECK_MODULES(XORG, 
-               [xorg-server >= 1.3.99.901] xproto $REQUIRED_MODULES)
-xorg_sdkdir=`$PKG_CONFIG --variable=sdkdir xorg-server`
+PKG_CHECK_MODULES(XORG, [xorg-server >= 1.3.99.901] xproto $REQUIRED_MODULES)
+
+DRIVER_NAME=joystick
+AC_SUBST([DRIVER_NAME])
+
+# -----------------------------------------------------------------------------
+#			Configuration options
+# -----------------------------------------------------------------------------
+# Define a configure option for an alternate input module directory
+AC_ARG_WITH(xorg-module-dir,
+            AS_HELP_STRING([--with-xorg-module-dir=DIR],
+                           [Default xorg module directory [[default=$libdir/xorg/modules]]]),
+            [moduledir="$withval"],
+            [moduledir="$libdir/xorg/modules"])
+inputdir=${moduledir}/input
+AC_SUBST(inputdir)
+
+# Define a configure option for an alternate X Server SDK Headers
+# X Server SDK location is required to install joystick header files
 AC_ARG_WITH(sdkdir,
-	AC_HELP_STRING([--with-sdkdir=<path>],
-		[Xorg X Server sdk headers (default is autodetected)]),
-	[sdkdir="$withval"], [sdkdir="${xorg_sdkdir}"])
+            AS_HELP_STRING([--with-sdkdir=<path>],
+                           [Xorg X Server sdk headers (default is autodetected)]),
+            [sdkdir="$withval"],
+            [sdkdir=`$PKG_CONFIG --variable=sdkdir xorg-server`])
 AC_SUBST(sdkdir)
 
-# Checks for libraries.
+# Define a configure option to enable code debugging
+AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug],
+                                    [Enable debugging (default: disabled)]),
+                                    [DEBUGGING=$enableval], [DEBUGGING=no])
+if test "x$DEBUGGING" = xyes; then
+   AC_DEFINE(DEBUG, 1, [Enable debugging code])
+fi
+AM_CONDITIONAL(DEBUG, [test "x$DEBUGGING" = xyes])
 
-# Checks for header files.
+# -----------------------------------------------------------------------------
+#		Determine which joystick backend to build
+# -----------------------------------------------------------------------------
 linux_backend=yes
 AC_CHECK_HEADERS([linux/joystick.h],, [linux_backend=no])
 AM_CONDITIONAL(LINUX_BACKEND, [test "x$linux_backend" = xyes])
@@ -109,21 +114,22 @@ AM_CONDITIONAL(EVDEV_BACKEND, [test "x$evdev_backend" = xyes])
 if test "x$evdev_backend" = xyes; then
     AC_DEFINE(EVDEV_BACKEND, 1, [Compile Linux evdev backend])
 fi
+# -----------------------------------------------------------------------------
 
-DRIVER_NAME=joystick
-AC_SUBST([DRIVER_NAME])
+AC_CONFIG_FILES([Makefile
+                src/Makefile
+                man/Makefile
+                config/Makefile
+                include/Makefile
+                xorg-joystick.pc])
+AC_OUTPUT
 
-AC_OUTPUT([Makefile
-           src/Makefile
-           man/Makefile
-           config/Makefile
-           include/Makefile
-           xorg-joystick.pc])
+# -----------------------------------------------------------------------------
 
-echo 
-echo Building Linux joystick backend: $linux_backend
-echo Building Linux evdev backend: $evdev_backend
-echo Building BSD usbhid backend: $bsd_backend
+AS_ECHO() 
+AS_ECHO("Building Linux joystick backend: $linux_backend")
+AS_ECHO("Building Linux evdev backend: $evdev_backend")
+AS_ECHO("Building BSD usbhid backend: $bsd_backend")
 
 if test "x$linux_backend" != "xyes" -a \
 	"x$bsd_backend" != "xyes" -a \
