@@ -524,7 +524,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         goto SetupProc_fail;
     }
 
-    local->private = (JoystickDevPtr)xalloc(sizeof(JoystickDevRec));
+    local->private = (JoystickDevPtr)malloc(sizeof(JoystickDevRec));
     priv = (JoystickDevPtr)local->private;
 
     local->name   = dev->identifier;
@@ -657,7 +657,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
             DBG(1, xf86Msg(X_CONFIG, "Autorepeat set to delay=%d, interval=%d\n",
                            priv->repeat_delay,priv->repeat_interval));
         }
-        xfree(s);
+        free(s);
     }
     
     priv->rmlvo.rules = xf86SetStrOption(dev->commonOptions, "xkb_rules", NULL);
@@ -722,7 +722,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 
 SetupProc_fail:
     if (priv)
-        xfree(priv);
+        free(priv);
     if (local)
         local->private = NULL;
     return NULL;
@@ -754,7 +754,7 @@ jstkCoreUnInit(InputDriverPtr    drv,
         device->keyboard_device = NULL;
     }
 
-    xfree (device);
+    free (device);
     local->private = NULL;
     xf86DeleteInput(local, 0);
 }

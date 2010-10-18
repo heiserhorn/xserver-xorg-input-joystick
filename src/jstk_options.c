@@ -155,7 +155,7 @@ jstkParseButtonOption(const char* org,
         xf86Msg(X_WARNING, "%s: error parsing button parameter.\n", 
                 name);
     }
-    xfree(param);
+    free(param);
 }
 
 
@@ -293,5 +293,5 @@ jstkParseAxisOption(const char* org,
         }else xf86Msg(X_WARNING, "%s: error parsing deadzone.\n", 
                       name);
     }
-    xfree(param);
+    free(param);
 }

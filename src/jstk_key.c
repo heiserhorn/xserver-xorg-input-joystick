@@ -506,7 +506,7 @@ jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
         goto SetupProc_fail;
     }
 
-    dev = xcalloc(sizeof(IDevRec), 1);
+    dev = calloc(sizeof(IDevRec), 1);
     strcpy(name, _dev->identifier);
     strcat(name, " (keys)");
     dev->identifier = xstrdup(name);
@@ -544,9 +544,9 @@ SetupProc_fail:
     if (local)
         local->private = NULL;
     if (dev) {
-        if (dev->identifier) xfree(dev->identifier);
-        if (dev->driver) xfree(dev->driver);
-        xfree(dev);
+        if (dev->identifier) free(dev->identifier);
+        if (dev->driver) free(dev->driver);
+        free(dev);
     }
     return NULL;
 }
