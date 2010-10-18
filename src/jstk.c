@@ -497,8 +497,7 @@ _X_EXPORT InputDriverRec JSTK_KEYBOARD = {
     NULL,
     jstkKeyboardPreInit,
     jstkKeyboardUnInit,
-    NULL,
-    0
+    NULL
 };
 
 /*
@@ -768,8 +767,7 @@ _X_EXPORT InputDriverRec JOYSTICK = {
     NULL,
     jstkCorePreInit,
     jstkCoreUnInit,
-    NULL,
-    0
+    NULL
 };
 
 
