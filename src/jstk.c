@@ -527,8 +527,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv = (JoystickDevPtr)pInfo->private;
 
     pInfo->name   = dev->identifier;
-    pInfo->flags  = XI86_POINTER_CAPABLE;
-    pInfo->flags |= XI86_SEND_DRAG_EVENTS;
+    pInfo->flags  = XI86_SEND_DRAG_EVENTS;
     pInfo->device_control = jstkDeviceControlProc;
     pInfo->read_input = jstkReadProc;
     pInfo->close_proc = NULL;
