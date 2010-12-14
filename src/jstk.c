@@ -369,7 +369,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
         }
 
         if (InitValuatorClassDeviceStruct(pJstk, m, axes_labels,
-                                          pInfo->history_size,
+                                          GetMotionHistorySize(),
                                           Relative) == FALSE) {
             ErrorF("unable to allocate Valuator class device\n"); 
             return !Success;
@@ -517,7 +517,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->dev = NULL;
     pInfo->private = priv;
     pInfo->type_name = XI_JOYSTICK;
-    pInfo->history_size = 0;
     pInfo->always_core_feedback = NULL;
     pInfo->conf_idev = dev;
 
