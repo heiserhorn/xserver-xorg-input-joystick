@@ -219,7 +219,6 @@ jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
     pInfo->conf_idev = dev;
 
     xf86CollectInputOptions(pInfo, NULL, NULL);
-    xf86OptionListReport(pInfo->options);
     xf86ProcessCommonOptions(pInfo, pInfo->options);
 
 

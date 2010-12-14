@@ -556,7 +556,6 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     priv->axis[5].mapping   = JSTK_MAPPING_Y;
 
     xf86CollectInputOptions(pInfo, NULL, NULL);
-    xf86OptionListReport(pInfo->options);
 
     /* Joystick device is mandatory */
     priv->device = xf86SetStrOption(dev->commonOptions, "Device", NULL);
