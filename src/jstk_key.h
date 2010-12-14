@@ -25,9 +25,9 @@
 #ifndef __JSTK_KEY_H_INCLUDED__
 #define __JSTK_KEY_H_INCLUDED__
 
-void jstkGenerateKeys(LocalDevicePtr device, KEYSCANCODES keys, char pressed);
+void jstkGenerateKeys(InputInfoPtr device, KEYSCANCODES keys, char pressed);
 
 InputInfoPtr jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr dev, int flags);
-void jstkKeyboardUnInit(InputDriverPtr drv, LocalDevicePtr local, int flags);
+void jstkKeyboardUnInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags);
 
 #endif

@@ -117,7 +117,7 @@ typedef struct _JoystickDevRec {
     jstkReadDataProc read_proc; /* Callback for reading data from the backend */
     void         *devicedata; /* Extra platform device dependend data */
     char         *device;     /* Name of the device */
-    LocalDevicePtr keyboard_device; /* Slave device for keyboard events */
+    InputInfoPtr keyboard_device; /* Slave device for keyboard events */
 
     OsTimerPtr   timer;       /* Timer for axis movement */
     Bool         timerrunning;

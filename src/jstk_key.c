@@ -418,7 +418,7 @@ jstkInitKeys(DeviceIntPtr pJstk, JoystickDevPtr priv)
  ***************************************************************************
  */
 void
-jstkGenerateKeys(LocalDevicePtr device, KEYSCANCODES keys, char pressed)
+jstkGenerateKeys(InputInfoPtr device, KEYSCANCODES keys, char pressed)
 {
     int i;
     unsigned int k;
@@ -497,12 +497,12 @@ jstkKeyboardDeviceControlProc(DeviceIntPtr       dev,
 InputInfoPtr
 jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
 {
-    LocalDevicePtr local = NULL;
+    InputInfoPtr pInfo = NULL;
     IDevPtr dev = NULL;
     char name[512] = {0};
 
-    local = xf86AllocateInput(drv, 0);
-    if (!local) {
+    pInfo = xf86AllocateInput(drv, 0);
+    if (!pInfo) {
         goto SetupProc_fail;
     }
 
@@ -514,35 +514,35 @@ jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
     dev->commonOptions = (pointer)xf86optionListDup(_dev->commonOptions);
     dev->extraOptions = (pointer)xf86optionListDup(_dev->extraOptions);
 
-    local->name   = dev->identifier;
-    local->flags  = XI86_KEYBOARD_CAPABLE;
-    local->device_control = jstkKeyboardDeviceControlProc;
-    local->read_input = NULL;
-    local->close_proc = NULL;
-    local->control_proc = NULL;
-    local->switch_mode = NULL;
-    local->conversion_proc = NULL;
-    local->fd = -1;
-    local->dev = NULL;
-    local->private = NULL;
-    local->type_name = XI_JOYSTICK;
-    local->history_size = 0;
-    local->always_core_feedback = 0;
-    local->conf_idev = dev;
+    pInfo->name   = dev->identifier;
+    pInfo->flags  = XI86_KEYBOARD_CAPABLE;
+    pInfo->device_control = jstkKeyboardDeviceControlProc;
+    pInfo->read_input = NULL;
+    pInfo->close_proc = NULL;
+    pInfo->control_proc = NULL;
+    pInfo->switch_mode = NULL;
+    pInfo->conversion_proc = NULL;
+    pInfo->fd = -1;
+    pInfo->dev = NULL;
+    pInfo->private = NULL;
+    pInfo->type_name = XI_JOYSTICK;
+    pInfo->history_size = 0;
+    pInfo->always_core_feedback = 0;
+    pInfo->conf_idev = dev;
 
-    xf86CollectInputOptions(local, NULL, NULL);
-    xf86OptionListReport(local->options);
-    xf86ProcessCommonOptions(local, local->options);
+    xf86CollectInputOptions(pInfo, NULL, NULL);
+    xf86OptionListReport(pInfo->options);
+    xf86ProcessCommonOptions(pInfo, pInfo->options);
 
 
     /* return the LocalDevice */
-    local->flags |= XI86_CONFIGURED;
+    pInfo->flags |= XI86_CONFIGURED;
 
-    return (local);
+    return (pInfo);
 
 SetupProc_fail:
-    if (local)
-        local->private = NULL;
+    if (pInfo)
+        pInfo->private = NULL;
     if (dev) {
         if (dev->identifier) free(dev->identifier);
         if (dev->driver) free(dev->driver);
@@ -563,15 +563,15 @@ SetupProc_fail:
  */
 void
 jstkKeyboardUnInit(InputDriverPtr    drv,
-                   LocalDevicePtr    local,
+                   InputInfoPtr      pInfo,
                    int               flags)
 {
-    JoystickDevPtr device = (JoystickDevPtr) local->private;
+    JoystickDevPtr device = (JoystickDevPtr) pInfo->private;
     DBG(2, ErrorF("jstkKeyboardUnInit.\n"));
 
     device->keyboard_device = NULL;
-    local->private = NULL;
+    pInfo->private = NULL;
 
-    xf86DeleteInput(local, 0);
+    xf86DeleteInput(pInfo, 0);
 }
 
