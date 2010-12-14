@@ -137,7 +137,7 @@ jstkGenerateKeys(InputInfoPtr device, KEYSCANCODES keys, char pressed)
  *
  ***************************************************************************
  */
-static Bool
+Bool
 jstkKeyboardDeviceControlProc(DeviceIntPtr       dev,
                               int                what)
 {
@@ -180,62 +180,116 @@ jstkKeyboardDeviceControlProc(DeviceIntPtr       dev,
  *
  * jstkKeyboardPreInit --
  *
- * Called manually to create a keyboard device for the joystick
+ * See comment in jstkCorePreInit() for details.
  *
  ***************************************************************************
  */
-InputInfoPtr
-jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
+
+int jstkKeyboardPreInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags)
 {
-    InputInfoPtr pInfo = NULL;
-    IDevPtr dev = NULL;
-    char name[512] = {0};
+    JoystickDevPtr priv = NULL;
+    char *s;
 
-    pInfo = xf86AllocateInput(drv, 0);
-    if (!pInfo) {
-        goto SetupProc_fail;
-    }
+    pInfo->private = priv = calloc(1, sizeof(JoystickDevRec));
+    if (!priv)
+        return BadAlloc;
 
-    dev = calloc(sizeof(IDevRec), 1);
-    strcpy(name, _dev->identifier);
-    strcat(name, " (keys)");
-    dev->identifier = xstrdup(name);
-    dev->driver = xstrdup(_dev->driver);
-    dev->commonOptions = (pointer)xf86optionListDup(_dev->commonOptions);
-    dev->extraOptions = (pointer)xf86optionListDup(_dev->extraOptions);
-
-    pInfo->name   = dev->identifier;
-    pInfo->flags  = XI86_KEYBOARD_CAPABLE;
     pInfo->device_control = jstkKeyboardDeviceControlProc;
     pInfo->read_input = NULL;
     pInfo->control_proc = NULL;
     pInfo->switch_mode = NULL;
     pInfo->fd = -1;
-    pInfo->dev = NULL;
-    pInfo->private = NULL;
     pInfo->type_name = XI_JOYSTICK;
-    pInfo->history_size = 0;
-    pInfo->always_core_feedback = 0;
-    pInfo->conf_idev = dev;
 
-    xf86CollectInputOptions(pInfo, NULL, NULL);
-    xf86ProcessCommonOptions(pInfo, pInfo->options);
+    /* parse keyboard-related options */
+    priv->repeat_delay = 0;
+    priv->repeat_interval = 0;
 
-
-    /* return the LocalDevice */
-    pInfo->flags |= XI86_CONFIGURED;
-
-    return (pInfo);
-
-SetupProc_fail:
-    if (pInfo)
-        pInfo->private = NULL;
-    if (dev) {
-        if (dev->identifier) free(dev->identifier);
-        if (dev->driver) free(dev->driver);
-        free(dev);
+    /* Parse option for autorepeat */
+    if ((s = xf86SetStrOption(pInfo->options, "AutoRepeat", NULL))) {
+        int delay, rate;
+        if (sscanf(s, "%d %d", &delay, &rate) != 2) {
+            xf86Msg(X_ERROR, "%s: \"%s\" is not a valid AutoRepeat value",
+                    pInfo->name, s);
+        } else {
+            priv->repeat_delay = delay;
+            if (rate != 0)
+                priv->repeat_interval = 1000/rate;
+            else priv->repeat_interval = 0;
+            DBG(1, xf86Msg(X_CONFIG, "Autorepeat set to delay=%d, interval=%d\n",
+                           priv->repeat_delay,priv->repeat_interval));
+        }
+        free(s);
     }
-    return NULL;
+
+    priv->rmlvo.rules = xf86SetStrOption(pInfo->options, "xkb_rules", NULL);
+    if (!priv->rmlvo.rules)
+	priv->rmlvo.rules = xf86SetStrOption(pInfo->options, "XkbRules", "evdev");
+
+    priv->rmlvo.model = xf86SetStrOption(pInfo->options, "xkb_model", NULL);
+    if (!priv->rmlvo.model)
+	priv->rmlvo.model = xf86SetStrOption(pInfo->options, "XkbModel", "evdev");
+
+    priv->rmlvo.layout = xf86SetStrOption(pInfo->options, "xkb_layout", NULL);
+    if (!priv->rmlvo.layout)
+	priv->rmlvo.layout = xf86SetStrOption(pInfo->options, "XkbLayout", "us");
+
+    priv->rmlvo.variant = xf86SetStrOption(pInfo->options, "xkb_variant", NULL);
+    if (!priv->rmlvo.variant)
+	priv->rmlvo.variant = xf86SetStrOption(pInfo->options, "XkbVariant", "");
+
+    priv->rmlvo.options = xf86SetStrOption(pInfo->options, "xkb_options", NULL);
+    if (!priv->rmlvo.options)
+	priv->rmlvo.options = xf86SetStrOption(pInfo->options, "XkbOptions", "");
+
+    return Success;
+}
+
+InputInfoPtr
+jstkKeyboardHotplug(InputInfoPtr pInfo, int flags)
+{
+    int rc;
+    char name[512] = {0};
+    InputAttributes *attrs = NULL;
+    InputOption *options;
+    InputOption *iopts = NULL, *tmp;
+    DeviceIntPtr dev;
+
+    /* duplicate option list, append to name */
+    options = xf86OptionListDuplicate(pInfo->options);
+    strcpy(name, pInfo->name);
+    strcat(name, " (keys)");
+    options = xf86ReplaceStrOption(options, "Name", name);
+    options = xf86ReplaceStrOption(options, "_source", "_driver/joystick");
+
+    while(options)
+    {
+        tmp = calloc(1, sizeof(InputOption));
+
+        tmp->key = xf86OptionName(options);
+        tmp->value = xf86OptionValue(options);
+        tmp->next = iopts;
+        iopts = tmp;
+        options = xf86NextOption(options);
+    }
+
+    /* duplicate attribute list */
+    attrs = DuplicateInputAttributes(pInfo->attrs);
+
+    rc = NewInputDeviceRequest(iopts, attrs, &dev);
+
+    while(iopts)
+    {
+        tmp = iopts->next;
+        free(iopts->key);
+        free(iopts->value);
+        free(iopts);
+        iopts = tmp;
+    }
+
+    FreeInputAttributes(attrs);
+
+    return (rc == Success) ? dev->public.devicePrivate : NULL;
 }
 
 

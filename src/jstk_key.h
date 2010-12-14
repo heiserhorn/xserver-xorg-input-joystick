@@ -27,7 +27,8 @@
 
 void jstkGenerateKeys(InputInfoPtr device, KEYSCANCODES keys, char pressed);
 
-InputInfoPtr jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr dev, int flags);
+int jstkKeyboardPreInit(InputDriverPtr pInfo, InputInfoPtr dev, int flags);
 void jstkKeyboardUnInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags);
-
+Bool jstkKeyboardDeviceControlProc(DeviceIntPtr dev, int what);
+InputInfoPtr jstkKeyboardHotplug(InputInfoPtr dev, int flags);
 #endif
