@@ -207,10 +207,8 @@ jstkKeyboardPreInit(InputDriverPtr drv, IDevPtr _dev, int flags)
     pInfo->flags  = XI86_KEYBOARD_CAPABLE;
     pInfo->device_control = jstkKeyboardDeviceControlProc;
     pInfo->read_input = NULL;
-    pInfo->close_proc = NULL;
     pInfo->control_proc = NULL;
     pInfo->switch_mode = NULL;
-    pInfo->conversion_proc = NULL;
     pInfo->fd = -1;
     pInfo->dev = NULL;
     pInfo->private = NULL;

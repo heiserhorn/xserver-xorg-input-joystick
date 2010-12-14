@@ -62,40 +62,6 @@
     char debug_level = 0;
 #endif
 
-
-/*
- ***************************************************************************
- *
- * jstkConvertProc --
- *
- * Convert valuators to X and Y.
- *
- ***************************************************************************
- */
-
-static Bool
-jstkConvertProc(InputInfoPtr    pInfo,
-                int             first,
-                int             num,
-                int             v0,
-                int             v1,
-                int             v2,
-                int             v3,
-                int             v4,
-                int             v5,
-                int*            x,
-                int*            y)
-{
-    if (first != 0 || num != 2)
-        return FALSE;
-
-    *x = v0;
-    *y = v1;
-
-    return TRUE;
-}
-
-
 /*
  ***************************************************************************
  *
@@ -509,10 +475,8 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->flags  = XI86_SEND_DRAG_EVENTS;
     pInfo->device_control = jstkDeviceControlProc;
     pInfo->read_input = jstkReadProc;
-    pInfo->close_proc = NULL;
     pInfo->control_proc = NULL;
     pInfo->switch_mode = NULL;
-    pInfo->conversion_proc = jstkConvertProc;
     pInfo->fd = -1;
     pInfo->dev = NULL;
     pInfo->private = priv;
