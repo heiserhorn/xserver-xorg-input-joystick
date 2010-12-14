@@ -558,9 +558,9 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     xf86CollectInputOptions(pInfo, NULL, NULL);
 
     /* Joystick device is mandatory */
-    priv->device = xf86SetStrOption(dev->commonOptions, "Device", NULL);
+    priv->device = xf86SetStrOption(pInfo->options, "Device", NULL);
     if (!priv->device)
-        priv->device = xf86SetStrOption(dev->commonOptions, "Path", NULL);
+        priv->device = xf86SetStrOption(pInfo->options, "Path", NULL);
 
     if (!priv->device) {
         xf86Msg (X_ERROR, "%s: No Device specified.\n", pInfo->name);
@@ -570,20 +570,20 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     xf86ProcessCommonOptions(pInfo, pInfo->options);
 
 #if DEBUG
-    debug_level = xf86SetIntOption(dev->commonOptions, "DebugLevel", 0);
+    debug_level = xf86SetIntOption(pInfo->options, "DebugLevel", 0);
     if (debug_level > 0) {
         xf86Msg(X_CONFIG, "%s: debug level set to %d\n", 
                 pInfo->name, debug_level);
     }
 #else
-    if (xf86SetIntOption(dev->commonOptions, "DebugLevel", 0) != 0) {
+    if (xf86SetIntOption(pInfo->options, "DebugLevel", 0) != 0) {
         xf86Msg(X_WARNING, "%s: DebugLevel: Compiled without debugging support!\n", 
                 pInfo->name);
     }
 #endif
 
     /* Parse option for autorepeat */
-    if ((s = xf86SetStrOption(dev->commonOptions, "AutoRepeat", NULL))) {
+    if ((s = xf86SetStrOption(pInfo->options, "AutoRepeat", NULL))) {
         int delay, rate;
         if (sscanf(s, "%d %d", &delay, &rate) != 2) {
             xf86Msg(X_ERROR, "%s: \"%s\" is not a valid AutoRepeat value", 
@@ -599,34 +599,34 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
         free(s);
     }
     
-    priv->rmlvo.rules = xf86SetStrOption(dev->commonOptions, "xkb_rules", NULL);
+    priv->rmlvo.rules = xf86SetStrOption(pInfo->options, "xkb_rules", NULL);
     if (!priv->rmlvo.rules)
-	priv->rmlvo.rules = xf86SetStrOption(dev->commonOptions, "XkbRules", "evdev");
+	priv->rmlvo.rules = xf86SetStrOption(pInfo->options, "XkbRules", "evdev");
 
-    priv->rmlvo.model = xf86SetStrOption(dev->commonOptions, "xkb_model", NULL);
+    priv->rmlvo.model = xf86SetStrOption(pInfo->options, "xkb_model", NULL);
     if (!priv->rmlvo.model)
-	priv->rmlvo.model = xf86SetStrOption(dev->commonOptions, "XkbModel", "evdev");
+	priv->rmlvo.model = xf86SetStrOption(pInfo->options, "XkbModel", "evdev");
 
-    priv->rmlvo.layout = xf86SetStrOption(dev->commonOptions, "xkb_layout", NULL);
+    priv->rmlvo.layout = xf86SetStrOption(pInfo->options, "xkb_layout", NULL);
     if (!priv->rmlvo.layout)
-	priv->rmlvo.layout = xf86SetStrOption(dev->commonOptions, "XkbLayout", "us");
+	priv->rmlvo.layout = xf86SetStrOption(pInfo->options, "XkbLayout", "us");
 
-    priv->rmlvo.variant = xf86SetStrOption(dev->commonOptions, "xkb_variant", NULL);
+    priv->rmlvo.variant = xf86SetStrOption(pInfo->options, "xkb_variant", NULL);
     if (!priv->rmlvo.variant)
-	priv->rmlvo.variant = xf86SetStrOption(dev->commonOptions, "XkbVariant", "");
+	priv->rmlvo.variant = xf86SetStrOption(pInfo->options, "XkbVariant", "");
 
-    priv->rmlvo.options = xf86SetStrOption(dev->commonOptions, "xkb_options", NULL);
+    priv->rmlvo.options = xf86SetStrOption(pInfo->options, "xkb_options", NULL);
     if (!priv->rmlvo.options)
-	priv->rmlvo.options = xf86SetStrOption(dev->commonOptions, "XkbOptions", "");
+	priv->rmlvo.options = xf86SetStrOption(pInfo->options, "XkbOptions", "");
 
-    priv->mouse_enabled = xf86SetBoolOption(dev->commonOptions, "StartMouseEnabled", TRUE);
-    priv->keys_enabled = xf86SetBoolOption(dev->commonOptions, "StartKeysEnabled", TRUE);
+    priv->mouse_enabled = xf86SetBoolOption(pInfo->options, "StartMouseEnabled", TRUE);
+    priv->keys_enabled = xf86SetBoolOption(pInfo->options, "StartKeysEnabled", TRUE);
 
     /* Process button mapping options */
     for (i=0; i<MAXBUTTONS; i++) {
         char p[64];
         sprintf(p,"MapButton%d",i+1);
-        s = xf86SetStrOption(dev->commonOptions, p, NULL);
+        s = xf86SetStrOption(pInfo->options, p, NULL);
         if (s != NULL) {
             jstkParseButtonOption(s, priv, i, pInfo->name);
         }
@@ -638,7 +638,7 @@ jstkCorePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     for (i=0; i<MAXAXES; i++) {
         char p[64];
         sprintf(p,"MapAxis%d",i+1);
-        s = xf86SetStrOption(dev->commonOptions, p, NULL);
+        s = xf86SetStrOption(pInfo->options, p, NULL);
         if (s != NULL) {
             jstkParseAxisOption(s, priv, &priv->axis[i], pInfo->name);
         }
