@@ -56,7 +56,8 @@ jstkAxisTimer(OsTimerPtr        timer,
 {
     #define NEXTTIMER 15
     DeviceIntPtr          device = (DeviceIntPtr)arg;
-    JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(device);
+    InputInfoPtr          pInfo = device->public.devicePrivate;
+    JoystickDevPtr        priv  = pInfo->private;
 
     int sigstate, i;
     int nexttimer;
@@ -407,7 +408,8 @@ jstkPWMAxisTimer(OsTimerPtr        timer,
                  pointer           arg)
 {
     DeviceIntPtr          device = (DeviceIntPtr)arg;
-    JoystickDevPtr        priv = (JoystickDevPtr)XI_PRIVATE(device);
+    InputInfoPtr          pInfo = device->public.devicePrivate;
+    JoystickDevPtr        priv  = pInfo->private;
 
     int sigstate, i;
     int nexttimer;

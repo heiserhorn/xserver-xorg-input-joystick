@@ -141,7 +141,8 @@ static Bool
 jstkKeyboardDeviceControlProc(DeviceIntPtr       dev,
                               int                what)
 {
-    JoystickDevPtr priv  = (JoystickDevPtr)XI_PRIVATE(dev);
+    InputInfoPtr pInfo = dev->public.devicePrivate;
+    JoystickDevPtr priv  = pInfo->private;
     if (!priv) {
         DBG(2, ErrorF("jstkKeyboardDeviceControlProc: priv == NULL\n"));
         return !Success;

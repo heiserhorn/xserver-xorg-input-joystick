@@ -293,7 +293,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
 {
     int i;
     InputInfoPtr     pInfo = (InputInfoPtr)pJstk->public.devicePrivate;
-    JoystickDevPtr   priv  = (JoystickDevPtr)XI_PRIVATE(pJstk);
+    JoystickDevPtr   priv  = pInfo->private;
     Atom             btn_labels[BUTTONMAP_SIZE+1] = {0}; /* TODO: fillme */
     Atom             axes_labels[MAXAXES] = {0}; /* TODO: fillme */
 
