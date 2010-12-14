@@ -55,17 +55,6 @@
 #define XI_JOYSTICK "JOYSTICK"
 #endif
 
-#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) < 5
-typedef struct {
-    char *rules;
-    char *model;
-    char *layout;
-    char *variant;
-    char *options;
-} XkbRMLVOSet;
-#endif
-
-
 
 typedef enum _JOYSTICKEVENT {
     EVENT_NONE=0,

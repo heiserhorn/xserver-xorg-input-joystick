@@ -28,10 +28,6 @@
 #include <xorg-server.h>
 #include <xf86Module.h>
 
-#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 3
-
-
-
 #include <misc.h>
 #include <xf86.h>
 #include <X11/Xatom.h>
@@ -457,5 +453,3 @@ jstkInitProperties(DeviceIntPtr pJstk, JoystickDevPtr priv)
 
     return TRUE;
 }
-
-#endif
