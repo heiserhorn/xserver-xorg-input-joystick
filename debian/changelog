@@ -1,3 +1,31 @@
+xserver-xorg-input-joystick (1:1.5.0-7) UNRELEASED; urgency=low
+
+  * Switch to dh:
+    - Use debhelper 8.
+    - Use dh-autoreconf.
+    - Bump xserver-xorg-dev build-dep for dh_xsf_substvars and xsf
+      debhelper sequence.
+    - Specify usr/share/man in .install, remove .manpages accordingly.
+  * Remove xsfbs accordingly.
+  * Remove long obsolete Replaces.
+  * Update Uploaders list. Thanks, David & Brice!
+  * Wrap Depends/Provides.
+  * Bump Standards-Version to 3.9.1 (no changes needed).
+
+ -- Cyril Brulebois <kibi@debian.org>  Thu, 03 Feb 2011 04:30:45 +0100
+
+xserver-xorg-input-joystick (1:1.5.0-6) experimental; urgency=low
+
+  * Merge xsfbs to get unversioned Provides.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 16 Oct 2010 13:38:52 +0200
+
+xserver-xorg-input-joystick (1:1.5.0-5) experimental; urgency=low
+
+  * Build against Xserver 1.9.1 rc1.
+
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 13 Oct 2010 01:30:57 +0200
+
 xserver-xorg-input-joystick (1:1.5.0-4) unstable; urgency=low
 
   [ Julien Cristau ]
