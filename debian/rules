@@ -20,4 +20,3 @@ override_dh_shlibdeps:
 
 %:
 	dh $@ --with autoreconf,quilt,xsf --builddirectory=build/
-
