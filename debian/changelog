@@ -1,4 +1,4 @@
-xserver-xorg-input-joystick (1:1.5.0-7) UNRELEASED; urgency=low
+xserver-xorg-input-joystick (1:1.5.0-7) unstable; urgency=low
 
   * Switch to dh:
     - Use debhelper 8.
@@ -12,7 +12,7 @@ xserver-xorg-input-joystick (1:1.5.0-7) UNRELEASED; urgency=low
   * Wrap Depends/Provides.
   * Bump Standards-Version to 3.9.1 (no changes needed).
 
- -- Cyril Brulebois <kibi@debian.org>  Thu, 03 Feb 2011 04:30:45 +0100
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 05 Feb 2011 14:38:39 +0100
 
 xserver-xorg-input-joystick (1:1.5.0-6) experimental; urgency=low
 
