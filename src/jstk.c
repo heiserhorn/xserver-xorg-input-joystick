@@ -611,6 +611,10 @@ SetupProc_fail:
  * jstkCoreUnInit --
  *
  * Called when a device is unplugged and needs to be removed
+ * This is a bit tricky, because the keyboard device and the main device
+ * share the same private data, which must be freed only once, which is done
+ * by the main device.
+ * 
  *
  ***************************************************************************
  */
@@ -620,15 +624,24 @@ jstkCoreUnInit(InputDriverPtr    drv,
                InputInfoPtr      pInfo,
                int               flags)
 {
-    JoystickDevPtr device = (JoystickDevPtr) pInfo->private;
-
-    if (device->keyboard_device != NULL)
-    {
-        xf86DisableDevice(device->keyboard_device->dev, TRUE);
-        device->keyboard_device = NULL;
+    if (pInfo->private) {
+	JoystickDevPtr priv = (JoystickDevPtr) pInfo->private;
+	if (priv->keyboard_device == pInfo) {
+	    /* this is the keyboard device */
+	    /* Unlink from private data to notify that the 
+	     * keyboard device is no more, but don't free */
+	    priv->keyboard_device = NULL;
+	} else {
+	    /* freeing main device
+	       if keyboard still exists, notify keyboard device that it's
+	       private data is gone */
+	    if (priv->keyboard_device)
+		priv->keyboard_device->private = NULL;
+	    
+	    free (priv);
+	}
     }
 
-    free (device);
     pInfo->private = NULL;
     xf86DeleteInput(pInfo, 0);
 }
