@@ -1,6 +1,10 @@
 xserver-xorg-input-joystick (1:1.6.0-1) UNRELEASED; urgency=low
 
+  [ Julien Cristau ]
   * New upstream release.
+
+  [ Cyril Brulebois ]
+  * Bump Standards-Version to 3.9.2 (no changes).
 
  -- Julien Cristau <jcristau@debian.org>  Thu, 28 Apr 2011 18:14:03 +0200
 
