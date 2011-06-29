@@ -1,7 +1,8 @@
 xserver-xorg-input-joystick (1:1.6.0-1) UNRELEASED; urgency=low
 
   [ Julien Cristau ]
-  * New upstream release.
+  * New upstream release:
+    - Compatible with xorg-server 1.10 (Closes: #624973, #628410).
 
   [ Cyril Brulebois ]
   * Bump Standards-Version to 3.9.2 (no changes).
