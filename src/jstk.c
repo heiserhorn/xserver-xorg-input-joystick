@@ -419,8 +419,7 @@ jstkDeviceControlProc(DeviceIntPtr       pJstk,
 
     default:
         ErrorF("unsupported mode=%d\n", what);
-        return !Success;
-        break;
+        return BadValue;
     } /* switch (what) */
     return Success;
 }

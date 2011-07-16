@@ -169,6 +169,8 @@ jstkKeyboardDeviceControlProc(DeviceIntPtr       dev,
         DBG(2, ErrorF("jstkKeyboardDeviceControlProc what=DEVICE_CLOSE\n"));
         dev->public.on = FALSE;
         break;
+    default:
+        return BadValue;
     }
 
     return Success;
