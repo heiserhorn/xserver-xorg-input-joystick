@@ -14,7 +14,7 @@ Build-Depends:
  x11proto-core-dev,
  x11proto-randr-dev,
  x11proto-kb-dev,
- libusbhid-dev [kfreebsd-amd64 kfreebsd-i386],
+ libusbhid-dev [kfreebsd-any],
 Standards-Version: 3.9.2
 Vcs-Git: git://git.debian.org/git/pkg-xorg/driver/xserver-xorg-input-joystick
 Vcs-Browser: http://git.debian.org/?p=pkg-xorg/driver/xserver-xorg-input-joystick.git
