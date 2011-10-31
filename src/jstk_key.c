@@ -253,26 +253,26 @@ jstkKeyboardHotplug(InputInfoPtr pInfo, int flags)
     int rc;
     char name[512] = {0};
     InputAttributes *attrs = NULL;
-    InputOption *options;
     InputOption *iopts = NULL, *tmp;
     DeviceIntPtr dev;
+    XF86OptionPtr opts;
 
     /* duplicate option list, append to name */
-    options = xf86OptionListDuplicate(pInfo->options);
+    opts = xf86OptionListDuplicate(pInfo->options);
     strcpy(name, pInfo->name);
     strcat(name, " (keys)");
-    options = xf86ReplaceStrOption(options, "Name", name);
-    options = xf86ReplaceStrOption(options, "_source", "_driver/joystick");
+    opts = xf86ReplaceStrOption(opts, "Name", name);
+    opts = xf86ReplaceStrOption(opts, "_source", "_driver/joystick");
 
-    while(options)
+    while(opts)
     {
         tmp = calloc(1, sizeof(InputOption));
 
-        tmp->key = xf86OptionName(options);
-        tmp->value = xf86OptionValue(options);
+        tmp->key = xf86OptionName(opts);
+        tmp->value = xf86OptionValue(opts);
         tmp->next = iopts;
         iopts = tmp;
-        options = xf86NextOption(options);
+        opts = xf86NextOption(opts);
     }
 
     /* duplicate attribute list */
