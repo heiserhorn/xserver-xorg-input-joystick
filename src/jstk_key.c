@@ -247,13 +247,46 @@ int jstkKeyboardPreInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags)
     return Success;
 }
 
+#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) < 14
+static InputOption*
+input_option_new(InputOption* list, char *key, char *value)
+{
+    InputOption *tmp;
+
+    tmp = calloc(1, sizeof(*tmp));
+    tmp->key = key;
+    tmp->value = value;
+    tmp->next = list;
+
+    return tmp;
+}
+
+static void
+input_option_free_list(InputOption **list)
+{
+    InputOption *iopts = *list;
+
+    while(iopts)
+    {
+        InputOption *tmp = iopts->next;
+        free(iopts->key);
+        free(iopts->value);
+        free(iopts);
+        iopts = tmp;
+    }
+
+    *list = NULL;
+}
+
+#endif
+
 InputInfoPtr
 jstkKeyboardHotplug(InputInfoPtr pInfo, int flags)
 {
     int rc;
     char name[512] = {0};
     InputAttributes *attrs = NULL;
-    InputOption *iopts = NULL, *tmp;
+    InputOption *iopts = NULL;
     DeviceIntPtr dev;
     XF86OptionPtr opts;
 
@@ -266,12 +299,9 @@ jstkKeyboardHotplug(InputInfoPtr pInfo, int flags)
 
     while(opts)
     {
-        tmp = calloc(1, sizeof(InputOption));
-
-        tmp->key = xf86OptionName(opts);
-        tmp->value = xf86OptionValue(opts);
-        tmp->next = iopts;
-        iopts = tmp;
+        iopts = input_option_new(iopts,
+                                 xf86OptionName(opts),
+                                 xf86OptionValue(opts));
         opts = xf86NextOption(opts);
     }
 
@@ -280,14 +310,7 @@ jstkKeyboardHotplug(InputInfoPtr pInfo, int flags)
 
     rc = NewInputDeviceRequest(iopts, attrs, &dev);
 
-    while(iopts)
-    {
-        tmp = iopts->next;
-        free(iopts->key);
-        free(iopts->value);
-        free(iopts);
-        iopts = tmp;
-    }
+    input_option_free_list(&iopts);
 
     FreeInputAttributes(attrs);
 
