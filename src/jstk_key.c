@@ -296,6 +296,7 @@ jstkKeyboardHotplug(InputInfoPtr pInfo, int flags)
     strcat(name, " (keys)");
     opts = xf86ReplaceStrOption(opts, "Name", name);
     opts = xf86ReplaceStrOption(opts, "_source", "_driver/joystick");
+    opts = xf86AddNewOption(opts, "Driver", pInfo->driver);
 
     while(opts)
     {
