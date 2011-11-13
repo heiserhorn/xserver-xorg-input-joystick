@@ -129,9 +129,6 @@ can be one of:
 
 .B none, relative, accelerated, absolute
 
-Every axis which's mode is not
-.B none
-will be reported as an additional valuator.
 .TP 7
 .B \*qvaluator\*q
 Send extra valuator events for this axis. The valuators will be numbered ascending, starting with 2 (valuator 0 and 1 are reserved for pointer movement). The range of the valuators is always 
