@@ -1,4 +1,4 @@
-xserver-xorg-input-joystick (1:1.6.0-2) UNRELEASED; urgency=low
+xserver-xorg-input-joystick (1:1.6.0-2) unstable; urgency=high
 
   [ Julien Cristau ]
   * Use kfreebsd-any wildcard for libusbhid build-dep (closes: #634707).
@@ -7,8 +7,9 @@ xserver-xorg-input-joystick (1:1.6.0-2) UNRELEASED; urgency=low
   * Add patch to deal with the uncoordinated freebsd-libs transition,
     thanks to Steven Chamberlain (Closes: #660395):
     - 0001-Fix-includes-for-kfreebsd.diff
+  * Set urgency to “high” for the RC bug fix.
 
- -- Julien Cristau <jcristau@debian.org>  Wed, 20 Jul 2011 20:51:38 +0200
+ -- Cyril Brulebois <kibi@debian.org>  Sun, 19 Feb 2012 16:04:42 +0000
 
 xserver-xorg-input-joystick (1:1.6.0-1) unstable; urgency=low
 
