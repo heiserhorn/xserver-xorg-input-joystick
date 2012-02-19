@@ -1,6 +1,12 @@
 xserver-xorg-input-joystick (1:1.6.0-2) UNRELEASED; urgency=low
 
+  [ Julien Cristau ]
   * Use kfreebsd-any wildcard for libusbhid build-dep (closes: #634707).
+
+  [ Cyril Brulebois ]
+  * Add patch to deal with the uncoordinated freebsd-libs transition,
+    thanks to Steven Chamberlain (Closes: #660395):
+    - 0001-Fix-includes-for-kfreebsd.diff
 
  -- Julien Cristau <jcristau@debian.org>  Wed, 20 Jul 2011 20:51:38 +0200
 
