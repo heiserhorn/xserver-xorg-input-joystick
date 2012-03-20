@@ -1,8 +1,8 @@
-xserver-xorg-input-joystick (1:1.6.1-1) UNRELEASED; urgency=low
+xserver-xorg-input-joystick (1:1.6.1-1) unstable; urgency=low
 
   * New upstream release.
 
- -- Cyril Brulebois <kibi@debian.org>  Tue, 20 Mar 2012 21:50:48 +0100
+ -- Cyril Brulebois <kibi@debian.org>  Tue, 20 Mar 2012 21:51:40 +0100
 
 xserver-xorg-input-joystick (1:1.6.0-2) unstable; urgency=high
 
