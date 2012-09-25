@@ -140,8 +140,8 @@ jstkOpenDevice_evdev(JoystickDevPtr joystick, Bool probe)
     for (j = 0; j < ABS_MAX; j++)
         if (test_bit(j, button_bits))
         {
-            struct input_absinfo abs;
-            if (ioctl(joystick->fd, EVIOCGABS(j), &abs) == -1) {
+            struct input_absinfo absinfo;
+            if (ioctl(joystick->fd, EVIOCGABS(j), &absinfo) == -1) {
                 xf86Msg(X_ERROR, "Joystick: ioctl EVIOCGABS on '%s' failed: %s\n",
                         joystick->device, strerror(errno));
                 close(joystick->fd);
@@ -150,10 +150,10 @@ jstkOpenDevice_evdev(JoystickDevPtr joystick, Bool probe)
                 return -1;
             }
             evdevdata->axis[j].number = axes; /* physical -> logical mapping */
-            evdevdata->axis[j].min = abs.minimum;
-            evdevdata->axis[j].max = abs.maximum;
+            evdevdata->axis[j].min = absinfo.minimum;
+            evdevdata->axis[j].max = absinfo.maximum;
             DBG(3, ErrorF("Axis %d: phys %d min %d max %d\n",
-               axes, j, abs.minimum, abs.maximum));
+               axes, j, absinfo.minimum, absinfo.maximum));
 
             axes++;
         }
