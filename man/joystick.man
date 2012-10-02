@@ -19,7 +19,13 @@ Snipped for xorg.conf.d(5):
 
 .SH DESCRIPTION
 .B joystick
-is an __xservername__ input driver for Joysticks. There are 3 backends available that are used in the following order, if support was found:
+is an __xservername__ input driver for controlling the pointer with a
+joystick device. It is
+.B not a joystick driver for games,
+the
+.B evdev
+driver will suffice for those in most cases.
+There are 3 backends available that are used in the following order, if support was found:
 
 .nf
 .B - Linux's evdev interface
