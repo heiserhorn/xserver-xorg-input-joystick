@@ -9,7 +9,7 @@ Snipped for xorg.conf.d(5):
 .nf
 .B "Section \*qInputClass\*q"
 .BI "  Identifier \*q" joystick-all \*q
-.BI  "  Driver \*q" joystick \*q
+.BI "  Driver \*q" joystick \*q
 .BI "  Option \*qMatchIsJoystick\*q   \*q" on \*q
 .BI "  Option \*qMatchDevicePath \*q" /dev/input/event* \*q
 \ \ ...
@@ -20,11 +20,32 @@ Snipped for xorg.conf.d(5):
 .SH DESCRIPTION
 .B joystick
 is an __xservername__ input driver for controlling the pointer with a
-joystick device. It is
-.B not a joystick driver for games,
-the
-.B evdev
+joystick device.
+.TP 3
+Use this driver, if you want to
+- generate 
+.IR "cursor movement" ,
+perform button or key events to control desktop and applications
+
+- generate 
+.I "cursor key events"
+for playing legacy games, that have no native joystick support
+
+.TP 3
+.B Do not use, if you want to
+- play games, that have native joystick support
+
+- use XI2 applications. The
+.B evdev(4)
 driver will suffice for those in most cases.
+
+.PP
+You may mix above scenarios by setting the device 
+.IR floating .
+The driver reports relative cursor movement, button and key events,
+as well as raw axis values through valuators.
+
+.SH SUPPORTED HARDWARE
 The joystick input module can be used on top of the following kernel devices:
 
 .nf
@@ -33,16 +54,16 @@ The joystick input module can be used on top of the following kernel devices:
 .B - BSD's usbhid device
 .fi
 
-The driver reports cursor movement
-as well as raw axis values through valuators.
-
-.SH SUPPORTED HARDWARE
 Every joystick supported by the kernel should be supported by the 
 .B joystick
 input driver. The joystick is assumed to be calibrated and reporting axis values
 between 
 .IR "-32768 " and " 32768" .
 See the Linux kernel documentation for a complete list of supported devices.
+
+There is no support for
+.B force feedback
+at the moment.
 
 .SH CONFIGURATION DETAILS
 Please refer to __xconfigfile__(__filemansuffix__) for general configuration
