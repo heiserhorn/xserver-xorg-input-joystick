@@ -25,24 +25,24 @@ joystick device. It is
 the
 .B evdev
 driver will suffice for those in most cases.
-There are 3 backends available that are used in the following order, if support was found:
+The joystick input module can be used on top of the following kernel devices:
 
 .nf
-.B - Linux's evdev interface
-.B - Linux's joystick interface
-.B - BSD's usbhid interface
+.B - Linux's evdev device
+.B - Linux's joystick device
+.B - BSD's usbhid device
 .fi
 
 The driver reports cursor movement
-as well as raw axis values through valuators. 
+as well as raw axis values through valuators.
 
 .SH SUPPORTED HARDWARE
-In general, every by the kernel supported joystick should be supported through the
+Every joystick supported by the kernel should be supported by the 
 .B joystick
-driver. The driver assumes that the joystick is calibrated and reports axis values
+input driver. The joystick is assumed to be calibrated and reporting axis values
 between 
 .IR "-32768 " and " 32768" .
-See the Linux kernel documentation for a complete list of supported devices. 
+See the Linux kernel documentation for a complete list of supported devices.
 
 .SH CONFIGURATION DETAILS
 Please refer to __xconfigfile__(__filemansuffix__) for general configuration
@@ -143,9 +143,9 @@ Neither
 .B mode
 nor
 .B axis
-needs to be set to generate extra valuator events. The axis will be labelled according to it's physical axis number, beginning with 
+needs to be set to generate extra valuator events. The axis will be labelled according to its physical axis number, beginning with 
 .I 1
-, i.e.
+, e.g.
 .I \*qAxis 1\*q
 for the first axis (being the 3rd valuator).
 Default: not set.
@@ -249,7 +249,7 @@ mode should be selected, if the axis is a
 which reports only three states: negative, center, positive. It will produce a smooth acceleration of the movement
 when the axis is deflected. The speed will be affected by the factor of the axis, but not the acceleration speed.
 
-This example will set up the axis as scrolling vertically inverted, which half of the speed:
+This example will set up the axis as scrolling vertically inverted, with half of the speed:
 .nf
 .BI "  Option \*qMapAxis1\*q     \*q" "mode=accelerated axis=-0.5zy" \*q
 .fi
@@ -272,7 +272,7 @@ the cursor can move. The default range is the
 .I width
 of the screen, when mapped to the x-axis and the
 .I height
-of the screen, when mapped to the y-axis. This mode can be combines with the other modes without problems. 
+of the screen, when mapped to the y-axis. This mode can be combined with the other modes without problems.
 
 In this example the first axis gets a range from left to the right of the screen. The second axis gets a
 total range of 200 pixels, 100 to the top and 100 to the bottom:
@@ -283,7 +283,7 @@ total range of 200 pixels, 100 to the top and 100 to the bottom:
 
 .SH "GENERATING KEY EVENTS"
 Providing a \*qkey=<scancode>[,<scancode>[...]]\*q option will generate X Events with the specified scancodes
-when the joystick button is pressed or the axis changed it's position. When the button/axis is released, the keys are released in the reverse order.
+when the joystick button is pressed or the axis changed its position. When the button/axis is released, the keys are released in the reverse order.
 
 To lookup keycodes for KeySyms, you can use
 .BR "xmodmap -pk" .
