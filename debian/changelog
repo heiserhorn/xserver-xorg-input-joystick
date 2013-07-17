@@ -1,6 +1,7 @@
 xserver-xorg-input-joystick (1:1.6.2-1) UNRELEASED; urgency=low
 
   * New upstream release.
+  * Update dependencies.
 
  -- Michele Cane <michele.cane@gmail.com>  Thu, 11 Jul 2013 09:17:46 +0200
 
