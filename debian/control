@@ -9,7 +9,7 @@ Build-Depends:
  quilt,
  pkg-config,
  xutils-dev,
- xserver-xorg-dev (>= 2:1.9.99.2),
+ xserver-xorg-dev (>= 2:1.14),
  x11proto-input-dev,
  x11proto-core-dev,
  x11proto-randr-dev,
